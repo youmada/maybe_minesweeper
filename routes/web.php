@@ -5,8 +5,21 @@ use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
+
+// ホーム画面ルート
 Route::get('/', function () {
     return Inertia::render('Home');
+});
+
+// シングルプレイ設定画面ルート
+Route::get('/single', function () {
+    return Inertia::render('Single');
+});
+
+Route::get('/single/play', function () {
+    return Inertia::render('Single/Play', [
+        'level' => request()->query('level'),// levelにマインスイーパーの難易度を入れる
+    ]);
 });
 
 Route::get('/dashboard', function () {

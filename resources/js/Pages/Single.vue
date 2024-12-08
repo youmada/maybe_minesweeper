@@ -10,14 +10,17 @@ import { Head, Link } from '@inertiajs/vue3';
             <h1
                 class="size-fit w-full text-center text-4xl font-bold text-slate-50"
             >
-                まいんすいーぱーおんらいん
+                シングルプレイ
             </h1>
             <main class="mb-auto mt-auto flex space-x-4">
-                <Link href="/single">
-                    <PrimaryButton>シングルプレイ</PrimaryButton>
+                <Link href="/single/play?level=easy">
+                    <PrimaryButton>いーじー</PrimaryButton>
                 </Link>
-                <Link href="/multi">
-                    <PrimaryButton>マルチプレイ</PrimaryButton>
+                <Link href="/single/play?level=normal">
+                    <PrimaryButton>のーまる</PrimaryButton>
+                </Link>
+                <Link href="/single/play?level=hard">
+                    <PrimaryButton>はーど</PrimaryButton>
                 </Link>
             </main>
         </div>
