@@ -61,7 +61,6 @@ export class BoardController {
     private _numOfMine: number;
     board: Board;
     visitedTiles: Set<string>;
-    numOfDeployableTiles: number;
 
     constructor(width: number, height: number, numOfMine: number) {
         this._width = width;
@@ -69,7 +68,6 @@ export class BoardController {
         this._numOfMine = numOfMine;
         this.board = new Board(width, height);
         this.visitedTiles = new Set();
-        this.numOfDeployableTiles = this.width * this.heigth - this.numOfMine;
     }
 
     get width() {
@@ -168,24 +166,27 @@ export class BoardController {
         return aroundTIles;
     }
 
-    chainOpenTile(diffX: number, diffY: number, tile: Tile) {
+    private chainOpenTile(diffX: number, diffY: number, tile: Tile) {
         // 1.現在位置を把握
         const currTile = this.getTile(tile.x + diffX, tile.y + diffY);
         if (!currTile) return;
-        // 1.現在位置を把握
+
         const tileKey = `${currTile.x},${currTile.y}`;
 
         // すでにタイルが空いているなら早期リターン
         if (this.visitedTiles.has(tileKey)) return;
+        // タイルが空いていないので、訪れたタイルに追加
         this.visitedTiles.add(tileKey);
 
-        const aroundMines = this.checkAroundMines(currTile);
+        // フラグが立っている場合は、フラグを外す
         currTile.openTile();
         currTile.isFlag = false;
 
-        if (aroundMines !== 0) return;
+        // 2.現在位置の周辺地雷数を取得
+        const aroundMines = this.checkAroundMines(currTile);
 
         // 3.八方向を確認して、それぞれの方向の隣接タイルの周辺地雷数が0の場合に、タイルを展開
+        if (aroundMines !== 0) return;
 
         // 4.隣接タイルに地雷が隣接するまで、再帰的に実行する。
 
@@ -206,13 +207,7 @@ export class BoardController {
 
     openTile(tile: Tile) {
         if (tile === undefined) return;
-        tile.openTile();
-        // タイルを開けたら、開けたタイルを記録する
-        this.visitedTiles.add(`${tile.x},${tile.y}`);
-        // タイルを開けたら、展開可能なタイルを減らす
-        this.numOfDeployableTiles--;
-
-        // 再帰的にタイルを開けることができる場合、再帰的に開ける
+        // タイル展開は全てchainOpenTileで行う
         this.chainOpenTile(0, 0, tile);
     }
 
@@ -264,7 +259,13 @@ class GameController {
     }
 
     isGameClear() {
-        if (this.boardController.numOfDeployableTiles === 0) return true;
+        const board = this.boardController;
+        const restClosedTiles =
+            board.width * board.heigth -
+            board.numOfMine -
+            this.boardController.visitedTiles.size;
+
+        if (restClosedTiles === 0) return true;
         return false;
     }
 
@@ -284,7 +285,7 @@ export function useMineSweeper(
     const gameController = ref<GameController>(
         new GameController(boardController.value as BoardController),
     );
-    const numOfOpenTiles = ref(boardController.value.visitedTiles);
+    const OpenTileList = ref(boardController.value.visitedTiles);
 
     function reInstance() {
         boardController.value = new BoardController(
@@ -292,7 +293,7 @@ export function useMineSweeper(
             boardHeight,
             numOfMine,
         );
-        numOfOpenTiles.value = boardController.value.visitedTiles;
+        OpenTileList.value = boardController.value.visitedTiles;
         gameController.value = new GameController(
             boardController.value as BoardController,
         );
@@ -305,7 +306,7 @@ export function useMineSweeper(
     return {
         boardController,
         gameController,
-        numOfOpenTiles,
+        OpenTileList,
         reInstance,
         startGame,
     };

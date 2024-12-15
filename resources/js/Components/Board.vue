@@ -3,7 +3,7 @@ import ModalWindow from '@/Components/ModalWindow.vue';
 import { default as PrimaryButton } from '@/Components/PrimaryButton.vue';
 import { Tile, useMineSweeper } from '@/custom/useMineSweaper';
 import { router } from '@inertiajs/vue3';
-import { ref, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 import BoardTile from './Tile.vue';
 
 const props = defineProps<{
@@ -12,18 +12,20 @@ const props = defineProps<{
     totalMine: number;
 }>();
 
-const {
-    boardController,
-    gameController,
-    numOfOpenTiles,
-    reInstance,
-    startGame,
-} = useMineSweeper(props.boardWidth, props.boardHeight, props.totalMine);
+const { boardController, gameController, OpenTileList, reInstance, startGame } =
+    useMineSweeper(props.boardWidth, props.boardHeight, props.totalMine);
 
 const isStartGame = ref(false);
 const isGameOver = ref(false);
 const isGameClear = ref(false);
 const isFlagMode = ref(false);
+
+const restOpenTiles = computed(() => {
+    return (
+        props.boardWidth * props.boardHeight -
+        (props.totalMine + OpenTileList.value.size)
+    );
+});
 
 function handleClickTile(tile: Tile) {
     if (!isStartGame.value) {
@@ -52,7 +54,7 @@ function gameOver() {
 
 // 展開できるタイル数が0になった時の処理
 watch(
-    () => numOfOpenTiles.value.size,
+    () => OpenTileList.value.size,
     () => {
         if (gameController.value.isGameClear()) isGameClear.value = true;
     },
@@ -85,7 +87,7 @@ function restartGame() {
             <div class="m-2 mr-4 flex justify-around">
                 <p class="inline text-center text-2xl font-bold">
                     <span> 残りタイル数 </span>
-                    <span>{{ boardController.numOfDeployableTiles }}</span>
+                    <span>{{ restOpenTiles }}</span>
                 </p>
             </div>
             <PrimaryButton
