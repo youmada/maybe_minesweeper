@@ -4,7 +4,7 @@ import { computed } from 'vue';
 
 const props = defineProps<{ tile: Tile; checkFn: Function }>();
 const computedText = computed(() => {
-    if (props.tile.getFlagState()) return;
+    if (props.tile.isFlag) return;
     if (props.tile.isOpen && !props.tile.isMine) {
         const totalAroundMine = props.checkFn();
         if (totalAroundMine === 0) return;
@@ -18,7 +18,7 @@ const computedText = computed(() => {
         :class="{
             open: tile.isOpen,
             mine: tile.isMine,
-            flag: tile.getFlagState(),
+            flag: tile.isFlag,
         }"
         >{{ computedText }}</span
     >

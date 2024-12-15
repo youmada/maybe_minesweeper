@@ -84,6 +84,10 @@ export class BoardController {
         return this._numOfMine;
     }
 
+    getBoard() {
+        return this.board.getBoard();
+    }
+
     setMines(clickTilePos: Tile): void {
         let iterator = this.numOfMine;
         const alreadySetMines = new Set<Tile>();
@@ -200,10 +204,22 @@ export class BoardController {
         });
     }
 
-    toggleFlag(x: number, y: number) {
-        const tile = this.getTile(x, y);
+    openTile(tile: Tile) {
         if (tile === undefined) return;
-        tile.toggleFlag();
+        tile.openTile();
+        // タイルを開けたら、開けたタイルを記録する
+        this.visitedTiles.add(`${tile.x},${tile.y}`);
+        // タイルを開けたら、展開可能なタイルを減らす
+        this.numOfDeployableTiles--;
+
+        // 再帰的にタイルを開けることができる場合、再帰的に開ける
+        this.chainOpenTile(0, 0, tile);
+    }
+
+    isOpenTile(tile: Tile) {
+        if (tile.isFlag) return false;
+        if (tile.isOpen) return false;
+        return true;
     }
 }
 
@@ -242,46 +258,18 @@ class GameController {
         this.boardController = boardController;
     }
 
-    checkGameStatus(clickTile: Tile): 'gameover' | 'gameclear' | null {
-        // ゲームオーバー
+    isGameOver(tile: Tile) {
+        if (tile.isMine) return true;
+        return false;
+    }
 
-        if (clickTile.isMine) {
-            return 'gameover';
-        }
-        // ゲームクリア
-        if (this.boardController.numOfDeployableTiles === 0) {
-            return 'gameclear';
-        }
-
-        return null;
+    isGameClear() {
+        if (this.boardController.numOfDeployableTiles === 0) return true;
+        return false;
     }
 
     startGame(clickTile: Tile) {
         this.boardController.setMines(clickTile);
-    }
-
-    openTile(x: number, y: number) {
-        const tile = this.boardController.getTile(x, y);
-        if (tile === undefined) return;
-        if (tile.isOpen) return;
-        if (tile.isMine) {
-            // ゲームオーバー
-            return;
-        }
-        tile.openTile();
-        // タイルを開けたら、開けたタイルを記録する
-        this.boardController.visitedTiles.add(`${x},${y}`);
-        // タイルを開けたら、展開可能なタイルを減らす
-        this.boardController.numOfDeployableTiles--;
-        // タイル展開でのゲームステータスを確認
-        this.checkGameStatus(tile);
-
-        if (this.boardController.checkAroundMines(tile) === 0) {
-            const aroundTiles = this.boardController.getAroundTiles(tile);
-            aroundTiles.forEach((tile) => {
-                this.openTile(tile.x, tile.y);
-            });
-        }
     }
 }
 

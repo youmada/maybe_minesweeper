@@ -3,7 +3,7 @@ import ModalWindow from '@/Components/ModalWindow.vue';
 import { default as PrimaryButton } from '@/Components/PrimaryButton.vue';
 import { Tile, useMineSweeper } from '@/custom/useMineSweaper';
 import { router } from '@inertiajs/vue3';
-import { computed, Ref, ref, watch } from 'vue';
+import { ref, watch } from 'vue';
 import BoardTile from './Tile.vue';
 
 const props = defineProps<{
@@ -12,24 +12,18 @@ const props = defineProps<{
     totalMine: number;
 }>();
 
-const { board, tiles, numOfOpenTiles, reInstance, startGame } = useMineSweeper(
-    props.boardWidth,
-    props.boardHeight,
-    props.totalMine,
-);
+const {
+    boardController,
+    gameController,
+    numOfOpenTiles,
+    reInstance,
+    startGame,
+} = useMineSweeper(props.boardWidth, props.boardHeight, props.totalMine);
+
 const isStartGame = ref(false);
 const isGameOver = ref(false);
 const isGameClear = ref(false);
 const isFlagMode = ref(false);
-
-// 一度に開くことができる最大のタイル数
-const limitOfChainOpenTile = Infinity;
-// limitOfchainOpenTileと比較してタイル連鎖展開をコントロール
-const limitOpenTileCounter = ref(0);
-
-function toggleFlag() {
-    return (isFlagMode.value = !isFlagMode.value);
-}
 
 function handleClickTile(tile: Tile) {
     if (!isStartGame.value) {
@@ -38,66 +32,15 @@ function handleClickTile(tile: Tile) {
         return;
     }
 
-    if (tile.getTileState().isOpen) return;
     if (isFlagMode.value) {
         tile.toggleFlag();
         return;
     }
 
-    if (tile.getFlagState()) return;
-    if (tile.getTileState().isMine) return (isGameOver.value = true);
-    chainOpenTile(0, 0, tile, limitOpenTileCounter);
-    limitOpenTileCounter.value = 0;
-}
-
-function chainOpenTile(diffX: number, diffY: number, tile: Tile, limit: Ref) {
-    if (limit.value >= limitOfChainOpenTile) return;
-    const isTile = board.value.getTile(tile.x + diffX, tile.y + diffY);
-    if (!isTile) return;
-
-    const currTile = tiles.value[tile.x + diffX][tile.y + diffY];
-    if (!currTile) return;
-    // 1.現在位置を把握
-    const tileKey = `${currTile.x},${currTile.y}`;
-
-    // すでにタイルが空いているなら早期リターン
-    if (numOfOpenTiles.value.has(tileKey)) return;
-    numOfOpenTiles.value.add(tileKey);
-
-    const aroundMines = currTile.checkAroundMines(board.value);
-    currTile.openTile();
-    currTile.isFlag = false;
-    limit.value += 1;
-
-    if (aroundMines !== 0) return;
-
-    // 3.八方向を確認して、それぞれの方向の隣接タイルの周辺地雷数が0の場合に、タイルを展開
-
-    // 4.隣接タイルに地雷が隣接するまで、再帰的に実行する。
-
-    // 現在位置から真上
-    chainOpenTile(0, -1, currTile, limit);
-
-    // 現在位置から右上
-    chainOpenTile(1, -1, currTile, limit);
-
-    // 現在位置から右
-    chainOpenTile(1, 0, currTile, limit);
-
-    // 現在位置から右下
-    chainOpenTile(1, 1, currTile, limit);
-
-    // 現在位置から真下
-    chainOpenTile(0, 1, currTile, limit);
-
-    // 現在位置から左下
-    chainOpenTile(-1, 1, currTile, limit);
-
-    // 現在位置から左
-    chainOpenTile(-1, 0, currTile, limit);
-
-    // 現在位置から左上
-    chainOpenTile(-1, -1, currTile, limit);
+    // タイルが開かれているか、フラグが立っている場合は何もしない
+    if (!boardController.value.isOpenTile(tile)) return;
+    if (gameController.value.isGameOver(tile)) return (isGameOver.value = true);
+    boardController.value.openTile(tile);
 }
 
 function gameClear() {
@@ -111,18 +54,9 @@ function gameOver() {
 watch(
     () => numOfOpenTiles.value.size,
     () => {
-        if (numOfOpenTiles.value.size === board.value.numOfDeployableTiles)
-            isGameClear.value = true;
+        if (gameController.value.isGameClear()) isGameClear.value = true;
     },
 );
-
-const restCloseTile = computed(() => {
-    return (
-        props.boardWidth * props.boardHeight -
-        props.totalMine -
-        numOfOpenTiles.value.size
-    );
-});
 
 // ゲームクリア処理
 watch(isGameClear, () => {
@@ -151,7 +85,7 @@ function restartGame() {
             <div class="m-2 mr-4 flex justify-around">
                 <p class="inline text-center text-2xl font-bold">
                     <span> 残りタイル数 </span>
-                    <span>{{ restCloseTile }}</span>
+                    <span>{{ boardController.numOfDeployableTiles }}</span>
                 </p>
             </div>
             <PrimaryButton
@@ -160,16 +94,19 @@ function restartGame() {
                     'text-white': isFlagMode,
                     'hover:bg-orange-400': isFlagMode,
                 }"
-                :click-fn="toggleFlag"
+                :clickFn="() => (isFlagMode = !isFlagMode)"
                 >フラグモード</PrimaryButton
             >
         </div>
         <div class="m-auto flex w-fit">
-            <div class="flex w-fit flex-col" v-for="horizontalTile in tiles">
+            <div
+                class="flex w-fit flex-col"
+                v-for="horizontalTile in boardController.getBoard()"
+            >
                 <div v-for="tile in horizontalTile">
                     <BoardTile
                         @click="() => handleClickTile(tile)"
-                        :checkFn="() => tile.checkAroundMines(board)"
+                        :checkFn="() => boardController.checkAroundMines(tile)"
                         :tile="tile"
                     ></BoardTile>
                 </div>
