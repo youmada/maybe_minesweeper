@@ -210,12 +210,6 @@ export class BoardController {
         // タイル展開は全てchainOpenTileで行う
         this.chainOpenTile(0, 0, tile);
     }
-
-    isOpenTile(tile: Tile) {
-        if (tile.isFlag) return false;
-        if (tile.isOpen) return false;
-        return true;
-    }
 }
 
 class Board {

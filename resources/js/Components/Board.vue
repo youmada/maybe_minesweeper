@@ -33,15 +33,22 @@ function handleClickTile(tile: Tile) {
         isStartGame.value = true;
         return;
     }
+    // タイルが開かれている場合、何もしない
+    if (tile.isOpen) return;
 
+    // フラグモードの場合
     if (isFlagMode.value) {
         tile.toggleFlag();
         return;
     }
 
-    // タイルが開かれているか、フラグが立っている場合は何もしない
-    if (!boardController.value.isOpenTile(tile)) return;
+    // フラグが立っている場合、何もしない
+    if (tile.isFlag) return;
+
+    // ゲームオーバー処理
     if (gameController.value.isGameOver(tile)) return (isGameOver.value = true);
+
+    // タイルを開く
     boardController.value.openTile(tile);
 }
 
