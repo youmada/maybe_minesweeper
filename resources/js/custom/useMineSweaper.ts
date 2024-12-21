@@ -212,7 +212,7 @@ export class BoardController {
     }
 }
 
-class Board {
+export class Board {
     private width: number;
     private heigth: number;
     private board: Tile[][];
@@ -241,7 +241,7 @@ class Board {
     }
 }
 
-class GameController {
+export class GameController {
     private boardController: BoardController;
     constructor(boardController: BoardController) {
         this.boardController = boardController;
