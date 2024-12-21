@@ -213,27 +213,34 @@ export class BoardController {
 }
 
 export class Board {
-    private width: number;
-    private heigth: number;
+    private _width: number;
+    private _height: number;
     private board: Tile[][];
 
     constructor(width: number, height: number) {
-        this.width = width;
-        this.heigth = height;
+        this._width = width;
+        this._height = height;
         this.board = this.createBoard();
     }
 
     private createBoard(): Tile[][] {
         const board: Tile[][] = [];
-        for (let i = 0; i < this.width; i++) {
+        for (let i = 0; i < this._width; i++) {
             const widthArr = [];
-            for (let j = 0; j < this.heigth; j++) {
+            for (let j = 0; j < this._height; j++) {
                 const title = new Tile(i, j);
                 widthArr.push(title);
             }
             board.push(widthArr);
         }
         return board;
+    }
+
+    get width() {
+        return this._width;
+    }
+    get height() {
+        return this._height;
     }
 
     getBoard() {

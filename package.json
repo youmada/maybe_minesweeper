@@ -4,7 +4,8 @@
     "scripts": {
         "build": "vue-tsc && vite build",
         "dev": "vite --host",
-        "test": "vitest",
+        "test": "vitest run",
+        "test:ui": "vitest --ui",
         "lint": "eslint resources/js --ext .js,.ts,.vue --ignore-path .gitignore --fix"
     },
     "devDependencies": {
@@ -33,6 +34,7 @@
     },
     "dependencies": {
         "@vue/test-utils": "^2.4.6",
+        "jsdom": "^25.0.1",
         "vuetify": "^3.7.5"
     }
 }
