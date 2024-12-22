@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import ModalWindow from '@/Components/ModalWindow.vue';
 import { default as PrimaryButton } from '@/Components/PrimaryButton.vue';
-import { Tile, useMineSweeper } from '@/custom/useMineSweaper';
+import { Tile, useMineSweaper } from '@/custom/useMineSweaper';
 import { router } from '@inertiajs/vue3';
 import { computed, ref, watch } from 'vue';
 import BoardTile from './Tile.vue';
@@ -13,7 +13,7 @@ const props = defineProps<{
 }>();
 
 const { boardController, gameController, OpenTileList, reInstance, startGame } =
-    useMineSweeper(props.boardWidth, props.boardHeight, props.totalMine);
+    useMineSweaper(props.boardWidth, props.boardHeight, props.totalMine);
 
 const isStartGame = ref(false);
 const isGameOver = ref(false);
