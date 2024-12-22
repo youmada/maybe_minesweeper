@@ -56,47 +56,35 @@ export class Tile {
 }
 
 export class BoardController {
-    private _width: number;
-    private _heigth: number;
     private _numOfMine: number;
     board: Board;
     visitedTiles: Set<string>;
 
     constructor(width: number, height: number, numOfMine: number) {
-        this._width = width;
-        this._heigth = height;
         this._numOfMine = numOfMine;
         this.board = new Board(width, height);
         this.visitedTiles = new Set();
     }
 
     get width() {
-        return this._width;
+        return this.board.width;
     }
 
-    get heigth() {
-        return this._heigth;
+    get height() {
+        return this.board.height;
     }
 
-    get numOfMine() {
+    get numOfMines() {
         return this._numOfMine;
     }
 
-    getBoard() {
-        return this.board.getBoard();
-    }
-
     setMines(clickTilePos: Tile): void {
-        let iterator = this.numOfMine;
+        let iterator = this.numOfMines;
         const alreadySetMines = new Set<Tile>();
+        // 初期クリックタイルとその周辺には地雷を入れない
         alreadySetMines.add(clickTilePos);
-        // 周辺8マスを取得
         const aroundTiles = this.getAroundTiles(clickTilePos);
-        // 最初のクリックタイルと周辺8マスは初期値で開けておく。
-        clickTilePos.openTile();
-        // すでに設置されているマインを開ける
-        aroundTiles.map((tile) => tile.openTile());
-        // すでに設置されているマインをセット
+        // 初期クリックタイルの周囲1マスを地雷不可にセット
         aroundTiles.forEach((tile) => alreadySetMines.add(tile));
 
         //wileループに入る前に、最初に押したタイルとその周囲1マスのタイルが入っている。
@@ -114,13 +102,13 @@ export class BoardController {
     private getRamdomTile() {
         if (this.board === null) return;
         const randomWidth = Math.floor(Math.random() * this.width);
-        const randomHeigth = Math.floor(Math.random() * this.heigth);
+        const randomHeigth = Math.floor(Math.random() * this.height);
         return this.board.getBoard()[randomWidth][randomHeigth];
     }
 
     getTile(x: number, y: number): Tile | undefined {
         if (x < 0 || x > this.width - 1) return;
-        if (y < 0 || y > this.heigth - 1) return;
+        if (y < 0 || y > this.height - 1) return;
         return this.board.getBoard()[x][y];
     }
 
@@ -137,6 +125,7 @@ export class BoardController {
 
     getAroundTiles(currentTile: Tile): Tile[] {
         const currPos = currentTile.getPosition();
+        // 時計回りで周囲8マスの座標を設定
         const tiles: { x: number; y: number }[] = [
             // 現在位置から真上
             { x: currPos.x, y: currPos.y - 1 },
@@ -210,24 +199,30 @@ export class BoardController {
         // タイル展開は全てchainOpenTileで行う
         this.chainOpenTile(0, 0, tile);
     }
+
+    toggleFlag(tile: Tile) {
+        // タイルが存在しない場合は早期リターン
+        if (this.getTile(tile.x, tile.y) === undefined) return;
+        tile.toggleFlag();
+    }
 }
 
-class Board {
-    private width: number;
-    private heigth: number;
+export class Board {
+    private _width: number;
+    private _height: number;
     private board: Tile[][];
 
     constructor(width: number, height: number) {
-        this.width = width;
-        this.heigth = height;
+        this._width = width;
+        this._height = height;
         this.board = this.createBoard();
     }
 
     private createBoard(): Tile[][] {
         const board: Tile[][] = [];
-        for (let i = 0; i < this.width; i++) {
+        for (let i = 0; i < this._width; i++) {
             const widthArr = [];
-            for (let j = 0; j < this.heigth; j++) {
+            for (let j = 0; j < this._height; j++) {
                 const title = new Tile(i, j);
                 widthArr.push(title);
             }
@@ -236,12 +231,19 @@ class Board {
         return board;
     }
 
+    get width() {
+        return this._width;
+    }
+    get height() {
+        return this._height;
+    }
+
     getBoard() {
         return this.board;
     }
 }
 
-class GameController {
+export class GameController {
     private boardController: BoardController;
     constructor(boardController: BoardController) {
         this.boardController = boardController;
@@ -255,8 +257,8 @@ class GameController {
     isGameClear() {
         const board = this.boardController;
         const restClosedTiles =
-            board.width * board.heigth -
-            board.numOfMine -
+            board.width * board.height -
+            board.numOfMines -
             this.boardController.visitedTiles.size;
 
         if (restClosedTiles === 0) return true;
@@ -264,11 +266,14 @@ class GameController {
     }
 
     startGame(clickTile: Tile) {
+        // 地雷をセット
         this.boardController.setMines(clickTile);
+        // 初期クリックタイルを展開
+        this.boardController.openTile(clickTile);
     }
 }
 
-export function useMineSweeper(
+export function useMineSweaper(
     boardWidth: number,
     boardHeight: number,
     numOfMine: number,
