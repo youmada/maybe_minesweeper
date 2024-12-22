@@ -1,5 +1,9 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { useMineSweaper } from '../useMineSweaper';
+import {
+    BoardController,
+    GameController,
+    useMineSweaper,
+} from '../useMineSweaper';
 
 describe('useMineSweaperのテスト', () => {
     let boardController: ReturnType<typeof useMineSweaper>['boardController'];
@@ -79,5 +83,43 @@ describe('useMineSweaperのテスト', () => {
         });
 
         expect(mineCount).toBe(0);
+    });
+
+    it('コンティニュー処理テスト', () => {
+        const width = 10;
+        const height = 10;
+        const numOfMines = 10;
+        const beforeBoardController = new BoardController(
+            width,
+            height,
+            numOfMines,
+        );
+        const beforeGameController = new GameController(beforeBoardController);
+
+        // ゲーム開始
+        const clickTile = beforeBoardController.getTile(5, 5);
+        if (clickTile === undefined) return;
+        beforeGameController.startGame(clickTile);
+        const visitedTiles = beforeBoardController.visitedTiles;
+
+        // ゲームの状態をシリアライズ
+        const serializedGameController = beforeGameController.serialize();
+
+        // useMineSweaperフックを使用してゲームを再開
+        const { boardController, OpenTileList, continueGame } = useMineSweaper(
+            width,
+            height,
+            numOfMines,
+            GameController.deserialize(serializedGameController),
+        );
+
+        // ゲームをコンティニュー
+        continueGame();
+
+        // ボード情報が保存されていることを確認
+        expect(boardController.value.width).toBe(width);
+        expect(boardController.value.height).toBe(height);
+        expect(boardController.value.numOfMines).toBe(numOfMines);
+        expect(OpenTileList.value).toEqual(visitedTiles);
     });
 });

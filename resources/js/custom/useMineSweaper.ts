@@ -78,6 +78,30 @@ export class BoardController {
         return this._numOfMine;
     }
 
+    // シリアライズメソッド
+    serialize() {
+        return JSON.stringify({
+            width: this.width,
+            height: this.height,
+            board: this.board.serialize(),
+            numOfMines: this.numOfMines,
+            visitedTiles: Array.from(this.visitedTiles),
+        });
+    }
+
+    // デシリアライズメソッド
+    static deserialize(data: string): BoardController {
+        const obj = JSON.parse(data);
+        const boardController = new BoardController(
+            obj.width,
+            obj.height,
+            obj.numOfMines,
+        );
+        boardController.board = Board.deserialize(obj.board);
+        boardController.visitedTiles = new Set(obj.visitedTiles);
+        return boardController;
+    }
+
     setMines(clickTilePos: Tile): void {
         let iterator = this.numOfMines;
         const alreadySetMines = new Set<Tile>();
@@ -241,12 +265,49 @@ export class Board {
     getBoard() {
         return this.board;
     }
+
+    // シリアライズメソッド
+    serialize() {
+        return JSON.stringify({
+            width: this._width,
+            height: this._height,
+            board: this.board,
+        });
+    }
+
+    // デシリアライズメソッド
+    static deserialize(data: string): Board {
+        const obj = JSON.parse(data);
+        const board = new Board(obj.width, obj.height);
+        board.board = obj.board;
+        return board;
+    }
 }
 
 export class GameController {
-    private boardController: BoardController;
+    private _boardController: BoardController;
     constructor(boardController: BoardController) {
-        this.boardController = boardController;
+        this._boardController = boardController;
+    }
+
+    // シリアライズメソッド
+    serialize() {
+        return JSON.stringify({
+            boardController: this.boardController.serialize(),
+        });
+    }
+
+    // デシリアライズメソッド
+    static deserialize(data: string): GameController {
+        const obj = JSON.parse(data);
+        const boardController = BoardController.deserialize(
+            obj.boardController,
+        );
+        return new GameController(boardController);
+    }
+
+    get boardController(): BoardController {
+        return this._boardController;
     }
 
     isGameOver(tile: Tile) {
@@ -277,6 +338,7 @@ export function useMineSweaper(
     boardWidth: number,
     boardHeight: number,
     numOfMine: number,
+    saveData?: GameController,
 ) {
     const boardController = ref<BoardController>(
         new BoardController(boardWidth, boardHeight, numOfMine),
@@ -302,11 +364,22 @@ export function useMineSweaper(
         gameController.value.startGame(clickTilePos);
     }
 
+    function continueGame() {
+        if (saveData) {
+            boardController.value = saveData.boardController;
+            gameController.value = new GameController(
+                boardController.value as BoardController,
+            );
+            OpenTileList.value = boardController.value.visitedTiles;
+        }
+    }
+
     return {
         boardController,
         gameController,
         OpenTileList,
         reInstance,
         startGame,
+        continueGame,
     };
 }

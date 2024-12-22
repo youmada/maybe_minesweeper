@@ -54,4 +54,31 @@ describe('GameControllerのテスト', () => {
     it('ゲームクリアしない場合', () => {
         expect(gameController.isGameClear()).toBe(false);
     });
+
+    it('シリアライズとデシリアライズのテスト', () => {
+        const width = 10;
+        const height = 10;
+        const numOfMines = 10;
+
+        // 一部のタイルを訪問済みに設定
+        boardController.visitedTiles.add('0,0');
+        boardController.visitedTiles.add('1,1');
+
+        // シリアライズ
+        const serializedData = gameController.serialize();
+
+        // デシリアライズ
+        const deserializedGameController =
+            GameController.deserialize(serializedData);
+
+        // 元のインスタンスとデシリアライズされたインスタンスが同じ状態であることを確認
+        const deserializedBoardController =
+            deserializedGameController.boardController;
+        expect(deserializedBoardController.width).toBe(width);
+        expect(deserializedBoardController.height).toBe(height);
+        expect(deserializedBoardController.numOfMines).toBe(numOfMines);
+        expect(deserializedBoardController.visitedTiles).toEqual(
+            boardController.visitedTiles,
+        );
+    });
 });
