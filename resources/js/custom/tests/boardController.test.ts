@@ -137,6 +137,7 @@ describe('ボードコントローラクラスのテスト', () => {
         });
     });
 
+    // openTileとその内部chainOpenTileメソッドテスト
     it('正常系: 再帰的なタイル展開処理', () => {
         const boardController = new BoardController(10, 10, 0); // 地雷を0に設定
         const clickTile = boardController.board.getBoard()[5][5];

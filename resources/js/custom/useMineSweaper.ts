@@ -81,14 +81,10 @@ export class BoardController {
     setMines(clickTilePos: Tile): void {
         let iterator = this.numOfMines;
         const alreadySetMines = new Set<Tile>();
+        // 初期クリックタイルとその周辺には地雷を入れない
         alreadySetMines.add(clickTilePos);
-        // 周辺8マスを取得
         const aroundTiles = this.getAroundTiles(clickTilePos);
-        // 最初のクリックタイルと周辺8マスは初期値で開けておく。
-        clickTilePos.openTile();
-        // すでに設置されているマインを開ける
-        aroundTiles.map((tile) => tile.openTile());
-        // すでに設置されているマインをセット
+        // 初期クリックタイルの周囲1マスを地雷不可にセット
         aroundTiles.forEach((tile) => alreadySetMines.add(tile));
 
         //wileループに入る前に、最初に押したタイルとその周囲1マスのタイルが入っている。
@@ -270,11 +266,14 @@ export class GameController {
     }
 
     startGame(clickTile: Tile) {
+        // 地雷をセット
         this.boardController.setMines(clickTile);
+        // 初期クリックタイルを展開
+        this.boardController.openTile(clickTile);
     }
 }
 
-export function useMineSweeper(
+export function useMineSweaper(
     boardWidth: number,
     boardHeight: number,
     numOfMine: number,
