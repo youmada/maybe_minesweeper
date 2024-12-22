@@ -5,12 +5,20 @@ use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
+
+// ホーム画面ルート
 Route::get('/', function () {
-    return Inertia::render('Welcome', [
-        'canLogin' => Route::has('login'),
-        'canRegister' => Route::has('register'),
-        'laravelVersion' => Application::VERSION,
-        'phpVersion' => PHP_VERSION,
+    return Inertia::render('Home');
+});
+
+// シングルプレイ設定画面ルート
+Route::get('/single', function () {
+    return Inertia::render('Single');
+});
+
+Route::get('/single/play', function () {
+    return Inertia::render('Single/Play', [
+        'level' => request()->query('level'),// levelにマインスイーパーの難易度を入れる
     ]);
 });
 
@@ -24,4 +32,4 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';
