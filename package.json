@@ -35,6 +35,7 @@
     "dependencies": {
         "@vue/test-utils": "^2.4.6",
         "jsdom": "^25.0.1",
+        "pinia": "^2.3.0",
         "vuetify": "^3.7.5"
     }
 }
