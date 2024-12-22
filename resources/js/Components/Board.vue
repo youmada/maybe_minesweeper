@@ -38,7 +38,7 @@ function handleClickTile(tile: Tile) {
 
     // フラグモードの場合
     if (isFlagMode.value) {
-        tile.toggleFlag();
+        boardController.value.toggleFlag(tile);
         return;
     }
 
@@ -110,7 +110,7 @@ function restartGame() {
         <div class="m-auto flex w-fit">
             <div
                 class="flex w-fit flex-col"
-                v-for="horizontalTile in boardController.getBoard()"
+                v-for="horizontalTile in boardController.board.getBoard()"
             >
                 <div v-for="tile in horizontalTile">
                     <BoardTile
