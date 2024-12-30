@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import Board from '@/Components/Board.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
+import { useGameStore } from '@/stores/gameStore';
+import { useSaveDataStore } from '@/stores/singlePlayData';
 import { router } from '@inertiajs/vue3';
-import { computed, ref } from 'vue';
+import { onMounted, ref } from 'vue';
 
 interface modeInfo {
     modeName: string;
@@ -11,14 +13,53 @@ interface modeInfo {
     totalMine: number;
 }
 
+onMounted(() => {
+    // セーブデータがある場合はロードする
+    saveDataStore.loadSaveData();
+
+    const level = props.level?.toString() || '';
+
+    if (level === 'continue') {
+        // セーブデータがあるか確認
+        if (!saveDataStore.getSaveData) {
+            isError.value = true;
+            return;
+        }
+
+        // セーブデータから幅・高さ・地雷数を復元
+        const baordData = saveDataStore.getSaveData.board;
+        const arrayToVisitedTiles =
+            saveDataStore.getSaveData.arrayToVisitedTiles;
+        const totalMine = saveDataStore.getSaveData.numOfMines;
+
+        // コンティニューゲーム
+        gameStore.continueGame(baordData, arrayToVisitedTiles, totalMine);
+    } else {
+        // easy / normal / hard の場合
+        const currLevel = currentLevel(level);
+        if (!currLevel) return; // ここで isError=true がセットされる
+
+        const { boardWidth, boardHeight, totalMine } = currLevel;
+
+        gameStore.initiaraize(boardWidth, boardHeight);
+        gameStore.numOfMines = totalMine;
+    }
+    // 初期化完了
+    isInitiaraized.value = true;
+});
+
+const gameStore = useGameStore();
+
 const props = defineProps<{ level?: string }>();
 const isError = ref(false);
+const isInitiaraized = ref(false);
+const saveDataStore = useSaveDataStore();
 const modes: { [name: string]: modeInfo } = {
     easy: {
         modeName: 'いーじー',
         boardWidth: 10,
         boardHeight: 10,
-        totalMine: 30,
+        totalMine: 20,
     },
     normal: {
         modeName: 'のーまる',
@@ -34,26 +75,58 @@ const modes: { [name: string]: modeInfo } = {
     },
 };
 
-const currentLevel = computed<modeInfo | null>(() => {
-    const level = props.level?.toString() || '';
+const currentLevel = (level: string) => {
     if (!modes[level]) {
         isError.value = true; // エラーフラグを立てる
         return null;
     }
     isError.value = false;
     return modes[level] || '';
-});
+};
+
 function returnToHome() {
     return router.visit('/');
 }
+
+function onSaveData() {
+    saveDataStore.setSaveData(
+        gameStore.board,
+        gameStore.numOfMines,
+        gameStore.visitedTiles,
+        props.level?.toString() || '',
+    );
+    return router.visit('/');
+}
+
+const modeName = currentLevel(props.level?.toString() || '')?.modeName;
 </script>
 <template>
     <div class="flex h-full w-full flex-col">
+        <template v-if="isInitiaraized">
+            <div class="flex h-full w-full flex-col">
+                <div class="p-7 text-center">
+                    <h1 class="text-4xl font-extrabold text-white">
+                        {{ modeName }}
+                    </h1>
+                </div>
+                <Board></Board>
+                <div class="p-7 text-center">
+                    <template v-if="gameStore.isGameStarted">
+                        <PrimaryButton class="m-5" :click-fn="onSaveData"
+                            >ボードをセーブする</PrimaryButton
+                        >
+                    </template>
+                    <PrimaryButton class="m-5" :click-fn="returnToHome"
+                        >ホームに戻る</PrimaryButton
+                    >
+                </div>
+            </div>
+        </template>
         <!-- エラー時のレイアウト -->
-        <template v-if="isError">
+        <template v-else>
             <div class="p-7 text-center">
                 <h1 class="text-4xl font-extrabold text-red-500">
-                    無効なレベルが指定されました
+                    エラーが発生しました。
                 </h1>
                 <p class="mt-4 text-white">
                     ホームに戻って再度お試しください。
@@ -61,25 +134,6 @@ function returnToHome() {
                 <PrimaryButton :click-fn="returnToHome"
                     >ホームに戻る</PrimaryButton
                 >
-            </div>
-        </template>
-        <template v-else-if="currentLevel">
-            <div class="flex h-full w-full flex-col">
-                <div class="p-7 text-center">
-                    <h1 class="text-4xl font-extrabold text-white">
-                        {{ currentLevel?.modeName }}
-                    </h1>
-                </div>
-                <Board
-                    :board-width="currentLevel?.boardWidth"
-                    :board-height="currentLevel?.boardHeight"
-                    :totalMine="currentLevel?.totalMine"
-                ></Board>
-                <div class="p-7 text-center">
-                    <PrimaryButton :click-fn="returnToHome"
-                        >ホームに戻る</PrimaryButton
-                    >
-                </div>
             </div>
         </template>
     </div>

@@ -1,14 +1,21 @@
 <script setup lang="ts">
-import { Tile } from '@/custom/useMineSweaper';
+import { getAroundTiles, Tile } from '@/custom/domain/mineSweeper';
+import { useGameStore } from '@/stores/gameStore';
 import { computed } from 'vue';
 
-const props = defineProps<{ tile: Tile; checkFn: Function }>();
+const props = defineProps<{ tile: Tile }>();
+const gameStore = useGameStore();
 const computedText = computed(() => {
     if (props.tile.isFlag) return;
     if (props.tile.isOpen && !props.tile.isMine) {
-        const totalAroundMine = props.checkFn();
-        if (totalAroundMine === 0) return;
-        return totalAroundMine;
+        const totalAroundTiles = getAroundTiles(
+            gameStore.board,
+            props.tile.x,
+            props.tile.y,
+        );
+        const totalAroundMine = totalAroundTiles.filter((tile) => tile.isMine);
+        if (totalAroundMine.length === 0) return;
+        return totalAroundMine.length;
     }
 });
 </script>
