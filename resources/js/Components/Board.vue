@@ -1,94 +1,43 @@
 <script setup lang="ts">
 import ModalWindow from '@/Components/ModalWindow.vue';
 import { default as PrimaryButton } from '@/Components/PrimaryButton.vue';
-import { Tile, useMineSweaper } from '@/custom/useMineSweaper';
+import { useGameStore } from '@/stores/gameStore';
+import { useSaveDataStore } from '@/stores/singlePlayData';
 import { router } from '@inertiajs/vue3';
-import { computed, ref, watch } from 'vue';
+import { computed } from 'vue';
 import BoardTile from './Tile.vue';
 
-const props = defineProps<{
-    boardWidth: number;
-    boardHeight: number;
-    totalMine: number;
-}>();
-
-const { boardController, gameController, OpenTileList, reInstance, startGame } =
-    useMineSweaper(props.boardWidth, props.boardHeight, props.totalMine);
-
-const isStartGame = ref(false);
-const isGameOver = ref(false);
-const isGameClear = ref(false);
-const isFlagMode = ref(false);
-
+const gameStore = useGameStore();
 const restOpenTiles = computed(() => {
-    return (
-        props.boardWidth * props.boardHeight -
-        (props.totalMine + OpenTileList.value.size)
-    );
-});
-
-function handleClickTile(tile: Tile) {
-    if (!isStartGame.value) {
-        startGame(tile);
-        isStartGame.value = true;
-        return;
-    }
-    // タイルが開かれている場合、何もしない
-    if (tile.isOpen) return;
-
-    // フラグモードの場合
-    if (isFlagMode.value) {
-        boardController.value.toggleFlag(tile);
-        return;
-    }
-
-    // フラグが立っている場合、何もしない
-    if (tile.isFlag) return;
-
-    // ゲームオーバー処理
-    if (gameController.value.isGameOver(tile)) return (isGameOver.value = true);
-
-    // タイルを開く
-    boardController.value.openTile(tile);
-}
-
-function gameClear() {
-    console.log('you win');
-}
-function gameOver() {
-    console.log('you lose');
-}
-
-// 展開できるタイル数が0になった時の処理
-watch(
-    () => OpenTileList.value.size,
-    () => {
-        if (gameController.value.isGameClear()) isGameClear.value = true;
-    },
-);
-
-// ゲームクリア処理
-watch(isGameClear, () => {
-    if (isGameClear.value === true) gameClear();
-});
-
-// ゲームオーバー処理
-watch(isGameOver, () => {
-    if (isGameOver.value === true) gameOver();
+    return gameStore.closedTilesCountWithoutMine;
 });
 
 function restartGame() {
-    isGameOver.value = false;
-    isGameClear.value = false;
-    isStartGame.value = false;
-    reInstance();
+    // クエリパラメータから現在のレベルを取得
+    const params = new URLSearchParams(window.location.search);
+    const currentLevel = params.get('level');
+
+    // クエリパラメータが continue の場合は前回のレベルを取得して遷移
+    if (currentLevel === 'continue') {
+        const saveDataStore = useSaveDataStore();
+        const previouseLevel = saveDataStore.getSaveData?.previousGameMode;
+        if (previouseLevel) {
+            router.visit(`/single/play?level=${previouseLevel}`);
+            return;
+        } else {
+            // セーブデータがない場合は難易度選択画面に遷移
+            router.visit('/single/play?level=invalid');
+            return;
+        }
+    }
+    gameStore.initiaraize(gameStore.width, gameStore.height);
 }
 </script>
 
 <template>
     <div class="w-full">
         <div
-            v-if="isStartGame"
+            v-if="gameStore.isGameStarted"
             class="m-5 mx-auto flex w-fit rounded-2xl border-2 border-gray-500 p-5"
         >
             <div class="m-2 mr-4 flex justify-around">
@@ -99,23 +48,19 @@ function restartGame() {
             </div>
             <PrimaryButton
                 :class="{
-                    'bg-orange-400': isFlagMode,
-                    'text-white': isFlagMode,
-                    'hover:bg-orange-400': isFlagMode,
+                    'bg-orange-400': gameStore.isFlagMode,
+                    'text-white': gameStore.isFlagMode,
+                    'hover:bg-orange-400': gameStore.isFlagMode,
                 }"
-                :clickFn="() => (isFlagMode = !isFlagMode)"
+                :clickFn="() => gameStore.toggleFlagMode()"
                 >フラグモード</PrimaryButton
             >
         </div>
-        <div class="m-auto flex w-fit">
-            <div
-                class="flex w-fit flex-col"
-                v-for="horizontalTile in boardController.board.getBoard()"
-            >
-                <div v-for="tile in horizontalTile">
+        <div class="m-auto flex w-fit flex-col">
+            <div class="flex w-fit" v-for="verticalTile in gameStore.board">
+                <div v-for="tile in verticalTile">
                     <BoardTile
-                        @click="() => handleClickTile(tile)"
-                        :checkFn="() => boardController.checkAroundMines(tile)"
+                        @click="() => gameStore.handleClickTile(tile.x, tile.y)"
                         :tile="tile"
                     ></BoardTile>
                 </div>
@@ -125,7 +70,7 @@ function restartGame() {
 
     <!-- モーダルエリア -->
     <ModalWindow
-        v-if="isGameClear"
+        v-if="gameStore.isGameClear"
         modalTile="ゲームクリアおめでとう！！"
         color="#0059ff"
     >
@@ -141,7 +86,11 @@ function restartGame() {
             >タイトルに戻る</PrimaryButton
         >
     </ModalWindow>
-    <ModalWindow v-if="isGameOver" modalTile="ゲームオーバー" color="red">
+    <ModalWindow
+        v-if="gameStore.isGameOver"
+        modalTile="ゲームオーバー"
+        color="red"
+    >
         <PrimaryButton :clickFn="() => restartGame()"
             >もう一度プレイ！</PrimaryButton
         >
