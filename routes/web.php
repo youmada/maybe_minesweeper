@@ -22,6 +22,11 @@ Route::get('/single/play', function () {
     ]);
 });
 
+// マルチプレイ設定画面ルート
+Route::get('/multi', function () {
+    return Inertia::render('Multi');
+});
+
 Route::get('/dashboard', function () {
     return Inertia::render('Dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');

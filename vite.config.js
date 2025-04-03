@@ -5,7 +5,7 @@ import vue from '@vitejs/plugin-vue';
 
 export default defineConfig({
     server: {
-        port: 5173,
+        port: 3000,
         strictPort: true,
         hmr: {
             host: "localhost", // ローカルホスト名を指定
