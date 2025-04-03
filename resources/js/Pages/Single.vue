@@ -14,7 +14,7 @@ const hasSaveData = computed(() => {
 </script>
 
 <template>
-    <Head title="Home" />
+    <Head title="シングルプレイモード選択" />
     <div class="relative flex h-[50vh] w-[50vw] items-center justify-center">
         <div class="flex h-full w-full flex-col items-center">
             <h1
