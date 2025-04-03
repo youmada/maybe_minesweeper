@@ -12,15 +12,15 @@ class BoardTest extends TestCase
     /**
      * ボードの初期化テスト
      */
-    #[Test] public function board_nitialization() {
+    #[Test] public function board_initialization() {
         $board = GameService::createBoard(10, 5);
 
-        $this->assertEquals(5, count($board)); // height
-        $this->assertEquals(10, count($board[0])); // width
+        $this->assertCount(5, $board); // height
+        $this->assertCount(10, $board[0]); // width
 
         $index = 0;
         foreach ($board as $row) {
-            foreach ($row as $tile) {
+            foreach ($row as $ignored) {
                 $index++;
             }
         }
@@ -47,7 +47,7 @@ class BoardTest extends TestCase
 
     #[Test] public function board_size_as_zero() {
         $board = GameService::createBoard(0, 0);
-        $this->assertEquals(0, count($board));
+        $this->assertCount(0, $board);
     }
 
 
