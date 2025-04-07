@@ -10,18 +10,23 @@ const maxPlayers = ref('3');
 const roomPermission = ref(false);
 
 const createRoom = () => {
+    const createRoomForm = {};
     // ルーム作成のロジックをここに追加
-};
-
-const selectPreset = () => {
-    // プリセットのボード選択ロジックをここに追加
+    console.log('create room');
+    const response = fetch('/api/rooms', {
+        method: 'POST',
+        headers: {},
+        body: JSON.stringify({}),
+    });
 };
 </script>
 
 <template>
     <Head><title>マルチプレイルーム作成</title></Head>
-    <div class="bg-base-200 flex min-h-screen items-center justify-center p-4">
-        <div class="card bg-base-100 w-full max-w-lg shadow-xl">
+    <div
+        class="flex min-h-screen w-full items-center justify-center bg-base-200 p-4"
+    >
+        <div class="card w-full max-w-lg bg-base-100 shadow-xl">
             <div class="card-body">
                 <h1 class="card-title text-center text-3xl font-bold">
                     ルーム作成
@@ -29,7 +34,7 @@ const selectPreset = () => {
 
                 <form @submit.prevent="createRoom" class="mt-6 space-y-6">
                     <!-- ボード幅 -->
-                    <div class="w-full max-w-xs">
+                    <div>
                         <label class="label w-full text-center">
                             <span class="m-auto font-medium"
                                 >ボード幅: {{ boardWidth }}
@@ -97,7 +102,7 @@ const selectPreset = () => {
                             type="number"
                             min="5"
                             max="30"
-                            class="input input-bordered w-full rounded-md border bg-gray-600"
+                            class="input-bordered input w-full rounded-md border bg-gray-600"
                             v-model="mineRatio"
                             required
                         />
@@ -111,7 +116,7 @@ const selectPreset = () => {
                             >
                         </label>
                         <select
-                            class="select select-bordered w-full rounded-md border bg-gray-600"
+                            class="select-bordered select w-full rounded-md border bg-gray-600"
                             v-model="roomDuration"
                             required
                         >
@@ -132,7 +137,7 @@ const selectPreset = () => {
                             type="number"
                             min="2"
                             max="6"
-                            class="input input-bordered w-full rounded-md border bg-gray-600"
+                            class="input-bordered input w-full rounded-md border bg-gray-600"
                             v-model="maxPlayers"
                             required
                         />
@@ -154,7 +159,7 @@ const selectPreset = () => {
                             <input
                                 type="checkbox"
                                 v-model="roomPermission"
-                                class="toggle toggle-l m-auto"
+                                class="toggle-l toggle m-auto"
                             />
                             <span
                                 :class="[

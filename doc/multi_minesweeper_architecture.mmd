@@ -1,0 +1,73 @@
+graph TB
+subgraph "クライアントサイド"
+B[ブラウザ]
+VueApp[Vue.js アプリケーション]
+Inertia[Inertia.js]
+end
+
+    subgraph "サーバーサイド"
+        subgraph "コントローラー層"
+            MC[MinesweeperController]
+        end
+        
+        subgraph "サービス層"
+            MS[MinesweeperService]
+        end
+        
+        subgraph "ドメイン層"
+            DGS[GameService]
+            DT[Tile]
+        end
+        
+        subgraph "リポジトリ層"
+            RR[RoomRepository]
+        end
+        
+        subgraph "データベース"
+            DBR[(Rooms)]
+            DBRP[(RoomParticipants)]
+            DBRS[(RoomStates)]
+        end
+    end
+    
+    subgraph "デプロイ環境"
+        DO[Digital Ocean]
+        Laravel[Laravel]
+        MySQL[MySQL]
+        Nginx[Nginx]
+    end
+    
+    B <--> Inertia
+    Inertia <--> VueApp
+    Inertia <--> MC
+    
+    MC --> MS
+    MS --> DGS
+    MS --> RR
+    DGS --> DT
+    
+    RR --> DBR
+    RR --> DBRP
+    RR --> DBRS
+    
+    DO --> Laravel
+    DO --> MySQL
+    DO --> Nginx
+    Laravel --> MC
+    
+    %% 主要なデータフローと依存関係
+    classDef controller fill:#93c5fd,stroke:#2563eb,color:#1e3a8a
+    classDef service fill:#bbf7d0,stroke:#16a34a,color:#166534
+    classDef domain fill:#fde68a,stroke:#d97706,color:#92400e
+    classDef repository fill:#c4b5fd,stroke:#7c3aed,color:#4c1d95
+    classDef database fill:#e5e7eb,stroke:#6b7280,color:#1f2937
+    classDef client fill:#bfdbfe,stroke:#3b82f6,color:#1e40af
+    classDef deployment fill:#fecaca,stroke:#ef4444,color:#991b1b
+    
+    class MC controller
+    class MS service
+    class DGS,DT domain
+    class RR repository
+    class DBR,DBRP,DBRS database
+    class B,VueApp,Inertia client
+    class DO,Laravel,MySQL,Nginx deployment
