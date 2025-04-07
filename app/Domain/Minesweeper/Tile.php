@@ -9,7 +9,7 @@ class Tile
     private bool $isMine;
     private bool $isOpen;
     private bool $isFlag;
-//    private int $adjacentMines;
+    private int $adjacentMines;
     /**
      * @param  int  $x
      * @param  int  $y
@@ -21,7 +21,7 @@ class Tile
         $this->isMine = false;
         $this->isOpen = false;
         $this->isFlag = false;
-//        $this->adjacentMines = 0;
+        $this->adjacentMines = 0;
     }
 
     public function x(): int
@@ -69,10 +69,10 @@ class Tile
         $this->isFlag = $value;
     }
 
-//    public function incrementAdjacentMines(): void
-//    {
-//        $this->adjacentMines++;
-//    }
+    public function incrementAdjacentMines(): void
+    {
+        $this->adjacentMines++;
+    }
 
     public function toArray(): array
     {
@@ -82,7 +82,11 @@ class Tile
             'isMine' => $this->isMine,
             'isOpen' => $this->isOpen,
             'isFlag' => $this->isFlag,
-//            'adjacentMines' => $this->adjacentMines
+            'adjacentMines' => $this->adjacentMines
         ];
+    }
+    public function adjacentMines(): int
+    {
+        return $this->adjacentMines;
     }
 }
