@@ -5,15 +5,17 @@ namespace App\Domain\Minesweeper;
 class Tile
 {
     private int $x;
+
     private int $y;
+
     private bool $isMine;
+
     private bool $isOpen;
+
     private bool $isFlag;
+
     private int $adjacentMines;
-    /**
-     * @param  int  $x
-     * @param  int  $y
-     */
+
     public function __construct(int $x, int $y)
     {
         $this->x = $x;
@@ -49,11 +51,6 @@ class Tile
         return $this->isFlag;
     }
 
-//    public function adjacentMines(): int
-//    {
-//        return $this->adjacentMines;
-//    }
-
     public function setMine(bool $value): void
     {
         $this->isMine = $value;
@@ -69,6 +66,11 @@ class Tile
         $this->isFlag = $value;
     }
 
+    public function setAdjacentMines(int $value): void
+    {
+        $this->adjacentMines = $value;
+    }
+
     public function incrementAdjacentMines(): void
     {
         $this->adjacentMines++;
@@ -82,9 +84,10 @@ class Tile
             'isMine' => $this->isMine,
             'isOpen' => $this->isOpen,
             'isFlag' => $this->isFlag,
-            'adjacentMines' => $this->adjacentMines
+            'adjacentMines' => $this->adjacentMines,
         ];
     }
+
     public function adjacentMines(): int
     {
         return $this->adjacentMines;
