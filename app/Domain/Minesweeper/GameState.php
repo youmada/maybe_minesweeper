@@ -7,7 +7,7 @@ use SplObjectStorage;
 
 class GameState
 {
-    private array $board;
+    private Board $board;
 
     private int $width;
 
@@ -23,7 +23,7 @@ class GameState
 
     private bool $isGameClear;
 
-    public function __construct(array $board, int $width, int $height, int $numOfMines)
+    public function __construct(Board $board, int $width, int $height, int $numOfMines)
     {
         $this->board = $board;
         $this->width = $width;
@@ -35,7 +35,7 @@ class GameState
         $this->isGameClear = false;
     }
 
-    public function getBoard(): array
+    public function getBoard(): Board
     {
         return $this->board;
     }
