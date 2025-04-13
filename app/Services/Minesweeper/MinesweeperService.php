@@ -15,8 +15,8 @@ class MinesweeperService
     // 1. ゲーム初期化 ✅
     // 2. タイルクリック時の処理 ✅
     // 3. データをリポジトリクラスに橋渡し
-    // 4. クライアントサイドへのデータ加工と出力
-    // 5. ゲームクリア・オーバー時の処理
+    // 4. クライアントサイドへのデータ加工と出力 ✅
+    // 5. ゲームクリア・オーバー時の処理 ✅
 
     public function __construct(GameService $gameService)
     {
