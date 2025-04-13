@@ -45,22 +45,6 @@ class MinesweeperServiceTest extends TestCase
     }
 
     #[Test]
-    public function game_state_when_set_mines_on_the_board(): void
-    {
-        // 準備
-        $gameState = $this->mineSweeperService->initializeGame($this->width, $this->height, $this->mineRatio);
-        $board = $gameState->getGameState()->getBoard();
-        $firstClickPosX = $this->width / 2;
-        $firstClickPosY = $this->height / 2;
-        // 実行
-        $this->mineSweeperService->setMinesOnTheBoard($firstClickPosX, $firstClickPosY);
-        $numOfMinesOnTheBoard = $board->countMines();
-
-        // アサート
-        $this->assertEquals($this->mineRatio, $numOfMinesOnTheBoard);
-    }
-
-    #[Test]
     public function when_tile_click_by_open_action(): void
     {
         // 準備
@@ -158,5 +142,37 @@ class MinesweeperServiceTest extends TestCase
         $this->assertTrue($isFirstTileFlag);
         $this->assertFalse($isSecondTileFlag);
 
+    }
+
+    #[Test]
+    public function when_game_started_mines_are_properly_placed(): void
+    {
+        // 準備
+        $this->mineSweeperService->initializeGame($this->width, $this->height, $this->mineRatio);
+        $clickTileX = $this->width / 2;
+        $clickTileY = $this->height / 2;
+
+        // 実行
+        $this->mineSweeperService->processGameStart($clickTileX, $clickTileY);
+
+        // 検証
+        $gameState = $this->mineSweeperService->getGameState();
+        $board = $gameState->getBoard();
+
+        // 1. ゲームが開始状態になっているか
+        $this->assertTrue($gameState->isGameStarted());
+
+        // 2. 地雷が適切な数配置されているか
+        $mineCount = $board->countMines();
+        $this->assertEquals($gameState->getNumOfMines(), $mineCount);
+
+        // 3. クリックしたタイルとその周辺に地雷がないか
+        $this->assertFalse($board->getTile($clickTileX, $clickTileY)->isMine());
+        foreach (GameService::getAroundTiles($board, $clickTileX, $clickTileY) as $tile) {
+            $this->assertFalse($tile->isMine());
+        }
+
+        // 4. クリックしたタイルが開かれているか
+        $this->assertTrue($board->getTile($clickTileX, $clickTileY)->isOpen());
     }
 }

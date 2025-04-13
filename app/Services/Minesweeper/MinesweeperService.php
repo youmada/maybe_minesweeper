@@ -45,7 +45,7 @@ class MinesweeperService
         return $this;
     }
 
-    public function setMinesOnTheBoard(int $firstClickPosX, int $firstClickPosY): void
+    private function setMinesOnTheBoard(int $firstClickPosX, int $firstClickPosY): void
     {
         $board = $this->gameState->getBoard();
         $numOfMines = $this->gameState->getNumOfMines();
@@ -56,7 +56,7 @@ class MinesweeperService
         $this->gameService::setMines($board, $numOfMines, $firstClickPos);
     }
 
-    //    private function getGameStateForClient(): array
+    //    public function getGameStateForClient(): array
     //    {
     //        return [];
     //    }
