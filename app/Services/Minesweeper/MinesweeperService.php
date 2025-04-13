@@ -14,10 +14,9 @@ class MinesweeperService
     // 必要な処理一覧
     // 1. ゲーム初期化 ✅
     // 2. タイルクリック時の処理 ✅
-    // 3. フラグ数を取得する処理
-    // 4. データをリポジトリクラスに橋渡し
-    // 5. クライアントサイドへのデータ加工と出力
-    // 6. ゲームクリア・オーバー時の処理
+    // 3. データをリポジトリクラスに橋渡し
+    // 4. クライアントサイドへのデータ加工と出力
+    // 5. ゲームクリア・オーバー時の処理
 
     public function __construct(GameService $gameService)
     {
@@ -56,10 +55,10 @@ class MinesweeperService
         $this->gameService::setMines($board, $numOfMines, $firstClickPos);
     }
 
-    //    public function getGameStateForClient(): array
-    //    {
-    //        return [];
-    //    }
+    public function getGameStateForClient(): array
+    {
+        return $this->gameState->toClientArray();
+    }
 
     public function getGameState(): GameState
     {

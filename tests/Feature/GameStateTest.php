@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Feature;
+namespace Feature;
 
 use App\Domain\Minesweeper\GameService;
 use App\Domain\Minesweeper\GameState;
@@ -56,17 +56,18 @@ class GameStateTest extends TestCase
         $height = 5;
         $numOfMines = 5;
         $board = GameService::createBoard($width, $height);
+        $boardTiles = $board->getBoard();
 
         // 特定の位置に地雷を配置（例: [0,0], [1,1], [2,2], [3,3], [4,4]）
-        $board[0][0]->setMine(true);
-        $board[1][1]->setMine(true);
-        $board[2][2]->setMine(true);
-        $board[3][3]->setMine(true);
-        $board[4][4]->setMine(true);
+        $boardTiles[0][0]->setMine(true);
+        $boardTiles[1][1]->setMine(true);
+        $boardTiles[2][2]->setMine(true);
+        $boardTiles[3][3]->setMine(true);
+        $boardTiles[4][4]->setMine(true);
 
         // いくつかのタイルを開く（例: [0,1], [1,0]）
-        $board[0][1]->setOpen(true);
-        $board[1][0]->setOpen(true);
+        $boardTiles[0][1]->setOpen(true);
+        $boardTiles[1][0]->setOpen(true);
 
         $gameState = new GameState($board, $width, $height, $numOfMines);
         $gameState->startGame(); // ゲームを開始状態にする
@@ -92,19 +93,20 @@ class GameStateTest extends TestCase
         $height = 5;
         $numOfMines = 5;
         $board = GameService::createBoard($width, $height);
+        $boardTiles = $board->getBoard();
 
         // 特定の位置に地雷を配置（例: [0,0], [1,1], [2,2], [3,3], [4,4]）
-        $board[0][0]->setMine(true);
-        $board[1][1]->setMine(true);
-        $board[2][2]->setMine(true);
-        $board[3][3]->setMine(true);
-        $board[4][4]->setMine(true);
+        $boardTiles[0][0]->setMine(true);
+        $boardTiles[1][1]->setMine(true);
+        $boardTiles[2][2]->setMine(true);
+        $boardTiles[3][3]->setMine(true);
+        $boardTiles[4][4]->setMine(true);
 
         // いくつかのタイルを開く（例: [0,1], [1,0]）
-        $board[0][1]->setOpen(true);
-        $board[1][0]->setOpen(true);
+        $boardTiles[0][1]->setOpen(true);
+        $boardTiles[1][0]->setOpen(true);
         // 地雷のあるタイルも開く（ゲームオーバーの状況）
-        $board[0][0]->setOpen(true);
+        $boardTiles[0][0]->setOpen(true);
 
         $gameState = new GameState($board, $width, $height, $numOfMines);
         $gameState->startGame();
@@ -129,18 +131,19 @@ class GameStateTest extends TestCase
         $height = 5;
         $numOfMines = 5;
         $board = GameService::createBoard($width, $height);
+        $boardTiles = $board->getBoard();
         // 地雷の配置
-        $board[0][0]->setMine(true);
-        $board[1][1]->setMine(true);
+        $boardTiles[0][0]->setMine(true);
+        $boardTiles[1][1]->setMine(true);
 
         // タイルを開く
-        $board[2][2]->setOpen(true);
+        $boardTiles[2][2]->setOpen(true);
 
         $originalGameState = new GameState($board, $width, $height, $numOfMines);
         $originalGameState->startGame();
 
         $visitedTiles = $originalGameState->getVisitedTiles();
-        $visitedTiles->attach($board[2][2]); // 開いたタイルを追加
+        $visitedTiles->attach($boardTiles[2][2]); // 開いたタイルを追加
 
         // 実行 - シリアライズとデシリアライズ
         $serialized = $originalGameState->toArray();
@@ -156,7 +159,7 @@ class GameStateTest extends TestCase
         $this->assertFalse($restoredState->isGameClear());
 
         // ボードの状態検証
-        $restoredBoard = $restoredState->getBoard();
+        $restoredBoard = $restoredState->getBoard()->getBoard();
         $this->assertTrue($restoredBoard[0][0]->isMine());
         $this->assertTrue($restoredBoard[1][1]->isMine());
         $this->assertTrue($restoredBoard[2][2]->isOpen());

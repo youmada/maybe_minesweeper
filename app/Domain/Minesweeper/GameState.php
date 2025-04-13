@@ -106,9 +106,10 @@ class GameState
     // シリアライズ関連メソッド
     public function toArray(): array
     {
+        $board = $this->board->getBoard();
         // ボードの2次元配列をシリアライズ可能な形式に変換
         $serializedBoard = [];
-        foreach ($this->board as $y => $row) {
+        foreach ($board as $y => $row) {
             $serializedBoard[$y] = $row;
             foreach ($row as $x => $tile) {
                 $serializedBoard[$y][$x] = $tile->toArray();
@@ -180,7 +181,8 @@ class GameState
         $height = $serialized['height'];
         $numOfMines = $serialized['numOfMines'];
 
-        $restoredBoard = GameService::createBoard($width, $height);
+        $boardInstance = GameService::createBoard($width, $height);
+        $restoredBoard = $boardInstance->getBoard();
 
         // ボード状態を復元
         foreach ($serialized['board'] as $y => $row) {
@@ -192,7 +194,7 @@ class GameState
             }
         }
 
-        $restoreState = new GameState($restoredBoard, $width, $height, $numOfMines);
+        $restoreState = new GameState($boardInstance, $width, $height, $numOfMines);
 
         // ゲーム状態を復元
         $restoreState->isGameStarted = $serialized['isGameStarted'];

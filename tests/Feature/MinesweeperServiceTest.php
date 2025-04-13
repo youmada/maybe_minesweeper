@@ -175,4 +175,22 @@ class MinesweeperServiceTest extends TestCase
         // 4. クリックしたタイルが開かれているか
         $this->assertTrue($board->getTile($clickTileX, $clickTileY)->isOpen());
     }
+
+    #[Test]
+    public function getGameStateForClient_returns_data_in_expected_format(): void
+    {
+        // 準備
+        $this->mineSweeperService->initializeGame($this->width, $this->height, $this->mineRatio);
+
+        // 実行
+        $clientData = $this->mineSweeperService->getGameStateForClient();
+
+        // 検証
+        $this->assertIsArray($clientData);
+        // 必須キーの存在のみ確認
+        $this->assertArrayHasKey('board', $clientData);
+        $this->assertArrayHasKey('width', $clientData);
+        $this->assertArrayHasKey('height', $clientData);
+        // その他の検証はGameState::toClientArrayのテストに任せる
+    }
 }
