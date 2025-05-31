@@ -201,8 +201,6 @@ class GameService
 
         $boardTiles = $board->getBoard();
 
-        $totalTiles = $board->getWidth() * $board->getHeight();
-
         foreach ($boardTiles as $row) {
             foreach ($row as $tile) {
                 if (! $tile->isOpen()) {
@@ -211,8 +209,7 @@ class GameService
             }
         }
 
-        $restTiles = $totalMines - $closedTiles;
-
-        return $restTiles === $totalMines;
+        // 未開放タイル数が地雷の数と一致する場合、ゲームクリア
+        return $closedTiles === $totalMines;
     }
 }

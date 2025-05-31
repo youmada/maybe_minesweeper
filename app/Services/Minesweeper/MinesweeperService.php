@@ -9,6 +9,7 @@ use App\Domain\Minesweeper\TileActionMode;
 class MinesweeperService
 {
     private GameState $gameState;
+    private const MIN_SAFE_TILES_AROUND_START = 9;
 
     private GameService $gameService;
     // 必要な処理一覧
@@ -30,6 +31,7 @@ class MinesweeperService
      */
     public function initializeGame(int $width, int $height, int $mineRatio): self
     {
+
         // ボードを生成する
         $board = $this->gameService::createBoard($width, $height);
 
@@ -37,7 +39,7 @@ class MinesweeperService
         $totalTiles = $width * $height;
         $numOfMines = (int) ceil($totalTiles * $mineRatio / 100);
         // 最小値と最大値の制限
-        $numOfMines = max(1, min($numOfMines, $totalTiles - 9));
+        $numOfMines = max(1, min($numOfMines, $totalTiles - $this::MIN_SAFE_TILES_AROUND_START));
 
         $this->gameState = new GameState($board, $width, $height, $numOfMines);
 
