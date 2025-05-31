@@ -42,6 +42,12 @@ return [
             'synchronous' => null,
         ],
 
+        'testing_sqlite' => [
+            'driver' => 'sqlite',
+            'database' => ':memory:',
+            'prefix' => '',
+        ],
+
         'mysql' => [
             'driver' => 'mysql',
             'url' => env('DB_URL'),

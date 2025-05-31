@@ -113,27 +113,25 @@
 
 ### **5.3 テーブル: `room_states`**
 
-| カラム名          | 型         | 説明                       |
-|---------------|-----------|--------------------------|
-| id (PK)       | BIGINT    | 自動採番 ID                  |
-| room_id (FK)  | BIGINT    | rooms テーブルの外部キー          |
-| board_id (FK) | BIGINT    | boards テーブルの外部キー         |
-| board_state   | JSON      | ボードの現在の状態 (開閉情報、フラグ情報など) |
-| turn_info     | JSON      | ターン制に関する情報（今のプレイヤー）      |
-| updated_at    | TIMESTAMP | 最終更新日時                   |
+| カラム名          | 型            | 説明                                  |
+|---------------|--------------|-------------------------------------|
+| id (PK)       | BIGINT       | 自動採番 ID                             |
+| room_id (FK)  | BIGINT       | rooms テーブルの外部キー                     |
+| board_id (FK) | BIGINT       | boards テーブルの外部キー                    |
+| game_state    | VARCHAR(255) | ゲームの進行具合（プレイヤーを待っているのか、ゲームが終わったのか？) |
+| turn_info     | JSON         | ターン制に関する情報（今のプレイヤー）                 |
+| updated_at    | TIMESTAMP    | 最終更新日時                              |
 
 ### **5.4 テーブル: `boards`**
 
-| カラム名        | 型         | 説明             |
-|-------------|-----------|----------------|
-| id (PK)     | BIGINT    | 自動採番 ID        |
-| width       | INT       | ボード幅           |
-| height      | INT       | ボード高さ          |
-| mine_ratio  | FLOAT     | 地雷の割合          |
-| mine_layout | JSON      | 地雷の配置情報（オプション） |
-| is_preset   | BOOLEAN   | プリセットボードかどうか   |
-| preset_name | VARCHAR   | プリセット名（ある場合）   |
-| created_at  | TIMESTAMP | 作成日時           |
+| カラム名       | 型         | 説明                  |
+|------------|-----------|---------------------|
+| id (PK)    | BIGINT    | 自動採番 ID             |
+| width      | INT       | ボード幅                |
+| height     | INT       | ボード高さ               |
+| mine_ratio | INT       | 地雷の割合(0-100パーセンテージ） |
+| tile_state | JSON      | タイルの配置情報や状態         |
+| created_at | TIMESTAMP | 作成日時                |
 
 ---
 

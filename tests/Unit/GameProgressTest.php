@@ -11,7 +11,7 @@ class GameProgressTest extends TestCase
    #[Test] public function check_game_over()
     {
         $board = GameService::createBoard(3, 3);
-        $clickedTile = $board[0][0];
+        $clickedTile = $board->getTile(0,0);
 
         $clickedTile->setMine(true);
         $clickedTile->setOpen(true);
@@ -24,7 +24,7 @@ class GameProgressTest extends TestCase
     #[Test] public function check_game_over_false()
     {
         $board = GameService::createBoard(3, 3);
-        $clickedTile = $board[0][0];
+        $clickedTile = $board->getTile(0,0);
 
         $clickedTile->setOpen(true);
 
@@ -41,13 +41,14 @@ class GameProgressTest extends TestCase
         $firstClick = ['x' => 0, 'y' => 0];
         GameService::setMines($board, $totalMines, $firstClick);
 
-        foreach ($board as $row) {
+        foreach ($board->getBoard() as $row) {
             foreach ($row as $tile) {
                 if (!$tile->isMine()) {
                     $tile->setOpen(true);
                 }
             }
         }
+
 
         $result = GameService::checkGameClear($board, $totalMines);
 
@@ -71,7 +72,7 @@ class GameProgressTest extends TestCase
         }
 
         // 1つだけ閉じる
-        $board[0][1]->setOpen(false);
+        $board->getTile(0,1)->setOpen(false);
 
         $result = GameService::checkGameClear($board, $totalMines);
 
