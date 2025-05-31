@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Room;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -13,7 +14,7 @@ return new class extends Migration
     {
         Schema::create('room_participants', function (Blueprint $table) {
             $table->id();
-            $table->foreignIdFor('room')->constrained();
+            $table->foreignIdFor(Room::class)->constrained();
             $table->string('user_id')->comment('参加者ID(セッションを予定）');
             $table->timestamp('joined_at');
             $table->timestamp('left_at')->nullable();

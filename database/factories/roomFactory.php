@@ -2,13 +2,13 @@
 
 namespace Database\Factories;
 
-use App\Models\rooms;
+use App\Models\Room;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Arr;
 
-class roomsFactory extends Factory
+class roomFactory extends Factory
 {
-    protected $model = rooms::class;
+    protected $model = Room::class;
 
     public function definition(): array
     {
