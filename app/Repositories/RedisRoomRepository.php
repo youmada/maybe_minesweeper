@@ -2,23 +2,22 @@
 
 namespace App\Repositories;
 
-use App\Domain\Minesweeper\GameState;
 use Exception;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Redis;
 use stdClass;
 
-class RedisMinesweeperRepository implements MinesweeperRepository
+class RedisRoomRepository implements RoomRepository
 {
-    private string $prefix = 'minesweeper:game';
+    private string $prefix = 'minesweeper:room';
 
     /**
      * @throws Exception
      */
-    public function saveState(GameState $state, string $gameId): void
+    public function saveState(string $userId, string $roomId): void
     {
-        $key = $this->prefix.':'.$gameId;
-        $value = json_encode($state->toArray());
+        $key = $this->prefix.':'.$roomId;
+        $value = $userId;
         try {
             Redis::set($key, $value);
         } catch (Exception $e) {
@@ -27,9 +26,9 @@ class RedisMinesweeperRepository implements MinesweeperRepository
         }
     }
 
-    public function getState(string $gameId): ?stdClass
+    public function getState(string $roomId): ?stdClass
     {
-        $key = $this->prefix.':'.$gameId;
+        $key = $this->prefix.':'.$roomId;
 
         try {
             $value = Redis::get($key);
@@ -46,10 +45,10 @@ class RedisMinesweeperRepository implements MinesweeperRepository
     /**
      * @throws Exception
      */
-    public function updateState(GameState $state, string $gameId): void
+    public function updateState(string $userId, string $roomId): void
     {
-        $key = $this->prefix.':'.$gameId;
-        $value = json_encode($state->toArray());
+        $key = $this->prefix.':'.$roomId;
+        $value = $userId;
         try {
             Redis::set($key, $value);
         } catch (Exception $e) {
@@ -62,9 +61,9 @@ class RedisMinesweeperRepository implements MinesweeperRepository
     /**
      * @throws Exception
      */
-    public function deleteState(string $gameId): void
+    public function deleteState(string $roomId): void
     {
-        $key = $this->prefix.':'.$gameId;
+        $key = $this->prefix.':'.$roomId;
         try {
             Redis::del($key);
         } catch (Exception $e) {
