@@ -9,6 +9,7 @@ use App\Domain\Minesweeper\TileActionMode;
 class MinesweeperService
 {
     private GameState $gameState;
+
     private const MIN_SAFE_TILES_AROUND_START = 9;
 
     private GameService $gameService;
@@ -46,7 +47,7 @@ class MinesweeperService
         return $this;
     }
 
-    private function setMinesOnTheBoard(int $firstClickPosX, int $firstClickPosY): void
+    protected function setMinesOnTheBoard(int $firstClickPosX, int $firstClickPosY): void
     {
         $board = $this->gameState->getBoard();
         $numOfMines = $this->gameState->getNumOfMines();

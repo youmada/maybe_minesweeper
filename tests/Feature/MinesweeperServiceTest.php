@@ -95,13 +95,21 @@ class MinesweeperServiceTest extends TestCase
     public function if_the_game_is_cleared_when_a_tile_is_clicked(): void
     {
         // 準備
-        $minimaMineRatio = 1;
-        $this->initializeTestGameWithMinimalMines($this->width, $this->height, $minimaMineRatio);
+        $this->mineSweeperService->initializeGame($this->width, $this->height, $this->mineRatio);
         $clickTileX = (int) ($this->width / 2);
         $clickTileY = (int) ($this->height / 2);
 
-        // 実行 地雷は無しなので、瞬時にゲームクリアする
+        $tiles = $this->mineSweeperService->getGameState()->getBoard()->getBoard();
+
+        // 実行
         $this->mineSweeperService->processGameStart($clickTileX, $clickTileY);
+        foreach ($tiles as $yIndex => $row) {
+            foreach ($row as $xIndex => $tile) {
+                if (! $tile->isMine()) {
+                    $this->mineSweeperService->handleClickTile($xIndex, $yIndex, TileActionMode::OPEN);
+                }
+            }
+        }
 
         // アサート：すべてのタイルが開放され、ゲームがクリアかを確認
         $gameState = $this->mineSweeperService->getGameState();
@@ -113,7 +121,8 @@ class MinesweeperServiceTest extends TestCase
     public function if_the_game_is_over_when_a_tile_is_clicked(): void
     {
         // 準備
-        $this->mineSweeperService->initializeGame($this->width, $this->height, $this->mineRatio);
+        $minimaMineRatio = 1;
+        $this->mineSweeperService->initializeGame($this->width, $this->height, $minimaMineRatio);
         $clickTileX = $this->width / 2;
         $clickTileY = $this->height / 2;
 
@@ -196,19 +205,5 @@ class MinesweeperServiceTest extends TestCase
         $this->assertArrayHasKey('width', $clientData);
         $this->assertArrayHasKey('height', $clientData);
         // その他の検証はGameState::toClientArrayのテストに任せる
-    }
-
-    private function initializeTestGameWithMinimalMines(int $width, int $height, int $mineRatio): GameState
-    {
-        $game = $this->mineSweeperService->initializeGame($width, $height, $mineRatio);
-
-        // 必ず地雷がない状況を作成
-        foreach ($game->getGameState()->getBoard()->getBoard() as $row) {
-            foreach ($row as $tile) {
-                $tile->setMine(false);
-            }
-        }
-
-        return $game->getGameState();
     }
 }

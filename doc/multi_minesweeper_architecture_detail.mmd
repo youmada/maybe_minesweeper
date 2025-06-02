@@ -37,10 +37,11 @@ flowchart TB
 
         subgraph "Repository層"
             RoomRepo["RoomRepository\n- ルームCRUD操作\n- 参加者管理"]
+            MinesweeperRepo["MinesweeperRepository\n- ボードCRUD操作"]
         end
 
         subgraph "Data層"
-            DB[(データベース)]
+            DB[("データベース\n(MySQL)")]
             Cache[("キャッシュ\n(Redis)")]
             Session[("セッション\nストレージ")]
         end
@@ -68,34 +69,31 @@ flowchart TB
 %% 接続関係
     Browser <--> MineController & MultiController
     MultiPlayer <-.-> Echo
-
     MineController --> MineService
     MultiController --> MultiService
-
     MineService --> GameService
     MultiService --> GameService
+    MineService --> MinesweeperRepo
     MultiService --> RoomRepo
-
     GameService --> Tile & Board
-
     RoomRepo --> DB
+    RoomRepo --> Cache
+    MinesweeperRepo --> Cache
     MineService --> Session
     MultiService --> Cache
     Echo <--> Redis
-
 %% クラススタイル
-    classDef client fill:#dbeafe,stroke:#3b82f6,stroke-width:2px,color:#1e3a8a
-    classDef controller fill:#bbf7d0,stroke:#22c55e,stroke-width:2px,color:#166534
-    classDef service fill:#fef3c7,stroke:#f59e0b,stroke-width:2px,color:#92400e
-    classDef domain fill:#fecaca,stroke:#ef4444,stroke-width:2px,color:#991b1b
-    classDef repository fill:#e9d5ff,stroke:#a855f7,stroke-width:2px,color:#6b21a8
-    classDef data fill:#e5e7eb,stroke:#6b7280,stroke-width:2px,color:#1f2937
-    classDef infra fill:#fce7f3,stroke:#ec4899,stroke-width:2px,color:#831843
-
+    classDef client fill: #dbeafe, stroke: #3b82f6, stroke-width: 2px, color: #1e3a8a
+    classDef controller fill: #bbf7d0, stroke: #22c55e, stroke-width: 2px, color: #166534
+    classDef service fill: #fef3c7, stroke: #f59e0b, stroke-width: 2px, color: #92400e
+    classDef domain fill: #fecaca, stroke: #ef4444, stroke-width: 2px, color: #991b1b
+    classDef repository fill: #e9d5ff, stroke: #a855f7, stroke-width: 2px, color: #6b21a8
+    classDef data fill: #e5e7eb, stroke: #6b7280, stroke-width: 2px, color: #1f2937
+    classDef infra fill: #fce7f3, stroke: #ec4899, stroke-width: 2px, color: #831843
     class Browser,SinglePlayer,MultiPlayer,GameBoard,PiniaStore client
     class MineController,MultiController controller
     class MineService,MultiService,Echo service
     class GameService,Tile,Board domain
-    class RoomRepo repository
+    class RoomRepo,MinesweeperRepo repository
     class DB,Cache,Session data
     class Droplet,WebServer,AppServer,DBServer,Redis,Queue infra

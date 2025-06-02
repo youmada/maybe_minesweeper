@@ -23,9 +23,7 @@ const createRoom = () => {
 
 <template>
     <Head><title>マルチプレイルーム作成</title></Head>
-    <div
-        class="flex min-h-screen w-full items-center justify-center bg-base-200 p-4"
-    >
+    <div class="flex min-h-screen w-full items-center justify-center p-4">
         <div class="card w-full max-w-lg bg-base-100 shadow-xl">
             <div class="card-body">
                 <h1 class="card-title text-center text-3xl font-bold">

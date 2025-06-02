@@ -1,8 +1,8 @@
 <?php
 
+use App\Http\Controllers\MultiplayerController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
-
 
 // ホーム画面ルート
 Route::get('/', function () {
@@ -16,7 +16,7 @@ Route::get('/single', function () {
 
 Route::get('/single/play', function () {
     return Inertia::render('Single/Play', [
-        'level' => request()->query('level'),// levelにマインスイーパーの難易度を入れる
+        'level' => request()->query('level'), // levelにマインスイーパーの難易度を入れる
     ]);
 });
 
@@ -26,4 +26,4 @@ Route::get('/multi', function () {
 });
 Route::post('/multi/create', [MultiplayerController::class, 'createRoom'])->name('multiplayer.create');
 
-require __DIR__ . '/auth.php';
+require __DIR__.'/auth.php';
