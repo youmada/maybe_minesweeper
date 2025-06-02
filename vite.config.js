@@ -1,14 +1,17 @@
 /// <reference types="vitest" />
-import { defineConfig } from 'vite';
-import laravel from 'laravel-vite-plugin';
 import vue from '@vitejs/plugin-vue';
+import laravel from 'laravel-vite-plugin';
+import { defineConfig } from 'vite';
 
 export default defineConfig({
     server: {
-        port: 3000,
+        port: 5173,
         strictPort: true,
         hmr: {
-            host: "localhost", // ローカルホスト名を指定
+            host: 'maybe_minesweeper.test', // ローカルホスト名を指定
+        },
+        cors: {
+            origin: 'https://maybe_minesweeper.test',
         },
     },
     // plugins: [vue()],
