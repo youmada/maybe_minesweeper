@@ -56,7 +56,7 @@ class GameStateTest extends TestCase
         $height = 5;
         $numOfMines = 5;
         $board = GameService::createBoard($width, $height);
-        $boardTiles = $board->getBoard();
+        $boardTiles = $board->getBoardState();
 
         // 特定の位置に地雷を配置（例: [0,0], [1,1], [2,2], [3,3], [4,4]）
         $boardTiles[0][0]->setMine(true);
@@ -93,7 +93,7 @@ class GameStateTest extends TestCase
         $height = 5;
         $numOfMines = 5;
         $board = GameService::createBoard($width, $height);
-        $boardTiles = $board->getBoard();
+        $boardTiles = $board->getBoardState();
 
         // 特定の位置に地雷を配置（例: [0,0], [1,1], [2,2], [3,3], [4,4]）
         $boardTiles[0][0]->setMine(true);
@@ -131,7 +131,7 @@ class GameStateTest extends TestCase
         $height = 5;
         $numOfMines = 5;
         $board = GameService::createBoard($width, $height);
-        $boardTiles = $board->getBoard();
+        $boardTiles = $board->getBoardState();
         // 地雷の配置
         $boardTiles[0][0]->setMine(true);
         $boardTiles[1][1]->setMine(true);
@@ -159,7 +159,7 @@ class GameStateTest extends TestCase
         $this->assertFalse($restoredState->isGameClear());
 
         // ボードの状態検証
-        $restoredBoard = $restoredState->getBoard()->getBoard();
+        $restoredBoard = $restoredState->getBoard()->getBoardState();
         $this->assertTrue($restoredBoard[0][0]->isMine());
         $this->assertTrue($restoredBoard[1][1]->isMine());
         $this->assertTrue($restoredBoard[2][2]->isOpen());

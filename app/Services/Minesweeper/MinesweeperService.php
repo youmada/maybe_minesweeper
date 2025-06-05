@@ -5,6 +5,7 @@ namespace App\Services\Minesweeper;
 use App\Domain\Minesweeper\GameService;
 use App\Domain\Minesweeper\GameState;
 use App\Domain\Minesweeper\TileActionMode;
+use App\Repositories\Interfaces\GameRepositoryInterface;
 
 class MinesweeperService
 {
@@ -12,7 +13,11 @@ class MinesweeperService
 
     private const MIN_SAFE_TILES_AROUND_START = 9;
 
+    private string $game_uuid;
+
     private GameService $gameService;
+
+    private GameRepositoryInterface $repository;
     // 必要な処理一覧
     // 1. ゲーム初期化 ✅
     // 2. タイルクリック時の処理 ✅
@@ -20,17 +25,20 @@ class MinesweeperService
     // 4. クライアントサイドへのデータ加工と出力 ✅
     // 5. ゲームクリア・オーバー時の処理 ✅
 
-    public function __construct(GameService $gameService)
+    public function __construct(GameService $gameService, GameRepositoryInterface $repository)
     {
         $this->gameService = $gameService;
+        $this->repository = $repository;
+        $this->game_uuid = self::getUUID();
     }
 
     /**
      * @param  int  $width  // 幅
      * @param  int  $height  // 高さ
-     * @param  int  $mineRatio  // 地雷の割合 パーセンテージ（0 - 100)
+     * @param  int  $numOfMines  // 地雷数
+     *                           ゲーム開始処理（続きからプレイでは使わないことを想定している。）
      */
-    public function initializeGame(int $width, int $height, int $mineRatio): self
+    public function initializeGame(int $width, int $height, int $numOfMines): self
     {
 
         // ボードを生成する
@@ -38,14 +46,21 @@ class MinesweeperService
 
         // 地雷数の計算 (mineRatioはパーセンテージ)
         $totalTiles = $width * $height;
-        $numOfMines = (int) ceil($totalTiles * $mineRatio / 100);
         // 最小値と最大値の制限
         $numOfMines = max(1, min($numOfMines, $totalTiles - $this::MIN_SAFE_TILES_AROUND_START));
 
         $this->gameState = new GameState($board, $width, $height, $numOfMines);
 
+        // リポジトリ層に保存
+        $this->repository->saveState($this->gameState, $this->game_uuid);
+
         return $this;
     }
+
+    // TODO: continueGameメソッドを作成する。
+    // - DBかredisからデータを取得して、GameStateを復元させる。
+    // - initializeGameで復元させるか、continueGameと分けるか、迷う。
+    // - initializeGameにmineRatioではなく、別の部分でnumOfMinesを計算するのはどうだろうか？
 
     protected function setMinesOnTheBoard(int $firstClickPosX, int $firstClickPosY): void
     {
@@ -117,5 +132,10 @@ class MinesweeperService
     {
         // ゲームをクリアする
         $this->gameState->endGame(true);
+    }
+
+    private static function getUUID(): string
+    {
+        return uuid_create(UUID_TYPE_RANDOM);
     }
 }

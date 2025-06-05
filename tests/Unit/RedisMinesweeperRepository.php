@@ -1,7 +1,7 @@
 <?php
 
 use App\Domain\Minesweeper\GameState;
-use App\Repositories\RedisMinesweeperRepository;
+use App\Repositories\Redis\MinesweeperRepository;
 use Illuminate\Support\Facades\Redis;
 
 beforeEach(function () {
@@ -19,7 +19,7 @@ beforeEach(function () {
     $this->expectedKey = 'minesweeper:game:'.$this->gameID;
     $this->expectedData = json_encode($this->gameState);
 
-    $this->repository = new RedisMinesweeperRepository;
+    $this->repository = new MinesweeperRepository;
 
 });
 

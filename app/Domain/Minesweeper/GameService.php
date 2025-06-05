@@ -19,7 +19,7 @@ class GameService
      */
     public static function getAroundTiles(Board $board, int $x, int $y): array
     {
-        $boardTiles = $board->getBoard();
+        $boardTiles = $board->getBoardState();
         if (empty($boardTiles)) {
             return [];
         }
@@ -61,7 +61,7 @@ class GameService
      */
     public static function setMines(Board $board, int $numOfMines, array $firstClick): void
     {
-        $boardTiles = $board->getBoard();
+        $boardTiles = $board->getBoardState();
         if (empty($boardTiles)) {
             return;
         }
@@ -199,7 +199,7 @@ class GameService
     {
         $closedTiles = 0;
 
-        $boardTiles = $board->getBoard();
+        $boardTiles = $board->getBoardState();
 
         foreach ($boardTiles as $row) {
             foreach ($row as $tile) {

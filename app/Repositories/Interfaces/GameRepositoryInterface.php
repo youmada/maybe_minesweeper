@@ -5,7 +5,7 @@ namespace App\Repositories\Interfaces;
 use App\Domain\Minesweeper\GameState;
 use stdClass;
 
-interface Game
+interface GameRepositoryInterface
 {
     public function saveState(GameState $state, string $gameId): void;
 

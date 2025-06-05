@@ -3,13 +3,13 @@
 namespace App\Repositories\Redis;
 
 use App\Domain\Minesweeper\GameState;
-use App\Repositories\Interfaces\Game;
+use App\Repositories\Interfaces\GameRepositoryInterface;
 use Exception;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Redis;
 use stdClass;
 
-class Minesweeper implements Game
+class MinesweeperRepository implements GameRepositoryInterface
 {
     private string $prefix = 'minesweeper:game';
 

@@ -12,7 +12,7 @@ class TileTest extends TestCase
     public function get_selected_tile(): void
     {
         $board = GameService::createBoard(10, 10);
-        $boardTiles = $board->getBoard();
+        $boardTiles = $board->getBoardState();
         $x = 5;
         $y = 5;
         $tile = $boardTiles[$x][$y];
@@ -86,7 +86,7 @@ class TileTest extends TestCase
     public function open_tile()
     {
         $board = GameService::createBoard(10, 10);
-        $boardTiles = $board->getBoard();
+        $boardTiles = $board->getBoardState();
         $tile = $boardTiles[5][5];
         $visitedTiles = new \SplObjectStorage;
 
@@ -99,7 +99,7 @@ class TileTest extends TestCase
     public function open_already_opened_tile()
     {
         $board = GameService::createBoard(5, 5);
-        $boardTiles = $board->getBoard();
+        $boardTiles = $board->getBoardState();
         $tile = $boardTiles[2][2];
         $tile->setOpen(true);
         // フラグを立てておく(処理が早期リターンしていることを確認するため)
@@ -117,7 +117,7 @@ class TileTest extends TestCase
     public function open_tile_with_cascade()
     {
         $board = GameService::createBoard(10, 10);
-        $boardTiles = $board->getBoard();
+        $boardTiles = $board->getBoardState();
         $boardTiles[3][3]->setMine(true);
         $tile = $boardTiles[5][5];
         $visitedTiles = new \SplObjectStorage;
@@ -139,7 +139,7 @@ class TileTest extends TestCase
     public function open_flagged_tile()
     {
         $board = GameService::createBoard(10, 10);
-        $boardTiles = $board->getBoard();
+        $boardTiles = $board->getBoardState();
         $tile = $boardTiles[5][5];
         $tile->setFlag(true);
         $visitedTiles = new \SplObjectStorage;
@@ -153,7 +153,7 @@ class TileTest extends TestCase
     public function toggle_flag()
     {
         $board = GameService::createBoard(10, 10);
-        $boardTiles = $board->getBoard();
+        $boardTiles = $board->getBoardState();
         $tile = $boardTiles[5][5];
 
         GameService::toggleFlag($tile);
@@ -166,7 +166,7 @@ class TileTest extends TestCase
     public function test_toggle_flag_on_open_tile()
     {
         $board = GameService::createBoard(10, 10);
-        $boardTiles = $board->getBoard();
+        $boardTiles = $board->getBoardState();
         $tile = $boardTiles[5][5];
         $tile->setOpen(true);
 

@@ -13,7 +13,7 @@ class MineTest extends TestCase
     public function set_Mines()
     {
         $board = GameService::createBoard(3, 3);
-        $boardTiles = $board->getBoard();
+        $boardTiles = $board->getBoardState();
         $firstClick = ['x' => 0, 'y' => 0];
         $numOfMines = 1;
 
@@ -35,7 +35,7 @@ class MineTest extends TestCase
     public function no_mines_around_first_click()
     {
         $board = GameService::createBoard(10, 10);
-        $boardTiles = $board->getBoard();
+        $boardTiles = $board->getBoardState();
         $firstClick = ['x' => 5, 'y' => 5];
         $numOfMines = 20;
 

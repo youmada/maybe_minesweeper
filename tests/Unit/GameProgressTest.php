@@ -44,7 +44,7 @@ class GameProgressTest extends TestCase
         $firstClick = ['x' => 0, 'y' => 0];
         GameService::setMines($board, $totalMines, $firstClick);
 
-        foreach ($board->getBoard() as $row) {
+        foreach ($board->getBoardState() as $row) {
             foreach ($row as $tile) {
                 if (! $tile->isMine()) {
                     $tile->setOpen(true);

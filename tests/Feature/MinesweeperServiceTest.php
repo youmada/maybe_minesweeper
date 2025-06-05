@@ -5,6 +5,7 @@ namespace Feature;
 use App\Domain\Minesweeper\GameService;
 use App\Domain\Minesweeper\GameState;
 use App\Domain\Minesweeper\TileActionMode;
+use App\Repositories\Redis\MinesweeperRepository;
 use App\Services\Minesweeper\MinesweeperService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\Test;
@@ -20,21 +21,22 @@ class MinesweeperServiceTest extends TestCase
 
     protected int $height = 10;
 
-    protected int $mineRatio = 30;
+    protected int $numOfMines = 30;
 
     protected function setUp(): void
     {
         parent::setUp();
 
         $gameService = new GameService;
-        $this->mineSweeperService = new MinesweeperService($gameService);
+        $gameRepository = new MinesweeperRepository;
+        $this->mineSweeperService = new MinesweeperService($gameService, $gameRepository);
     }
 
     #[Test]
     public function init_game(): void
     {
         // 実行
-        $this->mineSweeperService->initializeGame($this->width, $this->height, $this->mineRatio);
+        $this->mineSweeperService->initializeGame($this->width, $this->height, $this->numOfMines);
 
         //検証
         // getGameStateメソッドでゲーム状態を取得
@@ -49,7 +51,7 @@ class MinesweeperServiceTest extends TestCase
     public function when_tile_click_by_open_action(): void
     {
         // 準備
-        $this->mineSweeperService->initializeGame($this->width, $this->height, $this->mineRatio);
+        $this->mineSweeperService->initializeGame($this->width, $this->height, $this->numOfMines);
         $clickTileX = $this->width / 2;
         $clickTileY = $this->height / 2;
 
@@ -68,7 +70,7 @@ class MinesweeperServiceTest extends TestCase
     public function when_tile_click_by_open_action_again(): void
     {
         // 準備
-        $this->mineSweeperService->initializeGame($this->width, $this->height, $this->mineRatio);
+        $this->mineSweeperService->initializeGame($this->width, $this->height, $this->numOfMines);
         $clickTileX = $this->width / 2;
         $clickTileY = $this->height / 2;
 
@@ -95,11 +97,11 @@ class MinesweeperServiceTest extends TestCase
     public function if_the_game_is_cleared_when_a_tile_is_clicked(): void
     {
         // 準備
-        $this->mineSweeperService->initializeGame($this->width, $this->height, $this->mineRatio);
+        $this->mineSweeperService->initializeGame($this->width, $this->height, $this->numOfMines);
         $clickTileX = (int) ($this->width / 2);
         $clickTileY = (int) ($this->height / 2);
 
-        $tiles = $this->mineSweeperService->getGameState()->getBoard()->getBoard();
+        $tiles = $this->mineSweeperService->getGameState()->getBoard()->getBoardState();
 
         // 実行
         $this->mineSweeperService->processGameStart($clickTileX, $clickTileY);
@@ -139,7 +141,7 @@ class MinesweeperServiceTest extends TestCase
     public function when_a_tile_is_clicked_by_flag_mode(): void
     {
         // 準備
-        $this->mineSweeperService->initializeGame($this->width, $this->height, $this->mineRatio);
+        $this->mineSweeperService->initializeGame($this->width, $this->height, $this->numOfMines);
         $clickTileX = $this->width / 2;
         $clickTileY = $this->height / 2;
 
@@ -161,7 +163,7 @@ class MinesweeperServiceTest extends TestCase
     public function when_game_started_mines_are_properly_placed(): void
     {
         // 準備
-        $this->mineSweeperService->initializeGame($this->width, $this->height, $this->mineRatio);
+        $this->mineSweeperService->initializeGame($this->width, $this->height, $this->numOfMines);
         $clickTileX = $this->width / 2;
         $clickTileY = $this->height / 2;
 
@@ -193,7 +195,7 @@ class MinesweeperServiceTest extends TestCase
     public function getGameStateForClient_returns_data_in_expected_format(): void
     {
         // 準備
-        $this->mineSweeperService->initializeGame($this->width, $this->height, $this->mineRatio);
+        $this->mineSweeperService->initializeGame($this->width, $this->height, $this->numOfMines);
 
         // 実行
         $clientData = $this->mineSweeperService->getGameStateForClient();

@@ -46,7 +46,7 @@ class Board
         $this->tiles = $board;
     }
 
-    public function getBoard(): array
+    public function getBoardState(): array
     {
         return $this->tiles;
     }

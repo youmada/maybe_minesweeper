@@ -40,6 +40,11 @@ class GameState
         return $this->board;
     }
 
+    public function getGameState(): array
+    {
+        return $this->board->getBoardState();
+    }
+
     public function getWidth(): int
     {
         return $this->width;
@@ -106,7 +111,7 @@ class GameState
     // シリアライズ関連メソッド
     public function toArray(): array
     {
-        $board = $this->board->getBoard();
+        $board = $this->board->getBoardState();
         // ボードの2次元配列をシリアライズ可能な形式に変換
         $serializedBoard = [];
         foreach ($board as $y => $row) {
@@ -182,7 +187,7 @@ class GameState
         $numOfMines = $serialized['numOfMines'];
 
         $boardInstance = GameService::createBoard($width, $height);
-        $restoredBoard = $boardInstance->getBoard();
+        $restoredBoard = $boardInstance->getBoardState();
 
         // ボード状態を復元
         foreach ($serialized['board'] as $y => $row) {

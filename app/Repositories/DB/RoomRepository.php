@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Repositories\Redis;
+namespace App\Repositories\DB;
 
 use App\Repositories\Interfaces\RoomRepositoryInterface;
 use Exception;

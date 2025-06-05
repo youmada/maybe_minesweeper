@@ -4,7 +4,7 @@ namespace App\Repositories\Interfaces;
 
 use stdClass;
 
-interface RoomRepository
+interface RoomRepositoryInterface
 {
     public function saveState(string $userId, string $roomId): void;
 

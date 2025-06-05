@@ -1,6 +1,6 @@
 <?php
 
-use App\Repositories\RedisRoomRepository;
+use App\Repositories\Redis\RoomRepository;
 use Illuminate\Support\Facades\Redis;
 
 beforeEach(function () {
@@ -8,7 +8,7 @@ beforeEach(function () {
     $this->userId = fake()->uuid();
 
     $this->expectedKey = 'minesweeper:room:'.$this->roomId;
-    $this->repository = new RedisRoomRepository;
+    $this->repository = new RoomRepository;
 
 });
 

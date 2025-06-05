@@ -15,7 +15,7 @@ class BoardTest extends TestCase
     #[Test]
     public function board_initialization()
     {
-        $board = GameService::createBoard(10, 5)->getBoard();
+        $board = GameService::createBoard(10, 5)->getBoardState();
 
         $this->assertCount(5, $board); // height
         $this->assertCount(10, $board[0]); // width
@@ -33,7 +33,7 @@ class BoardTest extends TestCase
     #[Test]
     public function board_initialization_state()
     {
-        $board = GameService::createBoard(10, 5)->getBoard();
+        $board = GameService::createBoard(10, 5)->getBoardState();
 
         foreach ($board as $yIndex => $row) {
             foreach ($row as $xIndex => $tile) {
