@@ -11,12 +11,16 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('boards', function (Blueprint $table) {
+        Schema::create('game_states', function (Blueprint $table) {
             $table->id();
             $table->integer('width');
             $table->integer('height');
-            $table->integer('mine_ratio')->comment('パーセンテージ(0-100)');
+            $table->integer('num_of_mines')->comment('地雷数。');
             $table->json('tile_states')->comment('タイルの配置情報や地雷の有無など');
+            $table->uuid('game_id')->comment('サービス層で設定するuuidがここに入る。redisとDBで共通で使う。');
+            $table->boolean('is_game_started');
+            $table->boolean('is_game_clear');
+            $table->boolean('is_game_over');
             $table->timestamps();
         });
     }
@@ -26,6 +30,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('boards');
+        Schema::dropIfExists('game_states');
     }
 };

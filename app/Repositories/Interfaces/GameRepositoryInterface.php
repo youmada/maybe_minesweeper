@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Repositories;
+namespace App\Repositories\Interfaces;
 
 use App\Domain\Minesweeper\GameState;
 use stdClass;
 
-interface MinesweeperRepository
+interface Game
 {
     public function saveState(GameState $state, string $gameId): void;
 
