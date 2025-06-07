@@ -11,6 +11,9 @@ beforeEach(function () {
         'height' => 10,
         'numOfMines' => 20,
         'board' => [],
+        'isGameStarted' => false,
+        'isGameClear' => false,
+        'isGameOver' => false,
     ];
 
     $this->stateStub = $this->createStub(GameState::class);

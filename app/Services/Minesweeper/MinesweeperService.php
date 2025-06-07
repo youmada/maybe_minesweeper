@@ -29,7 +29,7 @@ class MinesweeperService
     {
         $this->gameService = $gameService;
         $this->repository = $repository;
-        $this->game_uuid = self::getUUID();
+        $this->game_uuid = self::createUUID();
     }
 
     /**
@@ -57,10 +57,18 @@ class MinesweeperService
         return $this;
     }
 
-    // TODO: continueGameメソッドを作成する。
-    // - DBかredisからデータを取得して、GameStateを復元させる。
-    // - initializeGameで復元させるか、continueGameと分けるか、迷う。
-    // - initializeGameにmineRatioではなく、別の部分でnumOfMinesを計算するのはどうだろうか？
+    /**
+     * @throws \Exception
+     */
+    public function continueGame(string $gameId): GameState
+    {
+        $state = $this->repository->getState($gameId);
+        if (! $state) {
+            throw new \Exception("Game not found: {$gameId}");
+        }
+
+        return $state;
+    }
 
     protected function setMinesOnTheBoard(int $firstClickPosX, int $firstClickPosY): void
     {
@@ -97,10 +105,12 @@ class MinesweeperService
 
         if ($mode === TileActionMode::OPEN) {
             if ($currentClickTile->isFlag()) {
+                // TODO: ここにリポジトリクラスが必要
                 return $this->gameState;
             }
             // タイルを開く
             GameService::openTile($board, $currentClickTile, $visitedTiles);
+
             // タイルが地雷かチェックする
             if (GameService::checkGameOver($currentClickTile)) {
                 $this->processGameOver();
@@ -112,9 +122,13 @@ class MinesweeperService
             GameService::toggleFlag($currentClickTile);
         }
 
+        // TODO: ここにリポジトリクラスが必要
         return $this->gameState;
     }
 
+    /*
+     * 初回クリック時の処理
+     */
     public function processGameStart(int $firstClickPosX, int $firstClickPosY): void
     {
         $this->gameState->startGame();
@@ -134,8 +148,13 @@ class MinesweeperService
         $this->gameState->endGame(true);
     }
 
-    private static function getUUID(): string
+    private static function createUUID(): string
     {
         return uuid_create(UUID_TYPE_RANDOM);
+    }
+
+    public function getGameId(): string
+    {
+        return $this->game_uuid;
     }
 }

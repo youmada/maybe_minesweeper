@@ -3,11 +3,11 @@
 namespace App\Repositories\Redis;
 
 use App\Domain\Minesweeper\GameState;
+use App\Domain\Minesweeper\GameState as State;
 use App\Repositories\Interfaces\GameRepositoryInterface;
 use Exception;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Redis;
-use stdClass;
 
 class MinesweeperRepository implements GameRepositoryInterface
 {
@@ -28,7 +28,7 @@ class MinesweeperRepository implements GameRepositoryInterface
         }
     }
 
-    public function getState(string $gameId): ?stdClass
+    public function getState(string $gameId): ?GameState
     {
         $key = $this->prefix.':'.$gameId;
 
@@ -41,7 +41,19 @@ class MinesweeperRepository implements GameRepositoryInterface
             return null;
         }
 
-        return $value ? json_decode($value) : null;
+        $decoded = json_decode($value, true);
+
+        $state = State::fromPrimitive(
+            $decoded['board'],
+            $decoded['width'],
+            $decoded['height'],
+            $decoded['numOfMines'],
+            $decoded['isGameStarted'],
+            $decoded['isGameClear'],
+            $decoded['isGameOver'],
+        );
+
+        return $value ? $state : null;
     }
 
     /**

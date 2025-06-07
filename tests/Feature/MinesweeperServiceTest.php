@@ -5,7 +5,9 @@ namespace Feature;
 use App\Domain\Minesweeper\GameService;
 use App\Domain\Minesweeper\GameState;
 use App\Domain\Minesweeper\TileActionMode;
-use App\Repositories\Redis\MinesweeperRepository;
+use App\Repositories\Composites\GameCompositeRepository;
+use App\Repositories\DB\MinesweeperRepository as DBRepo;
+use App\Repositories\Redis\MinesweeperRepository as RedisRepo;
 use App\Services\Minesweeper\MinesweeperService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\Test;
@@ -28,7 +30,7 @@ class MinesweeperServiceTest extends TestCase
         parent::setUp();
 
         $gameService = new GameService;
-        $gameRepository = new MinesweeperRepository;
+        $gameRepository = new GameCompositeRepository(new RedisRepo, new DBRepo);
         $this->mineSweeperService = new MinesweeperService($gameService, $gameRepository);
     }
 

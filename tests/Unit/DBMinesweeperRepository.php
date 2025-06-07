@@ -4,7 +4,7 @@ use App\Domain\Minesweeper\Board;
 use App\Domain\Minesweeper\GameState;
 use App\Exceptions\RepositoryException;
 use App\Models\GameState as DBGameState;
-use App\Repositories\DB\MinesweeperRepository;
+use App\Repositories\Composites\DB\MinesweeperRepository;
 
 beforeEach(function () {
 
