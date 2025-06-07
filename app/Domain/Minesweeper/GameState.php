@@ -217,4 +217,17 @@ class GameState
 
         return $restoreState;
     }
+
+    public static function fromPrimitive(array $tileStates, int $width, int $height, int $numOfMines, bool $isGameStarted, bool $isGameClear, bool $isGameOver): GameState
+    {
+        $boardInstance = GameService::createBoard($width, $height);
+        $boardInstance->restoreBoard($tileStates);
+
+        $gameState = new self($boardInstance, $width, $height, $numOfMines);
+        $gameState->isGameStarted = $isGameStarted;
+        $gameState->isGameClear = $isGameClear;
+        $gameState->isGameOver = $isGameOver;
+
+        return $gameState;
+    }
 }

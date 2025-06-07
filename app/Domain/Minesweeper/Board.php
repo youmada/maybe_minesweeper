@@ -51,6 +51,19 @@ class Board
         return $this->tiles;
     }
 
+    public function toArray(): array
+    {
+        $board = [];
+        for ($y = 0; $y < $this->height; $y++) {
+            $board[$y] = [];
+            for ($x = 0; $x < $this->width; $x++) {
+                $board[$y][$x] = $this->tiles[$y][$x]->toArray();
+            }
+        }
+
+        return $board;
+    }
+
     public function getTile(int $x, int $y): ?Tile
     {
         if ($x < 0 || $x >= $this->width || $y < 0 || $y >= $this->height) {
@@ -72,5 +85,22 @@ class Board
         }
 
         return $count;
+    }
+
+    public function restoreBoard(array $tileStates): void
+    {
+        if (count($tileStates) !== $this->width * $this->height) {
+            return;
+        } else {
+            $this->initializeBoard();
+            foreach ($tileStates as $y => $row) {
+                foreach ($row as $x => $tile) {
+                    $this->tiles[$y][$x]->setOpen($tile['isOpen']);
+                    $this->tiles[$y][$x]->setFlag($tile['isFlag']);
+                    $this->tiles[$y][$x]->setMine($tile['isMine']);
+                    $this->tiles[$y][$x]->setAdjacentMines($tile['adjacentMines']);
+                }
+            }
+        }
     }
 }

@@ -88,6 +88,17 @@ class Tile
         ];
     }
 
+    public static function fromArray(array $attrs): Tile
+    {
+        $tile = new self($attrs['x'], $attrs['y']);
+        $tile->setMine($attrs['isMine']);
+        $tile->setOpen($attrs['isOpen']);
+        $tile->setFlag($attrs['isFlag']);
+
+        return $tile;
+
+    }
+
     public function adjacentMines(): int
     {
         return $this->adjacentMines;

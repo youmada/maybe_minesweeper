@@ -1,5 +1,6 @@
 <?php
 
+use App\Domain\Minesweeper\Board;
 use App\Domain\Minesweeper\GameState;
 use App\Exceptions\RepositoryException;
 use App\Models\GameState as DBGameState;
@@ -65,4 +66,46 @@ it("can't save the state in DB", function () {
     $this->repository->saveState($this->stateStub, $this->gameID);
 })->throws(RepositoryException::class);
 
-it('can get the state from DB', function () {});
+it('can get the state class from DB',
+    function () {
+        $board = new Board(10, 10);
+        $gameState = new GameState($board, 10, 10, 20);
+        $this->repository->saveState($gameState, $this->gameID);
+
+        expect($gameState)->toEqual($this->repository->getState($this->gameID));
+    });
+
+it("can't get the state class from DB", function () {
+    $gameState = $this->repository->getState('invalid-game-id');
+    expect($gameState)->toBeNull();
+});
+
+it('can update the state in DB', function () {
+    $board = new Board(10, 10);
+    $gameState = new GameState($board, 10, 10, 20);
+    $this->repository->saveState($gameState, $this->gameID);
+    // ゲーム開始状態に遷移させる。
+    $gameState->startGame();
+
+    $this->repository->updateState($gameState, $this->gameID);
+    $savedGameState = DBGameState::where('game_id', $this->gameID)->first();
+    expect($savedGameState->is_game_started)->toBe(1);
+});
+
+it("can't update the state in DB. because of game id is not found", function () {
+    $invalid_id = 'invalid-game-id';
+
+    $this->repository->updateState($this->stateStub, $invalid_id);
+})->throws(RepositoryException::class);
+
+it('can delete the state in DB', function () {
+    $this->repository->saveState($this->stateStub, $this->gameID);
+    $this->repository->deleteState($this->gameID);
+    $savedGameState = DBGameState::where('game_id', $this->gameID)->first();
+    expect($savedGameState)->toBeNull();
+});
+
+it("can't delete the state in DB. because of game id is not found", function () {
+    $invalid_id = 'invalid-game-id';
+    $this->repository->deleteState($invalid_id);
+})->throws(RepositoryException::class);
