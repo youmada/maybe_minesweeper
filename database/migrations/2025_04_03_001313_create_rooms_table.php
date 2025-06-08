@@ -13,11 +13,12 @@ return new class extends Migration
     {
         Schema::create('rooms', function (Blueprint $table) {
             $table->id();
-            $table->string('magic_token');
-            $table->integer('max_participants');
-            $table->boolean('is_active');
+            $table->string('name');
+            $table->string('owner_id');
+            $table->string('magic_link_token')->unique();
+            $table->integer('max_users')->comment('ルーム最大参加人数');
             $table->boolean('is_private');
-            $table->integer('room_duration');
+            $table->timestamp('last_activity_at')->nullable()->index();
             $table->timestamps();
             $table->softDeletes();
         });

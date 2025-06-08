@@ -2,6 +2,7 @@
 
 use App\Models\GameState;
 use App\Models\Room;
+use App\Models\RoomUser;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -15,10 +16,20 @@ return new class extends Migration
     {
         Schema::create('room_states', function (Blueprint $table) {
             $table->id();
-            $table->foreignIdFor(Room::class)->constrained();
-            $table->foreignIdFor(GameState::class)->constrained();
-            $table->json('turn_info');
-            $table->string('game_status')->comment('待機中・進行中・終了などのゲーム進行ステータス');
+            $table->foreignIdFor(Room::class)
+                ->constrained()
+                ->onDelete('cascade');
+            $table->foreignIdFor(GameState::class)
+                ->constrained()
+                ->onDelete('cascade');
+            $table->foreignIdFor(RoomUser::class, 'current_turn_user_id')
+                ->nullable()
+                ->constrained()
+                ->onDelete('set null');
+            $table->json('turn_order')->comment('ターン順番');
+            $table->enum('status', ['waiting', 'playing', 'finished'])
+                ->default('waiting')
+                ->index();
             $table->timestamps();
         });
     }
