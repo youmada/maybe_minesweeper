@@ -1,5 +1,10 @@
 # **Multi Minesweeper Design Document (改訂版)**
 
+## アイデア：
+
+- ターン順番に関しては途中参加と退出を考えて、現在の順番の一番後ろにキューを入れる感じでどうだろうか？
+-
+
 ## **1. 概要**
 
 本ドキュメントでは、Vue 3 + Pinia + Laravel + Inertia
@@ -174,12 +179,8 @@
 - **Response Body** (例):
   ```json
   {
-    "board_state": {
-      /* JSON 地雷や開閉状態 */
-    },
-    "turn_info": {
-      /* JSON 現在のターン、残りフラグアクションなど */
-    },
+    "board_state": {},
+    "turn_info": {},
     "participants": [
       {
         "user_id": "string"
@@ -194,12 +195,8 @@
 - **Request Body** (例):
   ```json
   {
-    "board_state": {
-      /* JSON */
-    },
-    "turn_info": {
-      /* JSON */
-    }
+    "board_state": {},
+    "turn_info": {}
   }
   ```
 - **Response Body** (例):
