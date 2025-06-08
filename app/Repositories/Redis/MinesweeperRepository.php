@@ -44,7 +44,7 @@ class MinesweeperRepository implements GameRepositoryInterface
         $decoded = json_decode($value, true);
 
         $state = State::fromPrimitive(
-            $decoded['board'],
+            $decoded['tileStates'],
             $decoded['width'],
             $decoded['height'],
             $decoded['numOfMines'],

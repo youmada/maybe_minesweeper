@@ -40,6 +40,11 @@ class GameState
         return $this->board;
     }
 
+    public function setBoard(Board $board): void
+    {
+        $this->board = $board;
+    }
+
     public function getGameState(): array
     {
         return $this->board->getBoardState();
@@ -128,7 +133,7 @@ class GameState
         }
 
         return [
-            'board' => $serializedBoard,
+            'tileStates' => $serializedBoard,
             'width' => $this->width,
             'height' => $this->height,
             'numOfMines' => $this->numOfMines,
@@ -145,10 +150,10 @@ class GameState
         $data = $this->toArray();
 
         if (! $this->isGameOver()) {
-            foreach ($data['board'] as $y => $row) {
+            foreach ($data['tileStates'] as $y => $row) {
                 foreach ($row as $x => $tile) {
                     if (! $tile['isOpen']) {
-                        $data['board'][$y][$x]['isMine'] = false;
+                        $data['tileStates'][$y][$x]['isMine'] = false;
                     }
                 }
             }
@@ -164,7 +169,7 @@ class GameState
     {
 
         // 必須フィールドの存在チェック
-        $requiredFields = ['width', 'height', 'numOfMines', 'board'];
+        $requiredFields = ['width', 'height', 'numOfMines', 'tileStates'];
         foreach ($requiredFields as $field) {
             if (! isset($serialized[$field])) {
                 throw new InvalidArgumentException("不完全なゲームデータです: {$field}が欠けています");
@@ -172,13 +177,13 @@ class GameState
         }
 
         // ボードデータの型チェック
-        if (! is_array($serialized['board'])) {
+        if (! is_array($serialized['tileStates'])) {
             throw new InvalidArgumentException('ボードデータが無効です');
         }
 
         // ボードサイズとwith, heightの一致チェック
-        $isBoardWidthMatch = count($serialized['board'][0]) === $serialized['width'];
-        $isBoardHeightMatch = count($serialized['board']) === $serialized['height'];
+        $isBoardWidthMatch = count($serialized['tileStates'][0]) === $serialized['width'];
+        $isBoardHeightMatch = count($serialized['tileStates']) === $serialized['height'];
         if (! ($isBoardWidthMatch && $isBoardHeightMatch)) {
             throw new InvalidArgumentException('ボードサイズとwidth/heightが一致しません');
         }
@@ -190,7 +195,7 @@ class GameState
         $restoredBoard = $boardInstance->getBoardState();
 
         // ボード状態を復元
-        foreach ($serialized['board'] as $y => $row) {
+        foreach ($serialized['tileStates'] as $y => $row) {
             foreach ($row as $x => $tile) {
                 $restoredBoard[$y][$x]->setOpen($tile['isOpen']);
                 $restoredBoard[$y][$x]->setFlag($tile['isFlag']);

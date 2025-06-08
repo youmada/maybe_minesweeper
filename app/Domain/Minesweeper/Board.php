@@ -89,17 +89,30 @@ class Board
 
     public function restoreBoard(array $tileStates): void
     {
-        if (count($tileStates) !== $this->width * $this->height) {
+
+        // 1) 第一階層の行数チェック
+        if (count($tileStates) !== $this->height) {
+            dump('invalid tileStates: not match rows');
+
             return;
-        } else {
-            $this->initializeBoard();
-            foreach ($tileStates as $y => $row) {
-                foreach ($row as $x => $tile) {
-                    $this->tiles[$y][$x]->setOpen($tile['isOpen']);
-                    $this->tiles[$y][$x]->setFlag($tile['isFlag']);
-                    $this->tiles[$y][$x]->setMine($tile['isMine']);
-                    $this->tiles[$y][$x]->setAdjacentMines($tile['adjacentMines']);
-                }
+        }
+
+        // 2) 各行の列数チェック
+        foreach ($tileStates as $y => $row) {
+            if (! is_array($row) || count($row) !== $this->width) {
+                dump("invalid tileStates: not match columns at row {$y}");
+
+                return;
+            }
+        }
+
+        $this->initializeBoard();
+        foreach ($tileStates as $y => $row) {
+            foreach ($row as $x => $tile) {
+                $this->tiles[$y][$x]->setOpen($tile['isOpen']);
+                $this->tiles[$y][$x]->setFlag($tile['isFlag']);
+                $this->tiles[$y][$x]->setMine($tile['isMine']);
+                $this->tiles[$y][$x]->setAdjacentMines($tile['adjacentMines']);
             }
         }
     }

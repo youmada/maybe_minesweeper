@@ -20,7 +20,7 @@ beforeEach(function () {
     $this->numOfMines = 30;
 
     $this->gameService = new GameService;
-    $this->service = new MinesweeperService($this->gameService, $this->repo);
+    $this->service = new MinesweeperService($this->repo);
 });
 
 it('should return GameState when repository has it', function () {

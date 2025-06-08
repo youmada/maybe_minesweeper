@@ -9,13 +9,7 @@ use App\Repositories\Interfaces\GameRepositoryInterface;
 
 class MinesweeperService
 {
-    private GameState $gameState;
-
     private const MIN_SAFE_TILES_AROUND_START = 9;
-
-    private string $game_uuid;
-
-    private GameService $gameService;
 
     private GameRepositoryInterface $repository;
     // 必要な処理一覧
@@ -25,36 +19,35 @@ class MinesweeperService
     // 4. クライアントサイドへのデータ加工と出力 ✅
     // 5. ゲームクリア・オーバー時の処理 ✅
 
-    public function __construct(GameService $gameService, GameRepositoryInterface $repository)
+    public function __construct(GameRepositoryInterface $repository)
     {
-        $this->gameService = $gameService;
         $this->repository = $repository;
-        $this->game_uuid = self::createUUID();
     }
 
     /**
      * @param  int  $width  // 幅
      * @param  int  $height  // 高さ
      * @param  int  $numOfMines  // 地雷数
-     *                           ゲーム開始処理（続きからプレイでは使わないことを想定している。）
+     * @param  string  $gameId
+     *                          ゲーム開始処理（続きからプレイでは使わないことを想定している。）
      */
-    public function initializeGame(int $width, int $height, int $numOfMines): self
+    public function initializeGame(string $gameId, int $width, int $height, int $numOfMines): GameState
     {
 
         // ボードを生成する
-        $board = $this->gameService::createBoard($width, $height);
+        $board = gameService::createBoard($width, $height);
 
         // 地雷数の計算 (mineRatioはパーセンテージ)
         $totalTiles = $width * $height;
         // 最小値と最大値の制限
         $numOfMines = max(1, min($numOfMines, $totalTiles - $this::MIN_SAFE_TILES_AROUND_START));
 
-        $this->gameState = new GameState($board, $width, $height, $numOfMines);
+        $gameState = new GameState($board, $width, $height, $numOfMines);
 
         // リポジトリ層に保存
-        $this->repository->saveState($this->gameState, $this->game_uuid);
+        $this->repository->saveState($gameState, $gameId);
 
-        return $this;
+        return $gameState;
     }
 
     /**
@@ -70,25 +63,22 @@ class MinesweeperService
         return $state;
     }
 
-    protected function setMinesOnTheBoard(int $firstClickPosX, int $firstClickPosY): void
+    protected function setMinesOnTheBoard(int $firstClickPosX, int $firstClickPosY, GameState $gameState): GameState
     {
-        $board = $this->gameState->getBoard();
-        $numOfMines = $this->gameState->getNumOfMines();
+        $board = $gameState->getBoard();
+        $numOfMines = $gameState->getNumOfMines();
         $firstClickPos = [
             'x' => $firstClickPosX,
             'y' => $firstClickPosY,
         ];
-        $this->gameService::setMines($board, $numOfMines, $firstClickPos);
+        GameService::setMines($board, $numOfMines, $firstClickPos);
+
+        return $gameState;
     }
 
-    public function getGameStateForClient(): array
+    public function getGameStateForClient(GameState $gameState): array
     {
-        return $this->gameState->toClientArray();
-    }
-
-    public function getGameState(): GameState
-    {
-        return $this->gameState;
+        return $gameState->toClientArray();
     }
 
     // どんな処理が必要？
@@ -96,65 +86,55 @@ class MinesweeperService
     // ゲームオーバー・クリアのチェック ✅
     // リポジトリへの反映
     // 状態の返却 ✅
-    public function handleClickTile(int $clickTileX, int $clickTileY, TileActionMode $mode): GameState
+    /**
+     * @throws \Exception
+     */
+    public function handleClickTile(string $gameId, int $clickTileX, int $clickTileY, TileActionMode $mode): GameState
     {
-        $board = $this->gameState->getBoard();
-        $visitedTiles = $this->gameState->getVisitedTiles();
+        // リポジトリから現在の状態をロード
+        $state = $this->repository->getState($gameId) ?? throw new \Exception("Game not found: {$gameId}");
+
+        $board = $state->getBoard();
+        $visitedTiles = $state->getVisitedTiles();
         $currentClickTile = GameService::getTile($board, $clickTileX, $clickTileY);
-        $totalMines = $this->gameState->getNumOfMines();
+        $totalMines = $state->getNumOfMines();
 
         if ($mode === TileActionMode::OPEN) {
-            if ($currentClickTile->isFlag()) {
-                // TODO: ここにリポジトリクラスが必要
-                return $this->gameState;
+            if (! $currentClickTile->isFlag()) {
+                // タイルを開く
+                GameService::openTile($board, $currentClickTile, $visitedTiles);
+                // タイルが地雷かチェックする
+                if (GameService::checkGameOver($currentClickTile)) {
+                    $state->endGame(false);
+                } elseif (GameService::checkGameClear($board, $totalMines)) {
+                    $state->endGame(true);
+                    dump($state->isGameOver());
+                }
             }
-            // タイルを開く
-            GameService::openTile($board, $currentClickTile, $visitedTiles);
-
-            // タイルが地雷かチェックする
-            if (GameService::checkGameOver($currentClickTile)) {
-                $this->processGameOver();
-            }
-            if (GameService::checkGameClear($board, $totalMines)) {
-                $this->processGameClear();
-            }
-        } elseif ($mode === TileActionMode::FLAG) {
+        } else {
             GameService::toggleFlag($currentClickTile);
         }
+        // 更新した状態を永続化
+        $this->repository->updateState($state, $gameId);
 
-        // TODO: ここにリポジトリクラスが必要
-        return $this->gameState;
+        return $state;
     }
 
     /*
      * 初回クリック時の処理
      */
-    public function processGameStart(int $firstClickPosX, int $firstClickPosY): void
+    public function processGameStart(string $gameId, int $firstClickPosX, int $firstClickPosY): GameState
     {
-        $this->gameState->startGame();
-        $this->setMinesOnTheBoard($firstClickPosX, $firstClickPosY);
+        $state = $this->repository->getState($gameId) ?? throw new \Exception("Game not found: {$gameId}");
+        $state->startGame();
+        $gameState = $this->setMinesOnTheBoard($firstClickPosX, $firstClickPosY, $state);
+        $this->repository->updateState($gameState, $gameId);
+
+        //        dump($gameState);
         // 初回クリック操作
-        $this->handleClickTile($firstClickPosX, $firstClickPosY, TileActionMode::OPEN);
-    }
+        $state = $this->handleClickTile($gameId, $firstClickPosX, $firstClickPosY, TileActionMode::OPEN);
+        //        dump($state);
 
-    public function processGameOver(): void
-    {
-        $this->gameState->endGame(false);
-    }
-
-    public function processGameClear(): void
-    {
-        // ゲームをクリアする
-        $this->gameState->endGame(true);
-    }
-
-    private static function createUUID(): string
-    {
-        return uuid_create(UUID_TYPE_RANDOM);
-    }
-
-    public function getGameId(): string
-    {
-        return $this->game_uuid;
+        return $state;
     }
 }

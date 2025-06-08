@@ -21,16 +21,17 @@ class MinesweeperRepository implements GameRepositoryInterface
             return;
         }
         try {
+            $toArrayState = $state->toArray();
             GameState::create(
                 [
-                    'width' => $state->getWidth(),
-                    'height' => $state->getHeight(),
-                    'num_of_mines' => $state->getNumOfMines(),
+                    'width' => $toArrayState['width'],
+                    'height' => $toArrayState['height'],
+                    'num_of_mines' => $toArrayState['numOfMines'],
                     'game_id' => $gameId,
-                    'tile_states' => json_encode($state->toArray()),
-                    'is_game_started' => $state->isGameStarted(),
-                    'is_game_clear' => $state->isGameClear(),
-                    'is_game_over' => $state->isGameOver(),
+                    'tile_states' => $toArrayState['tileStates'],
+                    'is_game_started' => $toArrayState['isGameStarted'],
+                    'is_game_clear' => $toArrayState['isGameClear'],
+                    'is_game_over' => $toArrayState['isGameOver'],
                 ]
             );
         } catch (QueryException $exception) {
@@ -64,16 +65,17 @@ class MinesweeperRepository implements GameRepositoryInterface
     {
         try {
             $stateModel = GameState::where('game_id', $gameId)->firstOrFail();
+            $toArrayState = $state->toArray();
             $stateModel->update(
                 [
-                    'width' => $state->getWidth(),
-                    'height' => $state->getHeight(),
-                    'num_of_mines' => $state->getNumOfMines(),
+                    'width' => $toArrayState['width'],
+                    'height' => $toArrayState['height'],
+                    'num_of_mines' => $toArrayState['numOfMines'],
                     'game_id' => $gameId,
-                    'tile_states' => json_encode($state->getBoard()->toArray()),
-                    'is_game_started' => $state->isGameStarted(),
-                    'is_game_clear' => $state->isGameClear(),
-                    'is_game_over' => $state->isGameOver(),
+                    'tile_states' => $toArrayState['tileStates'],
+                    'is_game_started' => $toArrayState['isGameStarted'],
+                    'is_game_clear' => $toArrayState['isGameClear'],
+                    'is_game_over' => $toArrayState['isGameOver'],
                 ]
             );
         } catch (ModelNotFoundException $exception) {

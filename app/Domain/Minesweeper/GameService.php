@@ -54,7 +54,6 @@ class GameService
     /**
      * 地雷を設置する
      *
-     * @param  int  $numOfMines  // パーセンテージ（0 - 100)
      * @param  array{x: int, y: int}  $firstClick
      *
      * @throws \InvalidArgumentException
