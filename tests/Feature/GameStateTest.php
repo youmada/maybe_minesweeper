@@ -26,7 +26,7 @@ class GameStateTest extends TestCase
         $this->assertIsArray($result);
 
         // 必要なキーが全て含まれているか確認
-        $this->assertArrayHasKey('board', $result);
+        $this->assertArrayHasKey('tileStates', $result);
         $this->assertArrayHasKey('width', $result);
         $this->assertArrayHasKey('height', $result);
         $this->assertArrayHasKey('numOfMines', $result);
@@ -44,8 +44,8 @@ class GameStateTest extends TestCase
         $this->assertFalse($result['isGameClear']);
 
         // ボード構造の検証
-        $this->assertCount($height, $result['board']);
-        $this->assertCount($width, $result['board'][0]);
+        $this->assertCount($height, $result['tileStates']);
+        $this->assertCount($width, $result['tileStates'][0]);
     }
 
     #[Test]
@@ -77,12 +77,12 @@ class GameStateTest extends TestCase
 
         // 検証
         // 開いてないタイルの地雷情報が隠されているか
-        $this->assertFalse($clientArray['board'][0][0]['isMine'], '開いてないタイルの地雷情報が隠されていません');
-        $this->assertFalse($clientArray['board'][1][1]['isMine'], '開いてないタイルの地雷情報が隠されていません');
+        $this->assertFalse($clientArray['tileStates'][0][0]['isMine'], '開いてないタイルの地雷情報が隠されていません');
+        $this->assertFalse($clientArray['tileStates'][1][1]['isMine'], '開いてないタイルの地雷情報が隠されていません');
 
         // 開いているタイルは影響なし（この例では地雷なしのタイル）
-        $this->assertFalse($clientArray['board'][0][1]['isMine']);
-        $this->assertFalse($clientArray['board'][1][0]['isMine']);
+        $this->assertFalse($clientArray['tileStates'][0][1]['isMine']);
+        $this->assertFalse($clientArray['tileStates'][1][0]['isMine']);
     }
 
     #[Test]
@@ -116,11 +116,11 @@ class GameStateTest extends TestCase
         $clientArray = $gameState->toClientArray();
 
         // 検証 - 全ての地雷情報が表示されるか
-        $this->assertTrue($clientArray['board'][0][0]['isMine'], 'ゲームオーバー時に地雷情報が表示されていません');
-        $this->assertTrue($clientArray['board'][1][1]['isMine'], 'ゲームオーバー時に地雷情報が表示されていません');
-        $this->assertTrue($clientArray['board'][2][2]['isMine'], 'ゲームオーバー時に地雷情報が表示されていません');
-        $this->assertTrue($clientArray['board'][3][3]['isMine'], 'ゲームオーバー時に地雷情報が表示されていません');
-        $this->assertTrue($clientArray['board'][4][4]['isMine'], 'ゲームオーバー時に地雷情報が表示されていません');
+        $this->assertTrue($clientArray['tileStates'][0][0]['isMine'], 'ゲームオーバー時に地雷情報が表示されていません');
+        $this->assertTrue($clientArray['tileStates'][1][1]['isMine'], 'ゲームオーバー時に地雷情報が表示されていません');
+        $this->assertTrue($clientArray['tileStates'][2][2]['isMine'], 'ゲームオーバー時に地雷情報が表示されていません');
+        $this->assertTrue($clientArray['tileStates'][3][3]['isMine'], 'ゲームオーバー時に地雷情報が表示されていません');
+        $this->assertTrue($clientArray['tileStates'][4][4]['isMine'], 'ゲームオーバー時に地雷情報が表示されていません');
     }
 
     #[Test]
@@ -201,7 +201,7 @@ class GameStateTest extends TestCase
             'width' => 5,
             'height' => 5,
             'numOfMines' => 5,
-            'board' => 'これは配列ではなく文字列',  // 無効なボードデータ
+            'tileStates' => 'これは配列ではなく文字列',  // 無効なボードデータ
             'visitedPositions' => [],
             'isGameStarted' => false,
             'isGameOver' => false,
@@ -222,7 +222,7 @@ class GameStateTest extends TestCase
             'width' => 5,
             'height' => 5,
             'numOfMines' => 5,
-            'board' => array_fill(0, 3, array_fill(0, 3, [])),  // 3x3 ボード
+            'tileStates' => array_fill(0, 3, array_fill(0, 3, [])),  // 3x3 ボード
             'visitedPositions' => [],
             'isGameStarted' => false,
             'isGameOver' => false,

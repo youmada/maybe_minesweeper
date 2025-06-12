@@ -108,7 +108,6 @@ class MinesweeperService
                     $state->endGame(false);
                 } elseif (GameService::checkGameClear($board, $totalMines)) {
                     $state->endGame(true);
-                    dump($state->isGameOver());
                 }
             }
         } else {

@@ -2,7 +2,6 @@
 
 use App\Models\GameState;
 use App\Models\Room;
-use App\Models\RoomUser;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -22,10 +21,6 @@ return new class extends Migration
             $table->foreignIdFor(GameState::class)
                 ->constrained()
                 ->onDelete('cascade');
-            $table->foreignIdFor(RoomUser::class, 'current_turn_user_id')
-                ->nullable()
-                ->constrained()
-                ->onDelete('set null');
             $table->json('turn_order')->comment('ターン順番');
             $table->enum('status', ['waiting', 'playing', 'finished'])
                 ->default('waiting')
