@@ -1,0 +1,38 @@
+<?php
+
+namespace App\Factories;
+
+use App\Domain\Room\RoomState;
+use App\Domain\Room\RoomStatus;
+
+class RoomStateFactory
+{
+    public static function createNew(
+        string $roomId,
+        array $turnOrder,
+        int $flagLimit = 5 // デフォルト値として最大フラグカウントを設定可能
+    ): RoomState {
+        return new RoomState(
+            $roomId,
+            $turnOrder,
+            0,
+            RoomStatus::WAITING,
+            0,
+            false,
+            $flagLimit // 新しいプロパティとしてフラグ操作上限を渡す
+        );
+    }
+
+    public static function createFromRedis(array $data): RoomState
+    {
+        return new RoomState(
+            $data['roomId'],
+            $data['turnOrder'],
+            $data['currentOrderIndex'],
+            RoomStatus::from($data['status']),
+            $data['flagCount'],
+            $data['tileOpened'],
+            $data['flagLimit']
+        );
+    }
+}
