@@ -137,19 +137,6 @@ it('can reset action state when advance a next turn', function () {
     ]);
 });
 
-it('can check to move to next turn', function () {
-    // 準備
-    expect($this->roomState->getCurrentOrder())->toEqual($this->user1);
-
-    $this->roomState->nextTurn();
-
-    expect($this->roomState->getCurrentOrder())->toEqual($this->user1);
-
-    $this->roomState->processRoomAction(TileActionMode::OPEN);
-    $this->roomState->nextTurn();
-    expect($this->roomState->getCurrentOrder())->toEqual($this->user2);
-});
-
 it('can not process action when current order is not in turn order', function () {
     expect($this->roomState->getCurrentOrder())->toEqual($this->user1);
     $this->roomState->processRoomAction(TileActionMode::OPEN);

@@ -60,9 +60,6 @@ class RoomState
 
     public function nextTurn(): void
     {
-        if (! $this->isMoveToNextTurn()) {
-            return;
-        }
         $this->resetActionState();
         if ($this->currentOrderIndex === count($this->turnOrder) - 1) {
             $this->currentOrderIndex = 0;
@@ -72,9 +69,6 @@ class RoomState
         $this->currentOrderIndex++;
     }
 
-    /**
-     * @throws \Exception
-     */
     public function processRoomAction(TileActionMode $actionMode): void
     {
         if ($actionMode === TileActionMode::OPEN) {
@@ -98,7 +92,7 @@ class RoomState
         $this->flagCount = 0;
     }
 
-    private function isMoveToNextTurn(): bool
+    public function isMoveToNextTurn(): bool
     {
         return $this->tileOpened === true || $this->flagCount === $this->flagLimit;
     }

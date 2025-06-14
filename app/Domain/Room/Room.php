@@ -5,7 +5,7 @@ namespace App\Domain\Room;
 class Room
 {
     public function __construct(
-        public readonly string $id,
+        private readonly string $id,
         private readonly string $name,
         private readonly int $maxPlayers,
         private array $players,
