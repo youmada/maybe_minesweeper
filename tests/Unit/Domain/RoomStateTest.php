@@ -5,9 +5,8 @@ use App\Domain\Room\RoomState;
 use App\Domain\Room\RoomStatus;
 
 beforeEach(function () {
-    $this->roomId = Str::uuid()->tostring();
     $this->flagLimit = 5;
-    $this->roomState = new RoomState($this->roomId,
+    $this->roomState = new RoomState(
         [],
         0,
         RoomStatus::WAITING,
@@ -23,7 +22,7 @@ beforeEach(function () {
 
 it('can change room status',
     function () {
-        $roomState = new RoomState($this->roomId,
+        $roomState = new RoomState(
             [],
             0,
             RoomStatus::WAITING,
@@ -40,7 +39,7 @@ it('can initialize room turn order', function () {
 });
 
 it('can add user to room turn order', function () {
-    $roomState = new RoomState($this->roomId,
+    $roomState = new RoomState(
         [],
         0,
         RoomStatus::WAITING,
@@ -57,7 +56,7 @@ it('can add user to room turn order', function () {
 });
 
 it('can remove user from room turn order', function () {
-    $roomState = new RoomState($this->roomId,
+    $roomState = new RoomState(
         [],
         0,
         RoomStatus::WAITING,

@@ -4,7 +4,6 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
 
 class Room extends Model
@@ -13,7 +12,6 @@ class Room extends Model
 
     protected $fillable = [
         'name',
-        'room_id',
         'owner_id',
         'game_id',
         'max_player',
@@ -53,10 +51,5 @@ class Room extends Model
         $array['magicLinkToken'] = $this->magic_link_token;
 
         return $array;
-    }
-
-    public function gameStates(): HasMany
-    {
-        return $this->hasMany(GameState::class, 'room_id');
     }
 }

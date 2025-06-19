@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\Redis;
 
 beforeEach(function () {
     $this->roomId = 'room123';
-    $this->roomState = RoomStateFactory::createNew($this->roomId, ['user1']);
+    $this->roomState = RoomStateFactory::createNew(['user1']);
     $this->expectedKey = 'minesweeper:room:'.$this->roomId;
     $this->repository = new RoomRepository;
 

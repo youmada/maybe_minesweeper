@@ -9,7 +9,6 @@ class Room
     private readonly string $magicLinkToken;
 
     public function __construct(
-        private readonly string $id,
         private readonly string $name,
         private readonly int $maxPlayer,
         private array $players,
@@ -19,11 +18,6 @@ class Room
     ) {
         // DBからの復元に対応するために設定できるようにする。
         $this->magicLinkToken = $magicLinkToken ?? $this->generateUniqueToken();
-    }
-
-    public function getId(): string
-    {
-        return $this->id;
     }
 
     public function getMagicLinkToken(): string
@@ -92,7 +86,6 @@ class Room
     public function toArray(): array
     {
         return [
-            'roomId' => $this->id,
             'name' => $this->name,
             'maxPlayer' => $this->maxPlayer,
             'magicLinkToken' => $this->magicLinkToken,
@@ -105,7 +98,6 @@ class Room
     public static function fromArray(array $attrs): Room
     {
         return new self(
-            $attrs['roomId'],
             $attrs['name'],
             $attrs['maxPlayer'],
             $attrs['players'],

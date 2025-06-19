@@ -5,8 +5,8 @@ use App\Factories\RoomAggregateFactory;
 use App\Repositories\DB\RoomRepository;
 
 beforeEach(function () {
-    $this->roomId = 'room123';
-    $this->roomAggregate = RoomAggregateFactory::create($this->roomId,
+    $this->roomId = '1';
+    $this->roomAggregate = RoomAggregateFactory::create(
         'test room',
         3,
         'owner');
@@ -24,7 +24,6 @@ it('can save the room data in DB', function () {
     $this->assertDatabaseCount('rooms', 1);
     $this->assertDatabaseCount('room_states', 1);
     $this->assertDatabaseHas('rooms', [
-        'room_id' => $this->roomId,
         'name' => $room->getName(),
         'max_player' => $room->getMaxPlayer(),
         'magic_link_token' => $room->getMagicLinkToken(),
@@ -34,7 +33,6 @@ it('can save the room data in DB', function () {
     ]);
 
     $this->assertDatabaseHas('room_states', [
-        'room_id' => $this->roomId,
         'turn_order' => json_encode($roomState->getTurnOrder()),
         'status' => $roomState->getStatus(),
         'flag_limit' => $roomState->getFlagLimit(),
@@ -92,7 +90,6 @@ it('can update room data in DB', function () {
     $room = $this->roomAggregate->getRoom();
     $roomState = $this->roomAggregate->getRoomState();
     $this->assertDatabaseHas('rooms', [
-        'room_id' => $this->roomId,
         'name' => $room->getName(),
         'max_player' => $room->getMaxPlayer(),
         'magic_link_token' => $room->getMagicLinkToken(),
@@ -101,7 +98,6 @@ it('can update room data in DB', function () {
         'players' => json_encode($this->roomAggregate->getPlayers()),
     ]);
     $this->assertDatabaseHas('room_states', [
-        'room_id' => $this->roomId,
         'turn_order' => json_encode($roomState->getTurnOrder()),
         'status' => $roomState->getStatus(),
         'flag_limit' => $roomState->getFlagLimit(),

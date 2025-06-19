@@ -6,7 +6,6 @@ use App\Exceptions\RoomException;
 use App\Factories\RoomAggregateFactory;
 
 beforeEach(function () {
-    $this->roomId = Str::uuid()->tostring();
     $this->roomName = 'test room';
     $this->maxPlayer = 3;
     $this->players = [];
@@ -14,7 +13,7 @@ beforeEach(function () {
     $this->ownerId = Str::uuid()->tostring();
     $this->flagLimit = 5;
 
-    $this->roomAggregate = RoomAggregateFactory::create($this->roomId, $this->roomName, $this->maxPlayer, $this->isPlivate, $this->ownerId, $this->players, $this->flagLimit);
+    $this->roomAggregate = RoomAggregateFactory::create($this->roomName, $this->maxPlayer, $this->isPlivate, $this->ownerId, $this->players, $this->flagLimit);
 });
 
 it('can not join a room when over max player', function () {

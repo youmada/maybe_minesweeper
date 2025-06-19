@@ -7,7 +7,6 @@ use App\Domain\Minesweeper\TileActionMode;
 class RoomState
 {
     public function __construct(
-        private readonly string $roomId,
         private array $turnOrder,
         private int $currentOrderIndex,
         private RoomStatus $status,
@@ -19,7 +18,6 @@ class RoomState
     public static function fromArray(array $attrs): self
     {
         return new self(
-            $attrs['roomId'],
             $attrs['turnOrder'],
             $attrs['currentOrderIndex'] ?? 0,
             RoomStatus::from($attrs['status']),
@@ -27,11 +25,6 @@ class RoomState
             $attrs['turnActionState']['tileOpened'] ?? false,
             $attrs['flagLimit'],
         );
-    }
-
-    public function getRoomId(): string
-    {
-        return $this->roomId;
     }
 
     public function getTurnOrder(): array
@@ -122,7 +115,6 @@ class RoomState
     public function toArray(): array
     {
         return [
-            'roomId' => $this->getRoomId(),
             'turnOrder' => $this->getTurnOrder(),
             'currentOrderIndex' => $this->currentOrderIndex,
             'status' => $this->getStatus(),

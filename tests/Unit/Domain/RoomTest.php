@@ -2,12 +2,8 @@
 
 use App\Domain\Room\Room;
 
-beforeEach(function () {
-    $this->roomId = Str::uuid()->tostring();
-});
-
 it('can join player when not max player', function () {
-    $room = new Room($this->roomId, 'test room', 3, [], false, 'owner');
+    $room = new Room('test room', 3, [], false, 'owner');
 
     $user = Str::uuid()->tostring();
 
@@ -15,7 +11,7 @@ it('can join player when not max player', function () {
 });
 
 it('can not join player when max player', function () {
-    $room = new Room($this->roomId, 'test room', 1, [], false, 'owner');
+    $room = new Room('test room', 1, [], false, 'owner');
     $user1 = Str::uuid()->tostring();
     $user2 = Str::uuid()->tostring();
     // 1人目のユーザ
@@ -24,7 +20,7 @@ it('can not join player when max player', function () {
 });
 
 it('can leave player', function () {
-    $room = new Room($this->roomId, 'test room', 2, [], false, 'owner');
+    $room = new Room('test room', 2, [], false, 'owner');
     $user1 = Str::uuid()->tostring();
     $user2 = Str::uuid()->tostring();
 
@@ -36,7 +32,7 @@ it('can leave player', function () {
 });
 
 it('can not leave player when not joined', function () {
-    $room = new Room($this->roomId, 'test room', 2, [], false, 'owner');
+    $room = new Room('test room', 2, [], false, 'owner');
     $user1 = Str::uuid()->tostring();
     $user2 = Str::uuid()->tostring();
 

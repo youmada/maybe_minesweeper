@@ -18,15 +18,17 @@ class RoomRepository implements RoomRepositoryInterface
      */
     public function save(RoomAggregate $roomAggregate, string $roomId): void
     {
-        if (Room::where('room_id', $roomId)->exists()) {
+        // すでに登録されている場合はスキップ
+        if (Room::where('id', $roomId)->exists()) {
             return;
         }
+
         $toArrayRoom = $roomAggregate->getRoom()->toArray();
         $toArrayRoomState = $roomAggregate->getRoomState()->toArray();
 
         $mappedRoom = $this->getMappedRoom($toArrayRoom);
 
-        $mappedRoomState = $this->getMappedRoomState($toArrayRoomState);
+        $mappedRoomState = $this->getMappedRoomState($toArrayRoomState, $roomId);
         try {
             Room::create($mappedRoom);
             RoomState::create($mappedRoomState);
@@ -43,7 +45,7 @@ class RoomRepository implements RoomRepositoryInterface
     {
         try {
             $this->checkRoomAndStateExists($roomId);
-            $room = Room::where('room_id', $roomId)->first();
+            $room = Room::where('id', $roomId)->first();
             $roomState = RoomState::where('room_id', $roomId)->first();
 
             $roomAggregate = new RoomAggregate(
@@ -69,8 +71,8 @@ class RoomRepository implements RoomRepositoryInterface
             $roomData = $roomAggregate->getRoom()->toArray();
             $roomStateData = $roomAggregate->getRoomState()->toArray();
 
-            Room::where('room_id', $roomId)->update($this->getMappedRoom($roomData));
-            RoomState::where('room_id', $roomId)->update($this->getMappedRoomState($roomStateData));
+            Room::where('id', $roomId)->update($this->getMappedRoom($roomData));
+            RoomState::where('room_id', $roomId)->update($this->getMappedRoomState($roomStateData, $roomId));
         } catch (RoomException $e) {
             Log::error("DB update method error for key {$roomId}: ".$e->getMessage());
             throw $e;
@@ -85,7 +87,7 @@ class RoomRepository implements RoomRepositoryInterface
         try {
             $this->checkRoomAndStateExists($roomId);
 
-            Room::where('room_id', $roomId)->delete();
+            Room::where('id', $roomId)->delete();
             RoomState::where('room_id', $roomId)->delete();
         } catch (RoomException $e) {
             Log::error("DB delete method error for key {$roomId}: ".$e->getMessage());
@@ -97,7 +99,6 @@ class RoomRepository implements RoomRepositoryInterface
     private function getMappedRoom(array $toArrayRoom): array
     {
         return [
-            'room_id' => $toArrayRoom['roomId'],
             'name' => $toArrayRoom['name'],
             'max_player' => $toArrayRoom['maxPlayer'],
             'magic_link_token' => $toArrayRoom['magicLinkToken'],
@@ -107,19 +108,19 @@ class RoomRepository implements RoomRepositoryInterface
         ];
     }
 
-    private function getMappedRoomState(array $toArrayRoomState): array
+    private function getMappedRoomState(array $toArrayRoomState, string $roomId): array
     {
         return [
-            'room_id' => $toArrayRoomState['roomId'],
             'turn_order' => $toArrayRoomState['turnOrder'],
             'status' => $toArrayRoomState['status'],
             'flag_limit' => $toArrayRoomState['flagLimit'],
+            'room_id' => $roomId,
         ];
     }
 
     private function checkRoomAndStateExists(string $roomId): void
     {
-        if (! Room::where('room_id', $roomId)->exists()) {
+        if (! Room::where('id', $roomId)->exists()) {
             throw new RoomException('Room not found');
         }
 
