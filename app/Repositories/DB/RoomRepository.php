@@ -10,6 +10,7 @@ use App\Models\Room;
 use App\Models\RoomState;
 use App\Repositories\Interfaces\RoomRepositoryInterface;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 class RoomRepository implements RoomRepositoryInterface
 {
@@ -29,8 +30,11 @@ class RoomRepository implements RoomRepositoryInterface
         $mappedRoom = $this->getMappedRoom($toArrayRoom);
 
         $mappedRoomState = $this->getMappedRoomState($toArrayRoomState, $roomId);
+
+        $magicLinkToken = $this->generateUniqueToken();
+
         try {
-            Room::create($mappedRoom);
+            Room::create($mappedRoom + ['magic_link_token' => $magicLinkToken]);
             RoomState::create($mappedRoomState);
         } catch (RoomException $e) {
             Log::error("DB save method error for key {$roomId}: ".$e->getMessage());
@@ -101,7 +105,6 @@ class RoomRepository implements RoomRepositoryInterface
         return [
             'name' => $toArrayRoom['name'],
             'max_player' => $toArrayRoom['maxPlayer'],
-            'magic_link_token' => $toArrayRoom['magicLinkToken'],
             'is_private' => $toArrayRoom['isPrivate'],
             'owner_id' => $toArrayRoom['ownerId'],
             'players' => $toArrayRoom['players'],
@@ -127,5 +130,15 @@ class RoomRepository implements RoomRepositoryInterface
         if (! RoomState::where('room_id', $roomId)->exists()) {
             throw new RoomException('RoomState not found');
         }
+    }
+
+    // トークンの一意性を保証するヘルパー
+    private function generateUniqueToken(): string
+    {
+        do {
+            $token = Str::random(32);
+        } while (Room::where('magic_link_token', $token)->exists());
+
+        return $token;
     }
 }

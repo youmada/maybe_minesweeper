@@ -26,7 +26,6 @@ it('can save the room data in DB', function () {
     $this->assertDatabaseHas('rooms', [
         'name' => $room->getName(),
         'max_player' => $room->getMaxPlayer(),
-        'magic_link_token' => $room->getMagicLinkToken(),
         'is_private' => true,
         'owner_id' => 'owner',
         'players' => json_encode($room->getPlayers()),
@@ -92,7 +91,6 @@ it('can update room data in DB', function () {
     $this->assertDatabaseHas('rooms', [
         'name' => $room->getName(),
         'max_player' => $room->getMaxPlayer(),
-        'magic_link_token' => $room->getMagicLinkToken(),
         'is_private' => true,
         'owner_id' => 'owner',
         'players' => json_encode($this->roomAggregate->getPlayers()),
@@ -128,4 +126,4 @@ it('can not delete room data in DB.  because of room id is not found', function 
     $invalid_id = 'invalid-room-id';
     // 実行
     $this->roomRepository->delete($invalid_id);
-})->throws(\App\Exceptions\RoomException::class);
+})->throws(RoomException::class);

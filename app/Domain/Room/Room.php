@@ -2,28 +2,15 @@
 
 namespace App\Domain\Room;
 
-use Illuminate\Support\Str;
-
 class Room
 {
-    private readonly string $magicLinkToken;
-
     public function __construct(
         private readonly string $name,
         private readonly int $maxPlayer,
         private array $players,
         private readonly bool $isPrivate,
         private readonly string $ownerId,
-        ?string $magicLinkToken = null,
-    ) {
-        // DBからの復元に対応するために設定できるようにする。
-        $this->magicLinkToken = $magicLinkToken ?? $this->generateUniqueToken();
-    }
-
-    public function getMagicLinkToken(): string
-    {
-        return $this->magicLinkToken;
-    }
+    ) {}
 
     public function getMaxPlayer(): int
     {
@@ -88,7 +75,6 @@ class Room
         return [
             'name' => $this->name,
             'maxPlayer' => $this->maxPlayer,
-            'magicLinkToken' => $this->magicLinkToken,
             'players' => $this->players,
             'isPrivate' => $this->isPrivate,
             'ownerId' => $this->ownerId,
@@ -103,17 +89,6 @@ class Room
             $attrs['players'],
             $attrs['isPrivate'],
             $attrs['ownerId'],
-            $attrs['magicLinkToken'],
         );
-    }
-
-    // トークンの一意性を保証するヘルパー
-    private function generateUniqueToken(): string
-    {
-        do {
-            $token = Str::random(32);
-        } while (\App\Models\Room::where('magic_link_token', $token)->exists());
-
-        return $token;
     }
 }
