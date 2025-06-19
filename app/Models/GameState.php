@@ -12,7 +12,6 @@ class GameState extends Model
 
     protected $fillable = [
         'room_id',
-        'game_id',
         'width',
         'height',
         'num_of_mines',
@@ -25,16 +24,6 @@ class GameState extends Model
     public function rooms(): BelongsTo
     {
         return $this->belongsTo(Room::class);
-    }
-
-    public function getGameIdAttribute()
-    {
-        return $this->attributes['game_id'];
-    }
-
-    public function setGameIdAttribute($value): void
-    {
-        $this->attributes['game_id'] = $value;
     }
 
     public function getNumOfMinesAttribute()
@@ -97,9 +86,7 @@ class GameState extends Model
 
     public function toArray(): array
     {
-        $array = parent::toArray();
-
         // デフォルトの返却値をさらにカスタマイズ可能
-        return $array;
+        return parent::toArray();
     }
 }

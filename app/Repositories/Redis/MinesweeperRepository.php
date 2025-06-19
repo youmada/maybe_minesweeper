@@ -16,9 +16,9 @@ class MinesweeperRepository implements GameRepositoryInterface
     /**
      * @throws Exception
      */
-    public function saveState(GameState $state, string $gameId, string $roomId): void
+    public function saveState(GameState $state, string $roomId): void
     {
-        $key = $this->prefix.':'.$gameId;
+        $key = $this->prefix.':'.$roomId;
         $value = json_encode($state->toArray());
         try {
             Redis::set($key, $value);
@@ -28,9 +28,9 @@ class MinesweeperRepository implements GameRepositoryInterface
         }
     }
 
-    public function getState(string $gameId): ?GameState
+    public function getState(string $roomId): ?GameState
     {
-        $key = $this->prefix.':'.$gameId;
+        $key = $this->prefix.':'.$roomId;
 
         try {
             $value = Redis::get($key);
@@ -59,9 +59,9 @@ class MinesweeperRepository implements GameRepositoryInterface
     /**
      * @throws Exception
      */
-    public function updateState(GameState $state, string $gameId): void
+    public function updateState(GameState $state, string $roomId): void
     {
-        $key = $this->prefix.':'.$gameId;
+        $key = $this->prefix.':'.$roomId;
         $value = json_encode($state->toArray());
         try {
             Redis::set($key, $value);
@@ -75,9 +75,9 @@ class MinesweeperRepository implements GameRepositoryInterface
     /**
      * @throws Exception
      */
-    public function deleteState(string $gameId): void
+    public function deleteState(string $roomId): void
     {
-        $key = $this->prefix.':'.$gameId;
+        $key = $this->prefix.':'.$roomId;
         try {
             Redis::del($key);
         } catch (Exception $e) {

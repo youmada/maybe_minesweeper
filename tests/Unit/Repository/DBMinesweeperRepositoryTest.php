@@ -17,7 +17,6 @@ beforeEach(function () {
         'height' => 10,
         'numOfMines' => 20,
         'tileStates' => json_encode([]), // Board の空配列をシリアライズ
-        'gameId' => $this->gameID,
         'isGameStarted' => false,
         'isGameClear' => false,
         'isGameOver' => false,
@@ -37,8 +36,8 @@ beforeEach(function () {
 });
 
 it('can save the state in DB', function () {
-    $this->repository->saveState($this->stateStub, $this->gameID, $this->roomId);
-    $savedGameState = DBGameState::where('game_id', $this->gameID)->first();
+    $this->repository->saveState($this->stateStub, $this->roomId);
+    $savedGameState = DBGameState::where('room_id', $this->roomId)->first();
     foreach ($this->expectedData as $key => $value) {
         expect($savedGameState[$key])->toBe($value);
     }
@@ -46,11 +45,11 @@ it('can save the state in DB', function () {
 
 it('can be skipped if the state already exists in DB', function () {
     // まずゲームステートを保存
-    $this->repository->saveState($this->stateStub, $this->gameID, $this->roomId);
+    $this->repository->saveState($this->stateStub, $this->roomId);
     $this->assertDatabaseCount('game_states', 1);
 
     // 2回目に同じIDで保存する場合、処理がスキップされる。
-    $this->repository->saveState($this->stateStub, $this->gameID, $this->roomId);
+    $this->repository->saveState($this->stateStub, $this->roomId);
     // カウントが変わらないので、スキップされたことと同じ。
     $this->assertDatabaseCount('game_states', 1);
 });
@@ -60,20 +59,20 @@ it("can't save the state in DB", function () {
     $mock
         ->shouldReceive('saveState')
         ->once()
-        ->with($this->stateStub, $this->gameID, $this->roomId)
+        ->with($this->stateStub, $this->roomId)
         ->andThrow(RepositoryException::class);
 
     $this->repository = $mock;
-    $this->repository->saveState($this->stateStub, $this->gameID, $this->roomId);
+    $this->repository->saveState($this->stateStub, $this->roomId);
 })->throws(RepositoryException::class);
 
 it('can get the state class from DB',
     function () {
         $board = new Board(10, 10);
         $gameState = new GameState($board, 10, 10, 20);
-        $this->repository->saveState($gameState, $this->gameID, $this->roomId);
+        $this->repository->saveState($gameState, $this->roomId);
 
-        expect($gameState)->toEqual($this->repository->getState($this->gameID));
+        expect($gameState)->toEqual($this->repository->getState($this->roomId));
     });
 
 it("can't get the state class from DB", function () {
@@ -84,12 +83,12 @@ it("can't get the state class from DB", function () {
 it('can update the state in DB', function () {
     $board = new Board(10, 10);
     $gameState = new GameState($board, 10, 10, 20);
-    $this->repository->saveState($gameState, $this->gameID, $this->roomId);
+    $this->repository->saveState($gameState, $this->roomId);
     // ゲーム開始状態に遷移させる。
     $gameState->startGame();
 
-    $this->repository->updateState($gameState, $this->gameID);
-    $savedGameState = DBGameState::where('game_id', $this->gameID)->first();
+    $this->repository->updateState($gameState, $this->roomId);
+    $savedGameState = DBGameState::where('room_id', $this->roomId)->first();
     expect($savedGameState->is_game_started)->toBeTrue();
 });
 
@@ -100,9 +99,9 @@ it("can't update the state in DB. because of game id is not found", function () 
 })->throws(RepositoryException::class);
 
 it('can delete the state in DB', function () {
-    $this->repository->saveState($this->stateStub, $this->gameID, $this->roomId);
-    $this->repository->deleteState($this->gameID);
-    $savedGameState = DBGameState::where('game_id', $this->gameID)->first();
+    $this->repository->saveState($this->stateStub, $this->roomId);
+    $this->repository->deleteState($this->roomId);
+    $savedGameState = DBGameState::where('room_id', $this->roomId)->first();
     expect($savedGameState)->toBeNull();
 });
 

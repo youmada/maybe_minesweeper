@@ -14,9 +14,9 @@ class MinesweeperRepository implements GameRepositoryInterface
     /**
      * @throws RepositoryException
      */
-    public function saveState(State $state, string $gameId, $roomId): void
+    public function saveState(State $state, $roomId): void
     {
-        if (GameState::where('game_id', $gameId)->exists()) {
+        if (GameState::where('room_id', $roomId)->whereNot('is_game_over', true)->exists()) {
             return;
         }
         try {
@@ -33,17 +33,17 @@ class MinesweeperRepository implements GameRepositoryInterface
             ];
 
             GameState::create(
-                $mappedState + ['game_id' => $gameId, 'room_id' => $roomId]
+                $mappedState + ['room_id' => $roomId]
             );
         } catch (QueryException $exception) {
             throw RepositoryException::fromQueryException($exception, 'saveState');
         }
     }
 
-    public function getState(string $gameId): ?State
+    public function getState(string $roomId): ?State
     {
-        if (GameState::where('game_id', $gameId)->exists()) {
-            $stateModel = GameState::where('game_id', $gameId)->first();
+        if (GameState::where('room_id', $roomId)->exists()) {
+            $stateModel = GameState::where('room_id', $roomId)->first();
 
             return State::fromPrimitive(
                 $stateModel->tile_states,
@@ -62,10 +62,10 @@ class MinesweeperRepository implements GameRepositoryInterface
     /**
      * @throws RepositoryException
      */
-    public function updateState(State $state, string $gameId): void
+    public function updateState(State $state, string $roomId): void
     {
         try {
-            $stateModel = GameState::where('game_id', $gameId)->firstOrFail();
+            $stateModel = GameState::where('room_id', $roomId)->firstOrFail();
             $toArrayState = $state->toArray();
             $mappedState = [
                 'width' => $toArrayState['width'],
@@ -77,10 +77,10 @@ class MinesweeperRepository implements GameRepositoryInterface
                 'is_game_over' => $toArrayState['isGameOver'],
             ];
             $stateModel->update(
-                $mappedState + ['game_id' => $gameId]
+                $mappedState + ['room_id' => $roomId]
             );
         } catch (ModelNotFoundException $exception) {
-            throw new RepositoryException("GameState not found for game_id={$gameId}", 0, $exception);
+            throw new RepositoryException("GameState not found for room_id={$roomId}", 0, $exception);
         } catch (QueryException $exception) {
             throw RepositoryException::fromQueryException($exception, 'updateState');
         }
@@ -90,13 +90,13 @@ class MinesweeperRepository implements GameRepositoryInterface
     /**
      * @throws RepositoryException
      */
-    public function deleteState(string $gameId): void
+    public function deleteState(string $roomId): void
     {
         try {
-            $target = GameState::where('game_id', $gameId)->firstOrFail();
+            $target = GameState::where('room_id', $roomId)->firstOrFail();
             $target->delete();
         } catch (ModelNotFoundException $exception) {
-            throw new RepositoryException("GameState not found for game_id={$gameId}", 0, $exception);
+            throw new RepositoryException("GameState not found for room_id={$roomId}", 0, $exception);
         } catch (QueryException $exception) {
             throw RepositoryException::fromQueryException($exception, 'deleteState');
         }

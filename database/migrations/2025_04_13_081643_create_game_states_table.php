@@ -21,7 +21,6 @@ return new class extends Migration
             $table->integer('height');
             $table->integer('num_of_mines')->comment('地雷数。');
             $table->json('tile_states')->comment('タイルの配置情報や地雷の有無など');
-            $table->uuid('game_id')->unique()->comment('サービス層で設定するuuidがここに入る。redisとDBで共通で使う。');
             $table->boolean('is_game_started');
             $table->boolean('is_game_clear');
             $table->boolean('is_game_over');

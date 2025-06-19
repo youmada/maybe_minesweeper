@@ -21,7 +21,7 @@ beforeEach(function () {
     $this->roomId = \App\Utils\UUIDFactory::generate();
 
     $this->gameService = new GameService;
-    $this->service = new MinesweeperService($this->repo, $this->roomId);
+    $this->service = new MinesweeperService($this->repo);
 });
 
 it('should return GameState when repository has it', function () {
