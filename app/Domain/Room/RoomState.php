@@ -16,6 +16,19 @@ class RoomState
         private readonly int $flagLimit,
     ) {}
 
+    public static function fromArray(array $attrs): self
+    {
+        return new self(
+            $attrs['roomId'],
+            $attrs['turnOrder'],
+            $attrs['currentOrderIndex'] ?? 0,
+            RoomStatus::from($attrs['status']),
+            $attrs['turnActionState']['flagCount'] ?? 0,
+            $attrs['turnActionState']['tileOpened'] ?? false,
+            $attrs['flagLimit'],
+        );
+    }
+
     public function getRoomId(): string
     {
         return $this->roomId;
@@ -29,6 +42,11 @@ class RoomState
     public function getStatus(): string
     {
         return $this->status->value;
+    }
+
+    public function getFlagLimit(): int
+    {
+        return $this->flagLimit;
     }
 
     public function initializeTurnOrder(array $turnOrder): void
@@ -52,10 +70,9 @@ class RoomState
         $this->turnOrder = array_values($this->turnOrder);
     }
 
-    public function getCurrentOrder(): string
+    public function getCurrentOrder(): ?string
     {
-
-        return $this->turnOrder[$this->currentOrderIndex];
+        return $this->turnOrder[$this->currentOrderIndex] ?? null;
     }
 
     public function nextTurn(): void
@@ -100,5 +117,17 @@ class RoomState
     public function canOperate(string $user): bool
     {
         return $this->getCurrentOrder() === $user;
+    }
+
+    public function toArray(): array
+    {
+        return [
+            'roomId' => $this->getRoomId(),
+            'turnOrder' => $this->getTurnOrder(),
+            'currentOrderIndex' => $this->currentOrderIndex,
+            'status' => $this->getStatus(),
+            'turnActionState' => $this->getActionState(),
+            'flagLimit' => $this->flagLimit,
+        ];
     }
 }

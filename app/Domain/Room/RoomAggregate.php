@@ -4,51 +4,13 @@ namespace App\Domain\Room;
 
 use App\Domain\Minesweeper\TileActionMode;
 use App\Exceptions\RoomException;
-use App\Factories\RoomStateFactory;
 
 class RoomAggregate
 {
-    public readonly string $roomId;
-
-    public readonly string $roomName;
-
-    public readonly int $maxPlayers;
-
-    public readonly array $players;
-
-    public readonly bool $isPrivate;
-
-    public readonly string $ownerId;
-
-    public readonly int $flagLimit;
-
-    private Room $room;
-
-    private RoomState $roomState;
-
     public function __construct(
-        string $roomId,
-        string $roomName,
-        int $maxPlayers,
-        array $players,
-        bool $isPrivate,
-        string $ownerId,
-        int $flagLimit
-    ) {
-        $this->roomId = $roomId;
-        $this->roomName = $roomName;
-        $this->maxPlayers = $maxPlayers;
-        $this->players = $players;
-        $this->isPrivate = $isPrivate;
-        $this->ownerId = $ownerId;
-        $this->flagLimit = $flagLimit;
-    }
-
-    public function createRoom(): void
-    {
-        $this->room = new Room($this->roomId, $this->roomName, $this->maxPlayers, $this->players, $this->isPrivate, $this->ownerId);
-        $this->roomState = RoomStateFactory::createNew($this->roomId, [], $this->flagLimit);
-    }
+        private Room $room,
+        private RoomState $roomState,
+    ) {}
 
     public function startRoom(): void
     {
@@ -59,6 +21,16 @@ class RoomAggregate
     public function endRoom(): void
     {
         $this->roomState->changeStatus(RoomStatus::FINISHED);
+    }
+
+    public function getRoom(): Room
+    {
+        return $this->room;
+    }
+
+    public function getRoomState(): RoomState
+    {
+        return $this->roomState;
     }
 
     public function join(string $userId): void

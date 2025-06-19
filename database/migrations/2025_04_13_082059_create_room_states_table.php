@@ -1,6 +1,5 @@
 <?php
 
-use App\Models\GameState;
 use App\Models\Room;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
@@ -18,10 +17,8 @@ return new class extends Migration
             $table->foreignIdFor(Room::class)
                 ->constrained()
                 ->onDelete('cascade');
-            $table->foreignIdFor(GameState::class)
-                ->constrained()
-                ->onDelete('cascade');
-            $table->json('turn_order')->comment('ターン順番');
+            $table->json('turn_order')->nullable()->comment('ターン順番');
+            $table->integer('flag_limit')->default(0)->comment('フラグ操作上限');
             $table->enum('status', ['waiting', 'playing', 'finished'])
                 ->default('waiting')
                 ->index();

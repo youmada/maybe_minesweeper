@@ -16,7 +16,7 @@ class MinesweeperRepository implements GameRepositoryInterface
     /**
      * @throws Exception
      */
-    public function saveState(GameState $state, string $gameId): void
+    public function saveState(GameState $state, string $gameId, string $roomId): void
     {
         $key = $this->prefix.':'.$gameId;
         $value = json_encode($state->toArray());

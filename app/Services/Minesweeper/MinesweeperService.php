@@ -19,7 +19,7 @@ class MinesweeperService
     // 4. クライアントサイドへのデータ加工と出力 ✅
     // 5. ゲームクリア・オーバー時の処理 ✅
 
-    public function __construct(GameRepositoryInterface $repository)
+    public function __construct(GameRepositoryInterface $repository, private readonly string $roomId)
     {
         $this->repository = $repository;
     }
@@ -45,7 +45,7 @@ class MinesweeperService
         $gameState = new GameState($board, $width, $height, $numOfMines);
 
         // リポジトリ層に保存
-        $this->repository->saveState($gameState, $gameId);
+        $this->repository->saveState($gameState, $gameId, $this->roomId);
 
         return $gameState;
     }

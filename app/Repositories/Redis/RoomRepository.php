@@ -2,23 +2,23 @@
 
 namespace App\Repositories\Redis;
 
-use App\Repositories\Interfaces\RoomRepositoryInterface;
+use App\Domain\Room\RoomState;
+use App\Repositories\Interfaces\RoomStateRepositoryInterface;
 use Exception;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Redis;
-use stdClass;
 
-class RoomRepository implements RoomRepositoryInterface
+class RoomRepository implements RoomStateRepositoryInterface
 {
     private string $prefix = 'minesweeper:room';
 
     /**
      * @throws Exception
      */
-    public function saveState(string $userId, string $roomId): void
+    public function save(RoomState $roomState, string $roomId): void
     {
         $key = $this->prefix.':'.$roomId;
-        $value = $userId;
+        $value = json_encode($roomState->toArray());
         try {
             Redis::set($key, $value);
         } catch (Exception $e) {
@@ -27,29 +27,29 @@ class RoomRepository implements RoomRepositoryInterface
         }
     }
 
-    public function getState(string $roomId): ?stdClass
+    public function get(string $roomId): ?RoomState
     {
         $key = $this->prefix.':'.$roomId;
 
         try {
             $value = Redis::get($key);
-
+            $roomState = RoomState::fromArray($value);
         } catch (Exception $e) {
             Log::error("Redis getState error for key {$key}: ".$e->getMessage());
 
             return null;
         }
 
-        return $value ? json_decode($value) : null;
+        return $roomState;
     }
 
     /**
      * @throws Exception
      */
-    public function updateState(string $userId, string $roomId): void
+    public function update(RoomState $roomState, string $roomId): void
     {
         $key = $this->prefix.':'.$roomId;
-        $value = $userId;
+        $value = json_encode($roomState->toArray());
         try {
             Redis::set($key, $value);
         } catch (Exception $e) {
@@ -62,7 +62,7 @@ class RoomRepository implements RoomRepositoryInterface
     /**
      * @throws Exception
      */
-    public function deleteState(string $roomId): void
+    public function delete(string $roomId): void
     {
         $key = $this->prefix.':'.$roomId;
         try {

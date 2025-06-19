@@ -14,12 +14,12 @@ class GameCompositeRepository implements GameRepositoryInterface
         private DBRepo $dbRepo
     ) {}
 
-    public function saveState(GameState $state, string $gameId): void
+    public function saveState(GameState $state, string $gameId, string $roomId): void
     {
         // 初回は DB に設計情報だけ書き
-        $this->dbRepo->saveState($state, $gameId);
+        $this->dbRepo->saveState($state, $gameId, $roomId);
         // その後、必ず Redis にも書く
-        $this->redisRepo->saveState($state, $gameId);
+        $this->redisRepo->saveState($state, $gameId, $roomId);
     }
 
     public function getState(string $gameId): ?GameState

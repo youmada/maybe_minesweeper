@@ -14,9 +14,11 @@ return new class extends Migration
         Schema::create('rooms', function (Blueprint $table) {
             $table->id();
             $table->string('name');
+            $table->string('room_id')->unique()->index();
             $table->string('owner_id');
-            $table->string('magic_link_token')->unique();
-            $table->integer('max_users')->comment('ルーム最大参加人数');
+            $table->string('magic_link_token')->unique()->index();
+            $table->integer('max_player')->comment('ルーム最大参加人数');
+            $table->json('players');
             $table->boolean('is_private');
             $table->timestamp('last_activity_at')->nullable()->index();
             $table->timestamps();

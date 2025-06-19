@@ -1,0 +1,135 @@
+<?php
+
+use App\Exceptions\RoomException;
+use App\Factories\RoomAggregateFactory;
+use App\Repositories\DB\RoomRepository;
+
+beforeEach(function () {
+    $this->roomId = 'room123';
+    $this->roomAggregate = RoomAggregateFactory::create($this->roomId,
+        'test room',
+        3,
+        'owner');
+
+    $this->roomRepository = new RoomRepository;
+});
+
+it('can save the room data in DB', function () {
+    // 実行
+    $room = $this->roomAggregate->getRoom();
+    $roomState = $this->roomAggregate->getRoomState();
+    $this->assertDatabaseMissing('rooms');
+    $this->roomRepository->save($this->roomAggregate, $this->roomId);
+    // アサート
+    $this->assertDatabaseCount('rooms', 1);
+    $this->assertDatabaseCount('room_states', 1);
+    $this->assertDatabaseHas('rooms', [
+        'room_id' => $this->roomId,
+        'name' => $room->getName(),
+        'max_player' => $room->getMaxPlayer(),
+        'magic_link_token' => $room->getMagicLinkToken(),
+        'is_private' => true,
+        'owner_id' => 'owner',
+        'players' => json_encode($room->getPlayers()),
+    ]);
+
+    $this->assertDatabaseHas('room_states', [
+        'room_id' => $this->roomId,
+        'turn_order' => json_encode($roomState->getTurnOrder()),
+        'status' => $roomState->getStatus(),
+        'flag_limit' => $roomState->getFlagLimit(),
+    ]);
+});
+
+it('can be skipped if the room data already exists in DB', function () {
+    // 準備
+    $this->assertDatabaseMissing('rooms');
+    // 実行 & アサート
+    $this->roomRepository->save($this->roomAggregate, $this->roomId);
+    $this->assertDatabaseCount('rooms', 1);
+    $this->assertDatabaseCount('room_states', 1);
+
+    $this->roomRepository->save($this->roomAggregate, $this->roomId);
+    $this->assertDatabaseCount('rooms', 1);
+    $this->assertDatabaseCount('room_states', 1);
+});
+
+it('can not save the room data in DB', function () {
+    $mock = Mockery::mock(RoomRepository::class);
+    $mock
+        ->shouldReceive('save')
+        ->once()
+        ->with($this->roomAggregate, $this->roomId)
+        ->andThrow(RoomException::class);
+
+    $this->repository = $mock;
+    $this->repository->save($this->roomAggregate, $this->roomId);
+})->throws(RoomException::class);
+
+it('can get the room data from DB', function () {
+
+    // 準備
+    $this->roomRepository->save($this->roomAggregate, $this->roomId);
+
+    // 実行 & アサート
+    $data = $this->roomRepository->get($this->roomId);
+    expect($data)->toEqual($this->roomAggregate);
+});
+
+it('can not get the room data from DB.  because of room id is not found', function () {
+    $data = $this->roomRepository->get('invalid-room-id');
+    expect($data)->toBeNull();
+})->throws(RoomException::class);
+
+it('can update room data in DB', function () {
+    // 準備
+    $this->roomRepository->save($this->roomAggregate, $this->roomId);
+    $this->roomAggregate->startRoom();
+    $this->roomAggregate->join('user1');
+    // 実行
+    $this->roomRepository->update($this->roomAggregate, $this->roomId);
+    // アサート
+    $room = $this->roomAggregate->getRoom();
+    $roomState = $this->roomAggregate->getRoomState();
+    $this->assertDatabaseHas('rooms', [
+        'room_id' => $this->roomId,
+        'name' => $room->getName(),
+        'max_player' => $room->getMaxPlayer(),
+        'magic_link_token' => $room->getMagicLinkToken(),
+        'is_private' => true,
+        'owner_id' => 'owner',
+        'players' => json_encode($this->roomAggregate->getPlayers()),
+    ]);
+    $this->assertDatabaseHas('room_states', [
+        'room_id' => $this->roomId,
+        'turn_order' => json_encode($roomState->getTurnOrder()),
+        'status' => $roomState->getStatus(),
+        'flag_limit' => $roomState->getFlagLimit(),
+    ]);
+});
+
+it('can not update room data in DB.  because of room id is not found', function () {
+    // 準備
+    $invalid_id = 'invalid-room-id';
+    // 実行
+    $this->roomRepository->update($this->roomAggregate, $invalid_id);
+})->throws(Exception::class);
+
+it('can delete room data in DB', function () {
+    // 準備
+    $this->roomRepository->save($this->roomAggregate, $this->roomId);
+    $this->assertDatabaseCount('rooms', 1);
+    $this->assertDatabaseCount('room_states', 1);
+    // 実行
+    $this->roomRepository->delete($this->roomId);
+    // アサート
+    $this->assertDatabaseCount('rooms', 0);
+    $this->assertDatabaseCount('room_states', 0);
+});
+
+it('can not delete room data in DB.  because of room id is not found', function () {
+    // 準備
+    $invalid_id = 'invalid-room-id';
+    // 実行
+    $this->roomRepository->delete($invalid_id);
+})->throws(\App\Exceptions\RoomException::class);

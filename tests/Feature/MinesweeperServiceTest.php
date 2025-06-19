@@ -29,9 +29,10 @@ class MinesweeperServiceTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->gameRepository = new GameCompositeRepository(new RedisRepo, new DBRepo);
-        $this->mineSweeperService = new MinesweeperService($this->gameRepository);
+        $this->roomId = UUIDFactory::generate();
         $this->gameId = UUIDFactory::generate();
+        $this->gameRepository = new GameCompositeRepository(new RedisRepo, new DBRepo);
+        $this->mineSweeperService = new MinesweeperService($this->gameRepository, $this->roomId);
     }
 
     #[Test]
@@ -131,7 +132,7 @@ class MinesweeperServiceTest extends TestCase
 
         // クリック位置に手動で地雷をセット
         $gameState->getBoard()->getTile($clickTileX, $clickTileY)->setMine(true);
-        $this->gameRepository->saveState($gameState, $this->gameId);
+        $this->gameRepository->saveState($gameState, $this->gameId, $this->roomId);
 
         $gameState = $this->mineSweeperService->handleClickTile($this->gameId, $clickTileX, $clickTileY, TileActionMode::OPEN);
 

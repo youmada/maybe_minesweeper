@@ -2,10 +2,12 @@
 
 namespace App\Utils;
 
+use Illuminate\Support\Str;
+
 class UUIDFactory
 {
     public static function generate(): string
     {
-        return uuid_create(UUID_TYPE_RANDOM);
+        return Str::uuid()->toString();
     }
 }

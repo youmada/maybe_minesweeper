@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Room;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -13,6 +14,9 @@ return new class extends Migration
     {
         Schema::create('game_states', function (Blueprint $table) {
             $table->id();
+            $table->foreignIdFor(Room::class, 'room_id')
+                ->constrained()
+                ->onDelete('cascade');
             $table->integer('width');
             $table->integer('height');
             $table->integer('num_of_mines')->comment('地雷数。');
