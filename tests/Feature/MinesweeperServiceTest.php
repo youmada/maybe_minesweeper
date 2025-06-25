@@ -5,11 +5,11 @@ namespace Feature;
 use App\Domain\Minesweeper\GameService;
 use App\Domain\Minesweeper\GameState;
 use App\Domain\Minesweeper\TileActionMode;
+use App\Models\Room;
 use App\Repositories\Composites\GameCompositeRepository;
 use App\Repositories\DB\MinesweeperRepository as DBRepo;
 use App\Repositories\Redis\MinesweeperRepository as RedisRepo;
 use App\Services\Minesweeper\MinesweeperService;
-use App\Utils\UUIDFactory;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
@@ -29,7 +29,8 @@ class MinesweeperServiceTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->roomId = UUIDFactory::generate();
+        $room = Room::factory()->create();
+        $this->roomId = $room->id;
         $this->gameRepository = new GameCompositeRepository(new RedisRepo, new DBRepo);
         $this->mineSweeperService = new MinesweeperService($this->gameRepository);
     }

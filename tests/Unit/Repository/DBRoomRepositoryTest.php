@@ -3,6 +3,7 @@
 use App\Exceptions\RoomException;
 use App\Factories\RoomAggregateFactory;
 use App\Repositories\DB\RoomRepository;
+use Illuminate\Support\Carbon;
 
 beforeEach(function () {
     $this->roomId = '1';
@@ -15,6 +16,9 @@ beforeEach(function () {
 });
 
 it('can save the room data in DB', function () {
+
+    $dummyTime = now();
+    Carbon::setTestNow(Carbon::parse($dummyTime));
     // 実行
     $room = $this->roomAggregate->getRoom();
     $roomState = $this->roomAggregate->getRoomState();
@@ -36,6 +40,14 @@ it('can save the room data in DB', function () {
         'status' => $roomState->getStatus(),
         'flag_limit' => $roomState->getFlagLimit(),
     ]);
+
+    $this->assertDatabaseHas('room_users',
+        [
+            'room_id' => $this->roomId,
+            'user_id' => 'owner',
+            'joined_at' => $dummyTime,
+        ]
+    );
 });
 
 it('can be skipped if the room data already exists in DB', function () {
@@ -100,6 +112,19 @@ it('can update room data in DB', function () {
         'status' => $roomState->getStatus(),
         'flag_limit' => $roomState->getFlagLimit(),
     ]);
+
+    $this->assertDatabaseHas('room_users',
+        [
+            'room_id' => $this->roomId,
+            'user_id' => 'owner',
+        ]
+    );
+    $this->assertDatabaseHas('room_users',
+        [
+            'room_id' => $this->roomId,
+            'user_id' => 'user1',
+        ]
+    );
 });
 
 it('can not update room data in DB.  because of room id is not found', function () {

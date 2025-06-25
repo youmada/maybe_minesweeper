@@ -8,7 +8,9 @@ use App\Domain\Room\RoomState as RoomStateDomain;
 use App\Exceptions\RoomException;
 use App\Models\Room;
 use App\Models\RoomState;
+use App\Models\RoomUser;
 use App\Repositories\Interfaces\RoomRepositoryInterface;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
@@ -36,6 +38,11 @@ class RoomRepository implements RoomRepositoryInterface
         try {
             Room::create($mappedRoom + ['magic_link_token' => $magicLinkToken]);
             RoomState::create($mappedRoomState);
+            RoomUser::create([
+                'room_id' => $roomId,
+                'user_id' => $toArrayRoom['ownerId'],
+                'joined_at' => Carbon::now()->toDateTimeString(),
+            ]);
         } catch (RoomException $e) {
             Log::error("DB save method error for key {$roomId}: ".$e->getMessage());
             throw $e;
@@ -69,6 +76,8 @@ class RoomRepository implements RoomRepositoryInterface
      */
     public function update(RoomAggregate $roomAggregate, string $roomId): void
     {
+        $addPlayers = $roomAggregate->getPlayers();
+        $currentRoomPlayers = Room::where('id', $roomId)->first()->players ?? [];
         try {
             $this->checkRoomAndStateExists($roomId);
 
@@ -77,6 +86,16 @@ class RoomRepository implements RoomRepositoryInterface
 
             Room::where('id', $roomId)->update($this->getMappedRoom($roomData));
             RoomState::where('room_id', $roomId)->update($this->getMappedRoomState($roomStateData, $roomId));
+            foreach ($addPlayers as $player) {
+                if (! in_array($player, $currentRoomPlayers, true)) {
+                    RoomUser::create([
+                        'room_id' => $roomId,
+                        'user_id' => $player,
+                        'joined_at' => now(),
+                    ]);
+                }
+            }
+            // room_usersテーブル
         } catch (RoomException $e) {
             Log::error("DB update method error for key {$roomId}: ".$e->getMessage());
             throw $e;
@@ -92,7 +111,6 @@ class RoomRepository implements RoomRepositoryInterface
             $this->checkRoomAndStateExists($roomId);
 
             Room::where('id', $roomId)->delete();
-            RoomState::where('room_id', $roomId)->delete();
         } catch (RoomException $e) {
             Log::error("DB delete method error for key {$roomId}: ".$e->getMessage());
             throw $e;

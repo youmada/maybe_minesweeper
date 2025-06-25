@@ -4,14 +4,16 @@ use App\Domain\Minesweeper\Board;
 use App\Domain\Minesweeper\GameState;
 use App\Exceptions\RepositoryException;
 use App\Models\GameState as DBGameState;
+use App\Models\Room;
 use App\Repositories\DB\MinesweeperRepository;
 use App\Utils\UUIDFactory;
 
 beforeEach(function () {
 
-    $this->gameID = UUIDFactory::generate();
-    $this->roomId = UUIDFactory::generate();
+    $room = Room::factory()->create();
 
+    $this->gameID = UUIDFactory::generate();
+    $this->roomId = $room->id;
     $this->expectedData = [
         'width' => 10,
         'height' => 10,
