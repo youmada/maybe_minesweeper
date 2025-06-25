@@ -16,7 +16,7 @@ class RoomFactory extends Factory
         return [
             'name' => $this->faker->name(),
             'owner_id' => $this->faker->word(),
-            'magic_link_token' => Str::random(10),
+            'magic_link_token' => Str::random(32),
             'max_player' => $this->faker->randomNumber(),
             'players' => $this->faker->words(),
             'is_private' => $this->faker->boolean(),
