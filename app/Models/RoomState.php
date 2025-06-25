@@ -15,7 +15,7 @@ class RoomState extends Model
         'status',
     ];
 
-    public function room(): BelongsTo
+    public function rooms(): BelongsTo
     {
         return $this->belongsTo(Room::class);
     }

@@ -18,10 +18,9 @@ return new class extends Migration
             $table->string('magic_link_token')->unique()->index();
             $table->integer('max_player')->comment('ルーム最大参加人数');
             $table->json('players');
-            $table->boolean('is_private');
+            $table->boolean('is_private')->default(true);
             $table->timestamp('last_activity_at')->nullable()->index();
             $table->timestamps();
-            $table->softDeletes();
         });
     }
 

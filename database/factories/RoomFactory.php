@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 
-class RoomFactory extends Factory
+class MultiRoomFactory extends Factory
 {
     protected $model = Room::class;
 

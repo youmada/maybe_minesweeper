@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
 
 class Room extends Model
@@ -30,6 +31,16 @@ class Room extends Model
         'updated_at' => 'datetime:Y-m-d H:i:s',
         'is_private' => 'boolean',
     ];
+
+    public function roomStates(): HasMany
+    {
+        return $this->hasMany(RoomState::class);
+    }
+
+    public function searchByMagicLinkToken(string $magicLinkToken): ?Room
+    {
+        return Room::where('magic_link_token', $magicLinkToken)->first();
+    }
 
     public function toArray(): array
     {
