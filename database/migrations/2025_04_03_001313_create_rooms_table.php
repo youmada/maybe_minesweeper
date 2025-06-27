@@ -20,6 +20,7 @@ return new class extends Migration
             $table->json('players');
             $table->boolean('is_private')->default(true);
             $table->timestamp('last_activity_at')->nullable()->index();
+            $table->timestamp('expire_at')->default(now()->addWeek())->comment('ルーム有効期限。デフォルトでは1週間');
             $table->timestamps();
         });
     }

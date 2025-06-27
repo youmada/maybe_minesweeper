@@ -19,6 +19,7 @@ class Room extends Model
         'magic_link_token',
         'players',
         'is_private',
+        'expire_at',
     ];
 
     protected $hidden = [
@@ -29,12 +30,33 @@ class Room extends Model
         'players' => 'array',
         'created_at' => 'datetime:Y-m-d H:i:s',
         'updated_at' => 'datetime:Y-m-d H:i:s',
+        'expire_at' => 'datetime:Y-m-d H:i:s',
         'is_private' => 'boolean',
     ];
 
     public function roomStates(): HasMany
     {
         return $this->hasMany(RoomState::class);
+    }
+
+    public function isExpired(): bool
+    {
+        return $this->expire_at > now();
+    }
+
+    public function isRoomJoined(string $playerId): bool
+    {
+        /**
+         * ルームへの参加可否チェック
+         *
+         * - すでに参加済みのプレイヤーは常に true
+         * - 未参加のプレイヤーは max_player 未満なら true
+         */
+        if (in_array($playerId, $this->players, true)) {
+            return true;
+        }
+
+        return count($this->players) < $this->max_player;
     }
 
     public function searchByMagicLinkToken(string $magicLinkToken): ?Room
