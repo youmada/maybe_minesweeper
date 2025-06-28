@@ -6,11 +6,11 @@ use App\Domain\Minesweeper\GameState;
 
 interface GameRepositoryInterface
 {
-    public function saveState(GameState $state, string $gameId): void;
+    public function saveState(GameState $state, string $roomId): void;
 
-    public function getState(string $gameId): ?GameState;
+    public function getState(string $roomId): ?GameState;
 
-    public function updateState(GameState $state, string $gameId): void;
+    public function updateState(GameState $state, string $roomId): void;
 
-    public function deleteState(string $gameId): void;
+    public function deleteState(string $roomId): void;
 }

@@ -5,11 +5,11 @@ namespace Feature;
 use App\Domain\Minesweeper\GameService;
 use App\Domain\Minesweeper\GameState;
 use App\Domain\Minesweeper\TileActionMode;
+use App\Models\Room;
 use App\Repositories\Composites\GameCompositeRepository;
 use App\Repositories\DB\MinesweeperRepository as DBRepo;
 use App\Repositories\Redis\MinesweeperRepository as RedisRepo;
 use App\Services\Minesweeper\MinesweeperService;
-use App\Utils\UUIDFactory;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
@@ -29,16 +29,18 @@ class MinesweeperServiceTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        $room = Room::factory()->create();
+        $this->roomId = $room->id;
         $this->gameRepository = new GameCompositeRepository(new RedisRepo, new DBRepo);
         $this->mineSweeperService = new MinesweeperService($this->gameRepository);
-        $this->gameId = UUIDFactory::generate();
     }
 
     #[Test]
     public function init_game(): void
     {
         // 実行
-        $gameState = $this->mineSweeperService->initializeGame($this->gameId, $this->width, $this->height, $this->numOfMines);
+        $gameState = $this->mineSweeperService->initializeGame($this->roomId, $this->width, $this->height,
+            $this->numOfMines);
 
         //検証
 
@@ -51,13 +53,15 @@ class MinesweeperServiceTest extends TestCase
     public function when_tile_click_by_open_action(): void
     {
         // 準備
-        $gameState = $this->mineSweeperService->initializeGame($this->gameId, $this->width, $this->height, $this->numOfMines);
+        $gameState = $this->mineSweeperService->initializeGame($this->roomId, $this->width, $this->height,
+            $this->numOfMines);
         $clickTileX = $this->width / 2;
         $clickTileY = $this->height / 2;
 
         // 実行
         // handleClickTileにはどのタイルをクリックしたのか、位置情報が必要
-        $gameState = $this->mineSweeperService->handleClickTile($this->gameId, $clickTileX, $clickTileY, TileActionMode::OPEN);
+        $gameState = $this->mineSweeperService->handleClickTile($this->roomId, $clickTileX, $clickTileY,
+            TileActionMode::OPEN);
         $currentBoard = $gameState->getBoard();
         $currentClickTile = GameService::getTile($currentBoard, $clickTileX, $clickTileY);
 
@@ -70,20 +74,21 @@ class MinesweeperServiceTest extends TestCase
     public function when_tile_click_by_open_action_again(): void
     {
         // 準備
-        $gameState = $this->mineSweeperService->initializeGame($this->gameId, $this->width, $this->height, $this->numOfMines);
+        $gameState = $this->mineSweeperService->initializeGame($this->roomId, $this->width, $this->height,
+            $this->numOfMines);
         $clickTileX = $this->width / 2;
         $clickTileY = $this->height / 2;
 
         // 実行
         // 1回目
         $firstClickGameState = $this->mineSweeperService
-            ->handleClickTile($this->gameId, $clickTileX, $clickTileY, TileActionMode::OPEN);
+            ->handleClickTile($this->roomId, $clickTileX, $clickTileY, TileActionMode::OPEN);
         $firstBoard = $firstClickGameState->getBoard();
         $firstClickTile = GameService::getTile($firstBoard, $clickTileX, $clickTileY);
 
         // 2回目
         $secondClickGameState = $this->mineSweeperService
-            ->handleClickTile($this->gameId, $clickTileX, $clickTileY, TileActionMode::OPEN);
+            ->handleClickTile($this->roomId, $clickTileX, $clickTileY, TileActionMode::OPEN);
 
         $secondBoard = $secondClickGameState->getBoard();
         $secondClickTile = GameService::getTile($secondBoard, $clickTileX, $clickTileY);
@@ -97,23 +102,24 @@ class MinesweeperServiceTest extends TestCase
     public function if_the_game_is_cleared_when_a_tile_is_clicked(): void
     {
         // 準備
-        $gameState = $this->mineSweeperService->initializeGame($this->gameId, $this->width, $this->height, $this->numOfMines);
+        $gameState = $this->mineSweeperService->initializeGame($this->roomId, $this->width, $this->height,
+            $this->numOfMines);
         $clickTileX = (int) ($this->width / 2);
         $clickTileY = (int) ($this->height / 2);
 
         $tiles = $gameState->getGameState();
 
         // 実行
-        $gameState = $this->mineSweeperService->processGameStart($this->gameId, $clickTileX, $clickTileY);
+        $gameState = $this->mineSweeperService->processGameStart($this->roomId, $clickTileX, $clickTileY);
         foreach ($tiles as $yIndex => $row) {
             foreach ($row as $xIndex => $tile) {
                 if (! $tile->isMine()) {
-                    $this->mineSweeperService->handleClickTile($this->gameId, $xIndex, $yIndex, TileActionMode::OPEN);
+                    $this->mineSweeperService->handleClickTile($this->roomId, $xIndex, $yIndex, TileActionMode::OPEN);
                 }
             }
         }
 
-        $gameState = $this->gameRepository->getState($this->gameId);
+        $gameState = $this->gameRepository->getState($this->roomId);
 
         // アサート：すべてのタイルが開放され、ゲームがクリアかを確認
         $this->assertTrue($gameState->isGameClear());
@@ -125,15 +131,17 @@ class MinesweeperServiceTest extends TestCase
     {
         // 準備
         $minimaMineRatio = 1;
-        $gameState = $this->mineSweeperService->initializeGame($this->gameId, $this->width, $this->height, $minimaMineRatio);
+        $gameState = $this->mineSweeperService->initializeGame($this->roomId, $this->width, $this->height,
+            $minimaMineRatio);
         $clickTileX = $this->width / 2;
         $clickTileY = $this->height / 2;
 
         // クリック位置に手動で地雷をセット
         $gameState->getBoard()->getTile($clickTileX, $clickTileY)->setMine(true);
-        $this->gameRepository->saveState($gameState, $this->gameId);
+        $this->gameRepository->saveState($gameState, $this->roomId);
 
-        $gameState = $this->mineSweeperService->handleClickTile($this->gameId, $clickTileX, $clickTileY, TileActionMode::OPEN);
+        $gameState = $this->mineSweeperService->handleClickTile($this->roomId, $clickTileX, $clickTileY,
+            TileActionMode::OPEN);
 
         // アサート
         $this->assertTrue($gameState->isGameOver());
@@ -143,16 +151,16 @@ class MinesweeperServiceTest extends TestCase
     public function when_a_tile_is_clicked_by_flag_mode(): void
     {
         // 準備
-        $this->mineSweeperService->initializeGame($this->gameId, $this->width, $this->height, $this->numOfMines);
+        $this->mineSweeperService->initializeGame($this->roomId, $this->width, $this->height, $this->numOfMines);
         $clickTileX = $this->width / 2;
         $clickTileY = $this->height / 2;
 
         // 実行
         $isFirstTileFlag = $this->mineSweeperService
-            ->handleClickTile($this->gameId, $clickTileX, $clickTileY, TileActionMode::FLAG)
+            ->handleClickTile($this->roomId, $clickTileX, $clickTileY, TileActionMode::FLAG)
             ->getBoard()->getTile($clickTileX, $clickTileY)->isFlag();
         $isSecondTileFlag = $this->mineSweeperService
-            ->handleClickTile($this->gameId, $clickTileX, $clickTileY, TileActionMode::FLAG)
+            ->handleClickTile($this->roomId, $clickTileX, $clickTileY, TileActionMode::FLAG)
             ->getBoard()->getTile($clickTileX, $clickTileY)->isFlag();
 
         // アサート
@@ -165,15 +173,15 @@ class MinesweeperServiceTest extends TestCase
     public function when_game_started_mines_are_properly_placed(): void
     {
         // 準備
-        $this->mineSweeperService->initializeGame($this->gameId, $this->width, $this->height, $this->numOfMines);
+        $this->mineSweeperService->initializeGame($this->roomId, $this->width, $this->height, $this->numOfMines);
         $clickTileX = $this->width / 2;
         $clickTileY = $this->height / 2;
 
         // 実行
-        $this->mineSweeperService->processGameStart($this->gameId, $clickTileX, $clickTileY);
+        $this->mineSweeperService->processGameStart($this->roomId, $clickTileX, $clickTileY);
 
         // 検証
-        $gameState = $this->gameRepository->getState($this->gameId);
+        $gameState = $this->gameRepository->getState($this->roomId);
         $board = $gameState->getBoard();
 
         // 1. ゲームが開始状態になっているか
@@ -197,8 +205,8 @@ class MinesweeperServiceTest extends TestCase
     public function getGameStateForClient_returns_data_in_expected_format(): void
     {
         // 準備
-        $this->mineSweeperService->initializeGame($this->gameId, $this->width, $this->height, $this->numOfMines);
-        $gameState = $this->gameRepository->getState($this->gameId);
+        $this->mineSweeperService->initializeGame($this->roomId, $this->width, $this->height, $this->numOfMines);
+        $gameState = $this->gameRepository->getState($this->roomId);
 
         // 実行
         $clientData = $this->mineSweeperService->getGameStateForClient($gameState);

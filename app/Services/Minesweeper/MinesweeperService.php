@@ -6,6 +6,7 @@ use App\Domain\Minesweeper\GameService;
 use App\Domain\Minesweeper\GameState;
 use App\Domain\Minesweeper\TileActionMode;
 use App\Repositories\Interfaces\GameRepositoryInterface;
+use Exception;
 
 class MinesweeperService
 {
@@ -28,10 +29,10 @@ class MinesweeperService
      * @param  int  $width  // 幅
      * @param  int  $height  // 高さ
      * @param  int  $numOfMines  // 地雷数
-     * @param  string  $gameId
+     * @param  string  $roomId
      *                          ゲーム開始処理（続きからプレイでは使わないことを想定している。）
      */
-    public function initializeGame(string $gameId, int $width, int $height, int $numOfMines): GameState
+    public function initializeGame(string $roomId, int $width, int $height, int $numOfMines): GameState
     {
 
         // ボードを生成する
@@ -45,19 +46,19 @@ class MinesweeperService
         $gameState = new GameState($board, $width, $height, $numOfMines);
 
         // リポジトリ層に保存
-        $this->repository->saveState($gameState, $gameId);
+        $this->repository->saveState($gameState, $roomId);
 
         return $gameState;
     }
 
     /**
-     * @throws \Exception
+     * @throws Exception
      */
-    public function continueGame(string $gameId): GameState
+    public function continueGame(string $roomId): GameState
     {
-        $state = $this->repository->getState($gameId);
+        $state = $this->repository->getState($roomId);
         if (! $state) {
-            throw new \Exception("Game not found: {$gameId}");
+            throw new Exception("Game not found: {$roomId}");
         }
 
         return $state;
@@ -87,12 +88,12 @@ class MinesweeperService
     // リポジトリへの反映
     // 状態の返却 ✅
     /**
-     * @throws \Exception
+     * @throws Exception
      */
-    public function handleClickTile(string $gameId, int $clickTileX, int $clickTileY, TileActionMode $mode): GameState
+    public function handleClickTile(string $roomId, int $clickTileX, int $clickTileY, TileActionMode $mode): GameState
     {
         // リポジトリから現在の状態をロード
-        $state = $this->repository->getState($gameId) ?? throw new \Exception("Game not found: {$gameId}");
+        $state = $this->repository->getState($roomId) ?? throw new Exception("Game not found: {$roomId}");
 
         $board = $state->getBoard();
         $visitedTiles = $state->getVisitedTiles();
@@ -108,14 +109,13 @@ class MinesweeperService
                     $state->endGame(false);
                 } elseif (GameService::checkGameClear($board, $totalMines)) {
                     $state->endGame(true);
-                    dump($state->isGameOver());
                 }
             }
         } else {
             GameService::toggleFlag($currentClickTile);
         }
         // 更新した状態を永続化
-        $this->repository->updateState($state, $gameId);
+        $this->repository->updateState($state, $roomId);
 
         return $state;
     }
@@ -123,18 +123,20 @@ class MinesweeperService
     /*
      * 初回クリック時の処理
      */
-    public function processGameStart(string $gameId, int $firstClickPosX, int $firstClickPosY): GameState
+    /**
+     * @throws Exception
+     */
+    public function processGameStart(string $roomId, int $firstClickPosX, int $firstClickPosY): GameState
     {
-        $state = $this->repository->getState($gameId) ?? throw new \Exception("Game not found: {$gameId}");
+        $state = $this->repository->getState($roomId) ?? throw new Exception("Game not found: {$roomId}");
         $state->startGame();
         $gameState = $this->setMinesOnTheBoard($firstClickPosX, $firstClickPosY, $state);
-        $this->repository->updateState($gameState, $gameId);
+        $this->repository->updateState($gameState, $roomId);
 
         //        dump($gameState);
         // 初回クリック操作
-        $state = $this->handleClickTile($gameId, $firstClickPosX, $firstClickPosY, TileActionMode::OPEN);
         //        dump($state);
 
-        return $state;
+        return $this->handleClickTile($roomId, $firstClickPosX, $firstClickPosY, TileActionMode::OPEN);
     }
 }

@@ -1,0 +1,28 @@
+<?php
+
+namespace Database\Factories;
+
+use App\Models\Room;
+use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Str;
+
+class MultiRoomFactory extends Factory
+{
+    protected $model = Room::class;
+
+    public function definition(): array
+    {
+        return [
+            'name' => $this->faker->name(),
+            'owner_id' => $this->faker->word(),
+            'magic_link_token' => Str::random(10),
+            'max_player' => $this->faker->randomNumber(),
+            'players' => $this->faker->words(),
+            'is_private' => $this->faker->boolean(),
+            'last_activity_at' => Carbon::now(),
+            'created_at' => Carbon::now(),
+            'updated_at' => Carbon::now(),
+        ];
+    }
+}

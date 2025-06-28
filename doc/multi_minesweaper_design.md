@@ -92,53 +92,8 @@
 
 ## **5. データベース設計**
 
-### **5.1 テーブル: `rooms`**
-
-| カラム名             | 型            | 説明                       |
-|------------------|--------------|--------------------------|
-| id (PK)          | BIGINT       | 自動採番 ID                  |
-| magic_token      | VARCHAR(255) | ルーム参加用マジックトークン (URL で使用) |
-| max_participants | INT          | 最大参加人数                   |
-| is_active        | BOOLEAN      | ルームが有効かどうか (論理フラグ)       |
-| is_private       | BOOLEAN      | 非公開ルームかどうか（論理フラグ）        |
-| room_duration    | INT          | ルームの有効期限                 |
-| created_at       | TIMESTAMP    | 作成日時                     |
-| updated_at       | TIMESTAMP    | 更新日時                     |
-| deleted_at       | TIMESTAMP    | 論理削除用 (30 日経過など)         |
-
-### **5.2 テーブル: `room_participants`**
-
-| カラム名         | 型            | 説明                        |
-|--------------|--------------|---------------------------|
-| id (PK)      | BIGINT       | 自動採番 ID                   |
-| room_id (FK) | BIGINT       | rooms テーブルの外部キー           |
-| user_id      | VARCHAR(255) | 参加者 ID (セッション等)           |
-| joined_at    | TIMESTAMP    | 参加日時                      |
-| left_at      | TIMESTAMP    | 退出日時 (NULL の場合、まだ退出していない) |
-
-### **5.3 テーブル: `room_states`**
-
-| カラム名          | 型            | 説明                                  |
-|---------------|--------------|-------------------------------------|
-| id (PK)       | BIGINT       | 自動採番 ID                             |
-| room_id (FK)  | BIGINT       | rooms テーブルの外部キー                     |
-| board_id (FK) | BIGINT       | boards テーブルの外部キー                    |
-| game_state    | VARCHAR(255) | ゲームの進行具合（プレイヤーを待っているのか、ゲームが終わったのか？) |
-| turn_info     | JSON         | ターン制に関する情報（今のプレイヤー）                 |
-| updated_at    | TIMESTAMP    | 最終更新日時                              |
-
-### **5.4 テーブル: `boards`**
-
-| カラム名       | 型         | 説明                  |
-|------------|-----------|---------------------|
-| id (PK)    | BIGINT    | 自動採番 ID             |
-| width      | INT       | ボード幅                |
-| height     | INT       | ボード高さ               |
-| mine_ratio | INT       | 地雷の割合(0-100パーセンテージ） |
-| tile_state | JSON      | タイルの配置情報や状態         |
-| created_at | TIMESTAMP | 作成日時                |
-
----
+**マイグレーションファイルを見てください。**
+**規模感によっては作成**
 
 ## **7. API 設計**
 

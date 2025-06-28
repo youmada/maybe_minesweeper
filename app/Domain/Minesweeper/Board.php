@@ -2,6 +2,8 @@
 
 namespace App\Domain\Minesweeper;
 
+use InvalidArgumentException;
+
 class Board
 {
     private int $width;
@@ -92,17 +94,13 @@ class Board
 
         // 1) 第一階層の行数チェック
         if (count($tileStates) !== $this->height) {
-            dump('invalid tileStates: not match rows');
-
-            return;
+            throw new InvalidArgumentException('invalid tileStates: not match rows');
         }
 
         // 2) 各行の列数チェック
         foreach ($tileStates as $y => $row) {
             if (! is_array($row) || count($row) !== $this->width) {
-                dump("invalid tileStates: not match columns at row {$y}");
-
-                return;
+                throw new InvalidArgumentException('invalid tileStates: not match columns');
             }
         }
 

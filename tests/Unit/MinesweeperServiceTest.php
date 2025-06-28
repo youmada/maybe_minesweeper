@@ -18,6 +18,7 @@ beforeEach(function () {
     $this->width = 10;
     $this->height = 10;
     $this->numOfMines = 30;
+    $this->roomId = \App\Utils\UUIDFactory::generate();
 
     $this->gameService = new GameService;
     $this->service = new MinesweeperService($this->repo);

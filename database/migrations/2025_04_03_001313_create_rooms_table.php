@@ -13,13 +13,15 @@ return new class extends Migration
     {
         Schema::create('rooms', function (Blueprint $table) {
             $table->id();
-            $table->string('magic_token');
-            $table->integer('max_participants');
-            $table->boolean('is_active');
-            $table->boolean('is_private');
-            $table->integer('room_duration');
+            $table->string('name');
+            $table->string('owner_id');
+            $table->string('magic_link_token')->unique()->index();
+            $table->integer('max_player')->comment('ルーム最大参加人数');
+            $table->json('players');
+            $table->boolean('is_private')->default(true);
+            $table->timestamp('last_activity_at')->nullable()->index();
+            $table->timestamp('expire_at')->default(now()->addWeek())->comment('ルーム有効期限。デフォルトでは1週間');
             $table->timestamps();
-            $table->softDeletes();
         });
     }
 

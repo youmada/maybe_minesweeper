@@ -2,8 +2,6 @@
 
 namespace App\Providers;
 
-use App\Domain\Minesweeper\GameService;
-use App\Services\Minesweeper\MinesweeperService;
 use Illuminate\Support\Facades\Vite;
 use Illuminate\Support\ServiceProvider;
 
@@ -12,14 +10,7 @@ class AppServiceProvider extends ServiceProvider
     /**
      * Register any application services.
      */
-    public function register(): void
-    {
-        // サービスのバインド
-        $this->app->bind(GameService::class, function ($app) {
-            return new MinesweeperService(
-                $app->make(GameService::class));
-        });
-    }
+    public function register(): void {}
 
     /**
      * Bootstrap any application services.

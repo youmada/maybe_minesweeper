@@ -1,16 +1,17 @@
 <?php
 
+use App\Domain\Minesweeper\Board;
 use App\Domain\Minesweeper\GameState;
 use App\Repositories\Redis\MinesweeperRepository;
 use Illuminate\Support\Facades\Redis;
 
 beforeEach(function () {
-    $this->gameID = 'game123';
+    $this->roomId = '1';
     $this->gameState = [
         'width' => 10,
         'height' => 10,
         'numOfMines' => 20,
-        'board' => [],
+        'tileStates' => (new Board(10, 10))->toArray(),
         'isGameStarted' => false,
         'isGameClear' => false,
         'isGameOver' => false,
@@ -19,7 +20,7 @@ beforeEach(function () {
     $this->stateStub = $this->createStub(GameState::class);
     $this->stateStub->method('toArray')->willReturn($this->gameState);
 
-    $this->expectedKey = 'minesweeper:game:'.$this->gameID;
+    $this->expectedKey = 'minesweeper:game:'.$this->roomId;
     $this->expectedData = json_encode($this->gameState);
 
     $this->repository = new MinesweeperRepository;
@@ -33,7 +34,7 @@ it('game states data could saved in minesweeper repository.', function () {
         ->with($this->expectedKey, $this->expectedData);
 
     // 実行
-    $this->repository->saveState($this->stateStub, $this->gameID);
+    $this->repository->saveState($this->stateStub, $this->roomId);
 });
 
 it('game states data could get from minesweeper repository.', function () {
@@ -42,7 +43,7 @@ it('game states data could get from minesweeper repository.', function () {
         ->with($this->expectedKey)
         ->andReturn($this->expectedData);
 
-    $this->repository->getState($this->gameID);
+    $this->repository->getState($this->roomId);
 });
 
 it('game states data could update in minesweeper repository.', function () {
@@ -52,7 +53,7 @@ it('game states data could update in minesweeper repository.', function () {
         ->with($this->expectedKey, $this->expectedData);
 
     // 実行
-    $this->repository->updateState($this->stateStub, $this->gameID);
+    $this->repository->updateState($this->stateStub, $this->roomId);
 });
 
 it('game states data could delete in minesweeper repository.', function () {
@@ -60,5 +61,5 @@ it('game states data could delete in minesweeper repository.', function () {
         ->once()
         ->with($this->expectedKey);
 
-    $this->repository->deleteState($this->gameID);
+    $this->repository->deleteState($this->roomId);
 });

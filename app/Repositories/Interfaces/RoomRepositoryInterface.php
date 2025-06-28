@@ -2,15 +2,15 @@
 
 namespace App\Repositories\Interfaces;
 
-use stdClass;
+use App\Domain\Room\RoomAggregate;
 
 interface RoomRepositoryInterface
 {
-    public function saveState(string $userId, string $roomId): void;
+    public function save(RoomAggregate $roomAggregate, string $roomId): void;
 
-    public function getState(string $roomId): ?stdClass;
+    public function get(string $roomId): ?RoomAggregate;
 
-    public function updateState(string $userId, string $roomId): void;
+    public function update(RoomAggregate $roomAggregate, string $roomId): void;
 
-    public function deleteState(string $roomId): void;
+    public function delete(string $roomId): void;
 }
