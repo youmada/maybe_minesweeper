@@ -4,6 +4,7 @@ namespace App\Services\Multi;
 
 use App\Models\Room;
 use Exception;
+use Illuminate\Support\Facades\Log;
 
 class MagicLinkService
 {
@@ -15,6 +16,8 @@ class MagicLinkService
                 ->where('magic_link_token', $magicLinkToken)
                 ->firstOrFail();
         } catch (Exception $e) {
+            Log::error('MagicLinkService verify error: '.$e->getMessage());
+
             return false;
         }
         // マジックリンクの期限（ルームの期限でもある）をチェック

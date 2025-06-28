@@ -15,6 +15,10 @@ return Application::configure(basePath: dirname(__DIR__))
             \App\Http\Middleware\HandleInertiaRequests::class,
             \Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets::class,
         ]);
+        $middleware->alias([
+            'magic.link' => \App\Http\Middleware\MagicLinkMiddleware::class,
+            'room.auth' => \App\Http\Middleware\RoomAuthMiddleware::class,
+        ]);
 
         //
     })
