@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('rooms', function (Blueprint $table) {
             $table->id();
+            $table->binary('public_id')->unique()->after('id');
             $table->string('name');
             $table->string('owner_id');
             $table->string('magic_link_token')->unique()->index();

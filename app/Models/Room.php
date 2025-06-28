@@ -6,10 +6,35 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
+use Ramsey\Uuid\Uuid;
 
 class Room extends Model
 {
     use HasFactory;
+
+    public $incrementing = true;
+
+    protected $keyType = 'int';
+
+    public function getRouteKeyName(): string
+    {
+        // ルートでのバインディングをidではなくpublic_idで行うようにする
+        return 'public_id';
+    }
+
+    public function resolveRouteBinding($value, $field = null)
+    {
+        // 入力された文字列UUIDをバイナリ形式に変換してWHERE検索
+        return static::where('public_id', Uuid::fromString($value)->getBytes())->firstOrFail();
+    }
+
+    protected static function booted(): void
+    {
+        // 作成時にpublic_idカラムにバイナリ形式のUUIDをセット
+        static::creating(function ($room) {
+            $room->public_id = UUid::uuid4()->getBytes();
+        });
+    }
 
     protected $fillable = [
         'name',
@@ -38,6 +63,12 @@ class Room extends Model
     public function roomStates(): HasMany
     {
         return $this->hasMany(RoomState::class);
+    }
+
+    public function getPublicIdAttribute($value): string
+    {
+        // バイナリ形式のUUIDを文字列として取得するアクセサ
+        return Uuid::fromBytes($value)->toString();
     }
 
     public function isExpired(): bool
