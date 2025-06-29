@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -37,6 +38,7 @@ class Room extends Model
     }
 
     protected $fillable = [
+        'public_id',
         'name',
         'owner_id',
         'game_id',
@@ -54,9 +56,6 @@ class Room extends Model
     protected $casts = [
         'id' => 'string',
         'players' => 'array',
-        'created_at' => 'datetime:Y-m-d H:i:s',
-        'updated_at' => 'datetime:Y-m-d H:i:s',
-        'expire_at' => 'datetime:Y-m-d H:i:s',
         'is_private' => 'boolean',
     ];
 
@@ -73,7 +72,7 @@ class Room extends Model
 
     public function isExpired(): bool
     {
-        return $this->expire_at > now();
+        return $this->expire_at > Carbon::today();
     }
 
     public function isRoomJoined(string $playerId): bool
@@ -116,5 +115,10 @@ class Room extends Model
         $array['magicLinkToken'] = $this->magic_link_token;
 
         return $array;
+    }
+
+    public function getMagicLinkUrlAttribute(): string
+    {
+        return config('app.url')."/multi/rooms/join/{$this->public_id}?token={$this->magic_link_token}";
     }
 }

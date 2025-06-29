@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('rooms', function (Blueprint $table) {
             $table->id();
-            $table->binary('public_id')->unique()->after('id');
+            $table->binary('public_id', 16)->unique();
             $table->string('name');
             $table->string('owner_id');
             $table->string('magic_link_token')->unique()->index();
@@ -21,7 +21,7 @@ return new class extends Migration
             $table->json('players');
             $table->boolean('is_private')->default(true);
             $table->timestamp('last_activity_at')->nullable()->index();
-            $table->timestamp('expire_at')->default(now()->addWeek())->comment('ルーム有効期限。デフォルトでは1週間');
+            $table->date('expire_at')->default(now()->addWeek())->comment('ルーム有効期限。デフォルトでは1週間');
             $table->timestamps();
         });
     }

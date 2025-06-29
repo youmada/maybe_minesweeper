@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\MultiplayerController;
+use App\Http\Controllers\MultiRoomController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -20,10 +20,13 @@ Route::get('/single/play', function () {
     ]);
 });
 
-// マルチプレイ設定画面ルート
-Route::get('/multi', function () {
-    return Inertia::render('Multi');
-});
-Route::post('/multi/create', [MultiplayerController::class, 'createRoom'])->name('multiplayer.create');
+// マルチプレイ
 
-require __DIR__.'/auth.php';
+Route::resource('multi/rooms', MultiRoomController::class)->only(['index', 'create', 'store', 'show', 'destroy']);
+
+//Route::get('/multi', function () {
+//    return Inertia::render('Multi');
+//});
+//Route::post('/multi/create', [MultiplayerController::class, 'createRoom'])->name('multiplayer.create');
+
+//require __DIR__.'/auth.php';
