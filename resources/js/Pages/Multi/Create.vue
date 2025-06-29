@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Head } from '@inertiajs/vue3';
+import { Head, router } from '@inertiajs/vue3';
 import { ref } from 'vue';
 
 const boardWidth = ref(10);
@@ -13,11 +13,7 @@ const createRoom = () => {
     const createRoomForm = {};
     // ルーム作成のロジックをここに追加
     console.log('create room');
-    const response = fetch('/api/rooms', {
-        method: 'POST',
-        headers: {},
-        body: JSON.stringify({}),
-    });
+    const response = router.post(route('multi.create'), {});
 };
 </script>
 
