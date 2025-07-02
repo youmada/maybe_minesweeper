@@ -4,16 +4,18 @@ use App\Domain\Minesweeper\TileActionMode;
 use App\Domain\Room\RoomStatus;
 use App\Exceptions\RoomException;
 use App\Factories\RoomAggregateFactory;
+use Carbon\Carbon;
 
 beforeEach(function () {
     $this->roomName = 'test room';
     $this->maxPlayer = 3;
     $this->players = [];
+    $this->expireAt = Carbon::now()->toDateString();
     $this->isPlivate = true;
     $this->ownerId = Str::uuid()->tostring();
     $this->flagLimit = 5;
 
-    $this->roomAggregate = RoomAggregateFactory::create($this->roomName, $this->maxPlayer, $this->isPlivate, $this->ownerId, $this->players, $this->flagLimit);
+    $this->roomAggregate = RoomAggregateFactory::create($this->roomName, $this->maxPlayer, $this->ownerId, $this->expireAt, $this->isPlivate, $this->players, $this->flagLimit);
 });
 
 it('can not join a room when over max player', function () {

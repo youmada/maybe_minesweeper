@@ -19,9 +19,13 @@ class RoomAuthMiddleware
         $roomId = $request->route('room');
         $playerId = $request->session()->get('player_id', '');
 
-        $isJoined = Room::where('id', $roomId)
-            ->whereJsonContains('players', $playerId)
-            ->exists();
+        try {
+            $isJoined = Room::whereJsonContains('players', $playerId)
+                ->findByPublicId($roomId)
+                ->exists();
+        } catch (\Exception $e) {
+            $isJoined = false;
+        }
 
         if (! $isJoined) {
             return response()->json([

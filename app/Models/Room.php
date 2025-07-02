@@ -29,19 +29,10 @@ class Room extends Model
         return static::where('public_id', Uuid::fromString($value)->getBytes())->firstOrFail();
     }
 
-    protected static function booted(): void
-    {
-        // 作成時にpublic_idカラムにバイナリ形式のUUIDをセット
-        static::creating(function ($room) {
-            $room->public_id = UUid::uuid4()->getBytes();
-        });
-    }
-
     protected $fillable = [
         'public_id',
         'name',
         'owner_id',
-        'game_id',
         'max_player',
         'magic_link_token',
         'players',
@@ -62,6 +53,11 @@ class Room extends Model
     public function roomStates(): HasMany
     {
         return $this->hasMany(RoomState::class);
+    }
+
+    public function setPublicIdAttribute($value): void
+    {
+        $this->attributes['public_id'] = Uuid::fromString($value)->getBytes();
     }
 
     public function getPublicIdAttribute($value): string
@@ -93,6 +89,11 @@ class Room extends Model
     public function searchByMagicLinkToken(string $magicLinkToken): ?Room
     {
         return Room::where('magic_link_token', $magicLinkToken)->first();
+    }
+
+    public function scopeFindByPublicId($query, string $publicId)
+    {
+        return $query->where('public_id', Uuid::fromString($publicId)->getBytes());
     }
 
     public function toArray(): array

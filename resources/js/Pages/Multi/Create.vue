@@ -1,37 +1,43 @@
 <script setup lang="ts">
-import { Head, router } from '@inertiajs/vue3';
-import { ref } from 'vue';
+import { Head, useForm } from '@inertiajs/vue3';
 
-const boardWidth = ref(10);
-const boardHeight = ref(10);
-const mineRatio = ref('20');
-const roomDuration = ref('1');
-const maxPlayers = ref('3');
-const roomPermission = ref(false);
-
-const createRoom = () => {
-    const createRoomForm = {};
-    // ルーム作成のロジックをここに追加
-    console.log('create room');
-    const response = router.post(route('multi.create'), {});
-};
+const form = useForm({
+    name: '',
+    boardWidth: 10,
+    boardHeight: 10,
+    mineRatio: 20,
+    expireAt: 1,
+    maxPlayer: 3,
+});
 </script>
 
 <template>
     <Head><title>マルチプレイルーム作成</title></Head>
-    <div class="flex min-h-screen w-full items-center justify-center p-4">
+    <div
+        class="flex min-h-screen w-full flex-col items-center justify-center p-4"
+    >
+        <h2 class="m-4 text-center text-3xl font-bold">ルーム作成</h2>
         <div class="card w-full max-w-lg bg-base-100 shadow-xl">
-            <div class="card-body">
-                <h1 class="card-title text-center text-3xl font-bold">
-                    ルーム作成
-                </h1>
-
-                <form @submit.prevent="createRoom" class="mt-6 space-y-6">
+            <div class="card-body text-base">
+                <form
+                    @submit.prevent="form.post('/multi/rooms')"
+                    class="mt-6 space-y-6"
+                    :disabled="form.processing"
+                >
+                    <!-- ルーム名 -->
+                    <input
+                        name="name"
+                        type="text"
+                        placeholder="ルーム名"
+                        class="input input-lg w-full text-center"
+                        v-model="form.name"
+                        required
+                    />
                     <!-- ボード幅 -->
                     <div>
                         <label class="label w-full text-center">
                             <span class="m-auto font-medium"
-                                >ボード幅: {{ boardWidth }}
+                                >ボード幅: {{ form.boardWidth }}
                             </span>
                         </label>
                         <input
@@ -40,7 +46,7 @@ const createRoom = () => {
                             max="25"
                             step="5"
                             class="range w-full"
-                            v-model="boardWidth"
+                            v-model="form.boardWidth"
                         />
                         <div class="mt-2 flex justify-between px-2.5 text-xs">
                             <span>|</span>
@@ -60,7 +66,7 @@ const createRoom = () => {
                     <div class="form-control">
                         <label class="label w-full">
                             <span class="m-auto font-medium"
-                                >ボード高さ: {{ boardHeight }}</span
+                                >ボード高さ: {{ form.boardHeight }}</span
                             >
                         </label>
                         <input
@@ -69,7 +75,7 @@ const createRoom = () => {
                             max="25"
                             step="5"
                             class="range w-full"
-                            v-model="boardHeight"
+                            v-model="form.boardHeight"
                         />
                         <div class="mt-2 flex justify-between px-2.5 text-xs">
                             <span>|</span>
@@ -89,15 +95,16 @@ const createRoom = () => {
                     <div class="form-control">
                         <label class="label w-full">
                             <span class="label-text m-auto font-medium"
-                                >地雷の割合 (%)</span
+                                >地雷の割合：{{ form.mineRatio }}(%)</span
                             >
                         </label>
                         <input
-                            type="number"
-                            min="5"
-                            max="30"
-                            class="input-bordered input w-full rounded-md border bg-gray-600"
-                            v-model="mineRatio"
+                            v-model="form.mineRatio"
+                            type="range"
+                            min="10"
+                            max="40"
+                            value="20"
+                            class="range range-md w-full"
                             required
                         />
                     </div>
@@ -109,9 +116,10 @@ const createRoom = () => {
                                 >ルームの削除までの時間</span
                             >
                         </label>
+
                         <select
-                            class="select-bordered select w-full rounded-md border bg-gray-600"
-                            v-model="roomDuration"
+                            class="select w-full text-center"
+                            v-model="form.expireAt"
                             required
                         >
                             <option value="1">1日</option>
@@ -124,45 +132,20 @@ const createRoom = () => {
                     <div class="form-control">
                         <label class="label w-full">
                             <span class="label-text m-auto font-medium"
-                                >ルーム参加上限人数</span
+                                >ルーム参加上限人数：{{
+                                    form.maxPlayer
+                                }}人</span
                             >
                         </label>
                         <input
-                            type="number"
+                            v-model="form.maxPlayer"
+                            type="range"
                             min="2"
                             max="6"
-                            class="input-bordered input w-full rounded-md border bg-gray-600"
-                            v-model="maxPlayers"
+                            value="3"
+                            class="range range-md w-full"
                             required
                         />
-                    </div>
-
-                    <div class="form-control w-full">
-                        <span
-                            class="label-text block w-full text-center font-medium"
-                            >ルーム公開設定</span
-                        >
-                        <div class="my-3 w-full text-center">
-                            <span
-                                :class="[
-                                    'mx-3 text-base font-bold',
-                                    roomPermission ? 'text-slate-700' : '',
-                                ]"
-                                >公開</span
-                            >
-                            <input
-                                type="checkbox"
-                                v-model="roomPermission"
-                                class="toggle-l toggle m-auto"
-                            />
-                            <span
-                                :class="[
-                                    'mx-3 text-base font-bold',
-                                    roomPermission ? '' : 'text-slate-700',
-                                ]"
-                                >非公開</span
-                            >
-                        </div>
                     </div>
 
                     <div class="mt-8 flex flex-col gap-4 sm:flex-row">

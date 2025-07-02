@@ -4,6 +4,7 @@ namespace Tests\Unit\Middleware;
 
 use App\Http\Middleware\RoomAuthMiddleware;
 use App\Models\Room;
+use App\Utils\UUIDFactory;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
 
@@ -16,20 +17,21 @@ beforeEach(function () {
     $this->room = Room::factory()->create([
         'magic_link_token' => Str::random(32),
         'players' => [$this->playerId],
+        'public_id' => UUIDFactory::generate(),
     ]);
 });
 
 it('can access magic link route', function () {
     $response = $this
         ->withSession(['player_id' => $this->playerId])
-        ->get('/magic-link/'.$this->room->id.'/play');
+        ->get('/magic-link/'.$this->room->public_id.'/play');
     $response->assertOk();
 });
 
 it('can not access magic link route. because of invalid player id', function () {
     $response = $this
         ->withSession(['player_id' => 'invalid_player_id'])
-        ->get('/magic-link/'.$this->room->id.'/play');
+        ->get('/magic-link/'.$this->room->public_id.'/play');
     $response->assertStatus(403);
 });
 

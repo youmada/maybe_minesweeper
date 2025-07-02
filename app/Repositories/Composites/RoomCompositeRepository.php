@@ -19,12 +19,14 @@ class RoomCompositeRepository implements RoomCompositesRepositoryInterface
     /**
      * @throws \Exception
      */
-    public function save(RoomAggregate $roomAggregate, string $roomId): void
+    public function create(RoomAggregate $roomAggregate): string
     {
         // 初回は DB に設計情報だけ書き
-        $this->dbRepo->save($roomAggregate, $roomId);
+        $roomId = $this->dbRepo->create($roomAggregate);
         // その後、必ず Redis にも書く
         $this->redisRepo->save($roomAggregate->getRoomState(), $roomId);
+
+        return $roomId;
     }
 
     public function get(string $roomId): RoomAggregate|RoomState|null

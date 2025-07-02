@@ -10,7 +10,9 @@ use App\Models\Room;
 use App\Models\RoomState;
 use App\Models\RoomUser;
 use App\Repositories\Interfaces\RoomRepositoryInterface;
+use App\Utils\UUIDFactory;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
@@ -19,32 +21,34 @@ class RoomRepository implements RoomRepositoryInterface
     /**
      * @throws RoomException
      */
-    public function save(RoomAggregate $roomAggregate, string $roomId): void
+    public function create(RoomAggregate $roomAggregate): ?string
     {
-        // すでに登録されている場合はスキップ
-        if (Room::where('id', $roomId)->exists()) {
-            return;
-        }
 
+        $publicRoomId = UUIDFactory::generate();
         $toArrayRoom = $roomAggregate->getRoom()->toArray();
         $toArrayRoomState = $roomAggregate->getRoomState()->toArray();
 
-        $mappedRoom = $this->getMappedRoom($toArrayRoom);
-
-        $mappedRoomState = $this->getMappedRoomState($toArrayRoomState, $roomId);
+        $mappedRoom = $this->getMappedRoom($toArrayRoom, $publicRoomId);
 
         $magicLinkToken = $this->generateUniqueToken();
 
         try {
-            Room::create($mappedRoom + ['magic_link_token' => $magicLinkToken]);
-            RoomState::create($mappedRoomState);
-            RoomUser::create([
-                'room_id' => $roomId,
-                'user_id' => $toArrayRoom['ownerId'],
-                'joined_at' => Carbon::now()->toDateTimeString(),
-            ]);
+            $room = DB::transaction(function () use ($mappedRoom, $toArrayRoomState, $toArrayRoom, $magicLinkToken) {
+                $room = Room::create($mappedRoom + ['magic_link_token' => $magicLinkToken]);
+                RoomState::create($this->getMappedRoomState($toArrayRoomState, $room->id));
+                RoomUser::create([
+                    'room_id' => $room->id,
+                    'user_id' => $toArrayRoom['ownerId'],
+                    'joined_at' => Carbon::now()->toDateTimeString(),
+                ]);
+
+                return $room;
+            });
+
+            return $room->id;
+
         } catch (RoomException $e) {
-            Log::error("DB save method error for key {$roomId}: ".$e->getMessage());
+            Log::error("DB save method error for public room id {$publicRoomId}: ".$e->getMessage());
             throw $e;
         }
     }
@@ -118,15 +122,22 @@ class RoomRepository implements RoomRepositoryInterface
 
     }
 
-    private function getMappedRoom(array $toArrayRoom): array
+    private function getMappedRoom(array $toArrayRoom, ?string $publicRoomId = null): array
     {
-        return [
+        $mapped = [
             'name' => $toArrayRoom['name'],
             'max_player' => $toArrayRoom['maxPlayer'],
             'is_private' => $toArrayRoom['isPrivate'],
+            'expire_at' => $toArrayRoom['expireAt'],
             'owner_id' => $toArrayRoom['ownerId'],
             'players' => $toArrayRoom['players'],
         ];
+
+        if (! is_null($publicRoomId)) {
+            $mapped['public_id'] = $publicRoomId;
+        }
+
+        return $mapped;
     }
 
     private function getMappedRoomState(array $toArrayRoomState, string $roomId): array

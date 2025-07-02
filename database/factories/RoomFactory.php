@@ -3,11 +3,11 @@
 namespace Database\Factories;
 
 use App\Models\Room;
+use App\Utils\UUIDFactory;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
-use Ramsey\Uuid\Uuid;
 
 class RoomFactory extends Factory
 {
@@ -16,7 +16,7 @@ class RoomFactory extends Factory
     public function definition(): array
     {
         return [
-            'public_id' => UUid::uuid4()->getBytes(),
+            'public_id' => UUIDFactory::generate(),
             'name' => $this->faker->name(),
             'owner_id' => $this->faker->word(),
             'magic_link_token' => Str::random(32),

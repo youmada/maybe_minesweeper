@@ -4,20 +4,21 @@ namespace Tests\Unit\Middleware;
 
 use App\Http\Middleware\MagicLinkMiddleware;
 use App\Models\Room;
+use App\Utils\UUIDFactory;
 use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Str;
 
 beforeEach(function () {
     Route::get('/magic-link/{room}', fn () => response(['ok' => true]))
         ->middleware(['web', MagicLinkMiddleware::class]);
 
     $this->room = Room::factory()->create([
-        'magic_link_token' => Str::random(32),
+        'magic_link_token' => UUIDFactory::generate(),
+        'public_id' => UUIDFactory::generate(),
     ]);
 });
 
 it('can access magic link route', function () {
-    $response = $this->get('/magic-link/'.$this->room->id.'?token='.$this->room->magic_link_token);
+    $response = $this->get('/magic-link/'.$this->room->public_id.'?token='.$this->room->magic_link_token);
     $response->assertOk();
 });
 

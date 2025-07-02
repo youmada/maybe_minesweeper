@@ -22,7 +22,7 @@ Route::get('/single/play', function () {
 
 // マルチプレイ
 
-Route::resource('multi/rooms', MultiRoomController::class)->only(['index', 'create', 'store', 'show', 'destroy']);
+Route::resource('multi/rooms', MultiRoomController::class)->only(['index', 'create', 'store', 'destroy']);
 
 //Route::get('/multi', function () {
 //    return Inertia::render('Multi');

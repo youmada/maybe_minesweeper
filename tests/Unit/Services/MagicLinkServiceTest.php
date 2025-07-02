@@ -14,7 +14,7 @@ beforeEach(function () {
 });
 
 it('can verify a magic link from user send', function () {
-    expect((new MagicLinkService)->verify($this->room->id, $this->room->magic_link_token, $this->player->id))->toBeTrue();
+    expect((new MagicLinkService)->verify($this->room->public_id, $this->room->magic_link_token, $this->player->id))->toBeTrue();
 });
 
 it('can not verify a magic link, because of room is not exists.', function () {
@@ -22,7 +22,7 @@ it('can not verify a magic link, because of room is not exists.', function () {
 });
 
 it('can not verify a magic link, because of invalid magic link token', function () {
-    expect((new MagicLinkService)->verify($this->room->id, 'invalid_token', $this->player->id))->toBeFalse();
+    expect((new MagicLinkService)->verify($this->room->public_id, 'invalid_token', $this->player->id))->toBeFalse();
 });
 
 it('can not verify a magic link, because of magic link expired', function () {
@@ -30,7 +30,7 @@ it('can not verify a magic link, because of magic link expired', function () {
         'expire_at' => now()->subDay(),
     ]);
     $this->room->refresh();
-    expect((new MagicLinkService)->verify($this->room->id, $this->room->magic_link_token, $this->player->id))->toBeFalse();
+    expect((new MagicLinkService)->verify($this->room->public_id, $this->room->magic_link_token, $this->player->id))->toBeFalse();
 });
 
 it("can not verify a magic link, because of room's player limit is over", function () {
@@ -40,7 +40,7 @@ it("can not verify a magic link, because of room's player limit is over", functi
     ]);
     $this->room->refresh();
     $player2 = RoomUser::factory()->create([]);
-    expect((new MagicLinkService)->verify($this->room->id, $this->room->magic_link_token, $player2->id))->toBeFalse();
+    expect((new MagicLinkService)->verify($this->room->public_id, $this->room->magic_link_token, $player2->id))->toBeFalse();
 });
 
 it("can verify a magic link, because of room's player limit is over but player is already registered.", function () {
@@ -49,6 +49,6 @@ it("can verify a magic link, because of room's player limit is over but player i
         'players' => [$this->player->id],
     ]);
     $this->room->refresh();
-    expect((new MagicLinkService)->verify($this->room->id, $this->room->magic_link_token, $this->player->id))->toBeTrue();
+    expect((new MagicLinkService)->verify($this->room->public_id, $this->room->magic_link_token, $this->player->id))->toBeTrue();
 
 });

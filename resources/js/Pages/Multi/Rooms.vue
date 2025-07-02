@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import PrimaryButton from '@/Components/PrimaryButton.vue';
-import { Head } from '@inertiajs/vue3';
+import { Head, Link } from '@inertiajs/vue3';
+import { ref } from 'vue';
 
 type Room = {
     name: string;
@@ -11,12 +12,18 @@ type Room = {
 const props = defineProps({
     data: Array<Room>,
 });
-
 const rooms = props.data;
 
+const isClipped = ref(false);
+
 const clipBoard = (link: string) => {
-    console.log(link);
+    isClipped.value = true;
+
     navigator.clipboard.writeText(link);
+
+    setTimeout(() => {
+        isClipped.value = false;
+    }, 2000);
 };
 </script>
 
@@ -68,7 +75,17 @@ const clipBoard = (link: string) => {
         </ul>
 
         <div class="m-16 text-center">
-            <PrimaryButton>ルーム作成</PrimaryButton>
+            <Link href="/multi/rooms/create">
+                <PrimaryButton>ルーム作成</PrimaryButton>
+            </Link>
+        </div>
+    </div>
+
+    <div v-show="isClipped" class="toast">
+        <div class="alert alert-info">
+            <span class="text-base font-bold text-white"
+                >ルーム参加のURLをコピーしました</span
+            >
         </div>
     </div>
 </template>

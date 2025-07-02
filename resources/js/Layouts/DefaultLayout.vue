@@ -6,13 +6,13 @@ import { Link } from '@inertiajs/vue3';
 
 <template>
     <div class="bg-base-200 text-white/50">
-        <div class="navbar fixed z-50 bg-base-100 shadow-sm">
+        <div class="navbar fixed z-50 max-h-16 bg-base-100 shadow-sm">
             <Link href="/">
                 <h1 class="btn btn-ghost text-xl">たぶんまいんすいーぱー</h1>
             </Link>
         </div>
         <div
-            class="relative flex min-h-screen flex-col items-center justify-center selection:text-white"
+            class="relative flex min-h-screen flex-col items-center justify-center pt-16 selection:text-white"
         >
             <slot></slot>
         </div>

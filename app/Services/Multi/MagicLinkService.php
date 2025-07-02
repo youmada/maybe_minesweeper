@@ -12,8 +12,9 @@ class MagicLinkService
     {
         // 受け取ったマジックリンクとルームIDの組み合わせが存在するか、チェック
         try {
-            $room = Room::where('id', $roomId)
-                ->where('magic_link_token', $magicLinkToken)
+
+            $room = Room::where('magic_link_token', $magicLinkToken)
+                ->findByPublicId($roomId)
                 ->firstOrFail();
         } catch (Exception $e) {
             Log::error('MagicLinkService verify error: '.$e->getMessage());

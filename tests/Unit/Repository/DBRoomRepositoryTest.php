@@ -10,7 +10,9 @@ beforeEach(function () {
     $this->roomAggregate = RoomAggregateFactory::create(
         'test room',
         3,
-        'owner');
+        'owner',
+        Carbon::now()->toDateString(),
+    );
 
     $this->roomRepository = new RoomRepository;
 });
@@ -23,7 +25,7 @@ it('can save the room data in DB', function () {
     $room = $this->roomAggregate->getRoom();
     $roomState = $this->roomAggregate->getRoomState();
     $this->assertDatabaseMissing('rooms');
-    $this->roomRepository->save($this->roomAggregate, $this->roomId);
+    $this->roomRepository->create($this->roomAggregate);
     // アサート
     $this->assertDatabaseCount('rooms', 1);
     $this->assertDatabaseCount('room_states', 1);
@@ -50,35 +52,22 @@ it('can save the room data in DB', function () {
     );
 });
 
-it('can be skipped if the room data already exists in DB', function () {
-    // 準備
-    $this->assertDatabaseMissing('rooms');
-    // 実行 & アサート
-    $this->roomRepository->save($this->roomAggregate, $this->roomId);
-    $this->assertDatabaseCount('rooms', 1);
-    $this->assertDatabaseCount('room_states', 1);
-
-    $this->roomRepository->save($this->roomAggregate, $this->roomId);
-    $this->assertDatabaseCount('rooms', 1);
-    $this->assertDatabaseCount('room_states', 1);
-});
-
 it('can not save the room data in DB', function () {
     $mock = Mockery::mock(RoomRepository::class);
     $mock
-        ->shouldReceive('save')
+        ->shouldReceive('create')
         ->once()
-        ->with($this->roomAggregate, $this->roomId)
+        ->with($this->roomAggregate)
         ->andThrow(RoomException::class);
 
     $this->repository = $mock;
-    $this->repository->save($this->roomAggregate, $this->roomId);
+    $this->repository->create($this->roomAggregate);
 })->throws(RoomException::class);
 
 it('can get the room data from DB', function () {
 
     // 準備
-    $this->roomRepository->save($this->roomAggregate, $this->roomId);
+    $this->roomRepository->create($this->roomAggregate);
 
     // 実行 & アサート
     $data = $this->roomRepository->get($this->roomId);
@@ -92,7 +81,7 @@ it('can not get the room data from DB.  because of room id is not found', functi
 
 it('can update room data in DB', function () {
     // 準備
-    $this->roomRepository->save($this->roomAggregate, $this->roomId);
+    $this->roomRepository->create($this->roomAggregate);
     $this->roomAggregate->startRoom();
     $this->roomAggregate->join('user1');
     // 実行
@@ -136,7 +125,7 @@ it('can not update room data in DB.  because of room id is not found', function 
 
 it('can delete room data in DB', function () {
     // 準備
-    $this->roomRepository->save($this->roomAggregate, $this->roomId);
+    $this->roomRepository->create($this->roomAggregate);
     $this->assertDatabaseCount('rooms', 1);
     $this->assertDatabaseCount('room_states', 1);
     // 実行

@@ -8,6 +8,7 @@ class Room
         private readonly string $name,
         private readonly int $maxPlayer,
         private array $players,
+        private string $expireAt,
         private readonly bool $isPrivate,
         private readonly string $ownerId,
     ) {}
@@ -76,6 +77,7 @@ class Room
             'name' => $this->name,
             'maxPlayer' => $this->maxPlayer,
             'players' => $this->players,
+            'expireAt' => $this->expireAt,
             'isPrivate' => $this->isPrivate,
             'ownerId' => $this->ownerId,
         ];
@@ -87,6 +89,7 @@ class Room
             $attrs['name'],
             $attrs['maxPlayer'],
             $attrs['players'],
+            $attrs['expireAt'],
             $attrs['isPrivate'],
             $attrs['ownerId'],
         );
