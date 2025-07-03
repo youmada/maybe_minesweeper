@@ -11,7 +11,7 @@ beforeEach(function () {
 
 it("should response session user's room data", function () {
     $this->room = Room::factory()->create([
-        'magic_link_token' => Str::random(32),
+        'magic_link_token' => \App\Utils\UUIDFactory::generate(),
         'owner_id' => $this->playerId,
     ]);
     $response = $this->withSession(['player_id' => $this->playerId])->get('/multi/rooms');
@@ -23,7 +23,7 @@ it("should response session user's room data", function () {
             fn (Assert $page) => $page
                 ->where('name', $this->room->name)
                 ->where('expireAt', $this->room->expire_at->toDateTimeString())
-                ->where('magicLink', config('app.url')."/multi/rooms/join/{$this->room->public_id}?token={$this->room->magic_link_token}")
+                ->where('magicLink', config('app.url')."/multi/rooms/{$this->room->public_id}/join?token={$this->room->magic_link_token}")
         )
     );
 });
@@ -44,6 +44,8 @@ it("should create a room from user's request data.", function () {
     ]);
 
     $roomId = Room::where('owner_id', $this->playerId)->first()->id;
+
+    $room = Room::find($roomId);
 
     $this->assertDatabaseCount('rooms', 1);
     $this->assertDatabaseHas('rooms', [
@@ -78,5 +80,5 @@ it("should create a room from user's request data.", function () {
         'is_game_over' => false,
     ]);
 
-    //        $response->assertRedirect('/multi/rooms');
+    $response->assertRedirect('/multi/rooms/'.$room->public_id.'/join'.'?token='.$room->magic_link_token);
 });

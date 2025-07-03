@@ -120,6 +120,6 @@ class Room extends Model
 
     public function getMagicLinkUrlAttribute(): string
     {
-        return config('app.url')."/multi/rooms/join/{$this->public_id}?token={$this->magic_link_token}";
+        return config('app.url')."/multi/rooms/{$this->public_id}/join?token={$this->magic_link_token}";
     }
 }

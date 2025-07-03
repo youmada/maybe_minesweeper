@@ -16,21 +16,19 @@ class RoomAuthMiddleware
      */
     public function handle(Request $request, Closure $next): Response
     {
-        $roomId = $request->route('room');
+        $roomId = $request->route('room')->id;
         $playerId = $request->session()->get('player_id', '');
-
         try {
             $isJoined = Room::whereJsonContains('players', $playerId)
-                ->findByPublicId($roomId)
+                ->where('id', $roomId)
+                ->where('expire_at', '>', now())
                 ->exists();
         } catch (\Exception $e) {
             $isJoined = false;
         }
 
         if (! $isJoined) {
-            return response()->json([
-                'message' => 'このルームに参加していません',
-            ], 403);
+            abort(401);
         }
 
         return $next($request);

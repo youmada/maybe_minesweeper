@@ -17,7 +17,6 @@ return Application::configure(basePath: dirname(__DIR__))
             \App\Http\Middleware\SetPlayerIdInSession::class,
         ]);
         $middleware->alias([
-            'magic.link' => \App\Http\Middleware\MagicLinkMiddleware::class,
             'room.auth' => \App\Http\Middleware\RoomAuthMiddleware::class,
         ]);
 

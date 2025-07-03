@@ -12,6 +12,12 @@ import { useSaveDataStore } from './stores/singlePlayData';
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 
 createInertiaApp({
+    progress: {
+        // The delay after which the progress bar will appear, in milliseconds...
+        delay: 250,
+        // The color of the progress bar...
+        color: '#29d',
+    },
     title: (title) => `${title} - ${appName}`,
     resolve: (name) => {
         const page = resolvePageComponent(
@@ -37,8 +43,5 @@ createInertiaApp({
             saveDataStore.loadSaveData();
         });
         app.mount(el);
-    },
-    progress: {
-        color: '#4B5563',
     },
 });

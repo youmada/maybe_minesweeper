@@ -1,6 +1,8 @@
 <?php
 
+use App\Http\Controllers\GamePlayController;
 use App\Http\Controllers\MultiRoomController;
+use App\Http\Controllers\MultiRoomJoinController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -14,6 +16,7 @@ Route::get('/single', function () {
     return Inertia::render('Single');
 });
 
+// シングルプレイ
 Route::get('/single/play', function () {
     return Inertia::render('Single/Play', [
         'level' => request()->query('level'), // levelにマインスイーパーの難易度を入れる
@@ -22,11 +25,24 @@ Route::get('/single/play', function () {
 
 // マルチプレイ
 
+// マルチルーム
 Route::resource('multi/rooms', MultiRoomController::class)->only(['index', 'create', 'store', 'destroy']);
 
-//Route::get('/multi', function () {
-//    return Inertia::render('Multi');
-//});
-//Route::post('/multi/create', [MultiplayerController::class, 'createRoom'])->name('multiplayer.create');
+// マルチルーム参加
+Route::get('multi/rooms/{room}/join', [MultiRoomJoinController::class, '__invoke'])
+    ->whereUuid('room')
+    ->name('multi.rooms.join');
 
+// マルチゲームプレイ
+Route::group(['middleware' => ['room.auth']], function () {
+    Route::get('multi/rooms/{room}/play', [GamePlayController::class, 'show'])
+        ->whereUuid('room')
+        ->name('multi.rooms.play.show');
+    Route::put('multi/rooms/{room}/play', [GamePlayController::class, 'update'])
+        ->whereUuid('room')
+        ->name('multi.rooms.play.update');
+    Route::delete('multi/rooms/{room}/play', [GamePlayController::class, 'destroy'])
+        ->whereUuid('room')
+        ->name('multi.rooms.play.destroy');
+});
 //require __DIR__.'/auth.php';

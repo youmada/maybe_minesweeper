@@ -51,6 +51,7 @@ class MultiRoomController extends Controller
         $players = [$ownerId];
         $expireAt = Carbon::now()->addDays($attributes['expireAt'])->toDateString();
 
+        // ルーム作成
         $roomId = $createRoomService(
             $attributes['name'],
             $attributes['maxPlayer'],
@@ -60,9 +61,11 @@ class MultiRoomController extends Controller
             $players,
             MultiRoomController::FLAG_LIMIT);
 
+        $room = Room::find($roomId);
+        // ルーム作成時のゲーム初回作成
         $minesweeperService->initializeGame($roomId, $attributes['boardWidth'], $attributes['boardHeight'], $attributes['mineRatio']);
 
-        return redirect()->route('multi.play.show');
+        return Inertia::location(route('multi.rooms.join', ['room' => $room->public_id, 'token' => $room->magic_link_token]));
     }
 
     /**
