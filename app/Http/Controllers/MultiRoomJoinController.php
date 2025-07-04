@@ -30,6 +30,6 @@ class MultiRoomJoinController extends Controller
             $room->save();
         }
 
-        return Inertia::location(route('multi.rooms.play.show', ['room' => $room]));
+        return Inertia::location(route('multi.rooms.play.show'));
     }
 }

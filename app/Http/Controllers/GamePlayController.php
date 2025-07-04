@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\MultiPlayGameResource;
 use App\Models\Room;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -13,7 +14,7 @@ class GamePlayController extends Controller
      */
     public function show(Room $room)
     {
-        return Inertia::render('Multi/Play');
+        return Inertia::render('Multi/Play', ['data' => MultiPlayGameResource::make($room)->resolve()]);
     }
 
     /**
