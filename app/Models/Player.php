@@ -2,14 +2,13 @@
 
 namespace App\Models;
 
-use Illuminate\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Foundation\Auth\User as Authenticatable;
 
-class Player extends Model
+class Player extends Authenticatable
 {
-    use Authenticatable, HasFactory;
+    use HasFactory;
 
     protected $fillable = [
         'session_id',

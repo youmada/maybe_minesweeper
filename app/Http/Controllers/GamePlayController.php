@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\PlayerJoinedRoom;
 use App\Http\Resources\MultiPlayGameResource;
 use App\Models\Room;
 use Illuminate\Http\Request;
@@ -12,8 +13,11 @@ class GamePlayController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Room $room)
+    public function show(Request $request, Room $room)
     {
+        $playerId = $request->session()->get('player_id') ?? '';
+        PlayerJoinedRoom::dispatch($room->id, $playerId);
+
         return Inertia::render('Multi/Play', ['data' => MultiPlayGameResource::make($room)->resolve()]);
     }
 

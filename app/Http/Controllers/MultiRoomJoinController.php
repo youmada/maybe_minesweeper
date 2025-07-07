@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Player;
 use App\Models\Room;
 use App\Services\Multi\JoinRoomService;
 use App\Services\Multi\MagicLinkService;
 use DB;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 
 class MultiRoomJoinController extends Controller
@@ -30,6 +32,12 @@ class MultiRoomJoinController extends Controller
                 $JoinRoomService($room->id, $playerId);
             }
         });
+
+        $player = Player::where('session_id', $playerId)->first();
+
+        $room->players()->syncWithoutDetaching([$player->id]);
+
+        Auth::guard('magicLink')->login($player);
 
         return Inertia::location(route('multi.rooms.play.show', ['room' => $room]));
     }

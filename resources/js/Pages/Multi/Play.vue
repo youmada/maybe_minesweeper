@@ -1,20 +1,28 @@
 <script setup lang="ts">
 import ModalWindow from '@/Components/ModalWindow.vue';
-import { reactive, ref } from 'vue';
+import { computed, reactive, ref } from 'vue';
 
 type RoomData = {
-    roomId: string;
+    publicId: string;
     players: string[];
     maxPlayer: number;
-    publicId: string;
     magicLink: string;
+};
+
+type Player = {
+    sessionId: string;
 };
 const props = defineProps<{
     data: RoomData;
 }>();
 const roomData = reactive(props.data);
-console.log(props.data);
-const isPLayerGathering = ref(false);
+
+const playButtonText = computed(() => {
+    if (roomPlayer.value.length >= roomData.maxPlayer) {
+        return 'ゲームスタート！';
+    }
+    return '今すぐプレイする';
+});
 
 const clipBoard = (link: string) => {
     navigator.clipboard.writeText(link);
@@ -31,6 +39,32 @@ const showToast = (text: string) => {
         toastText.value = '';
     }, 2000);
 };
+
+const roomPlayer = ref<Player[]>([]);
+
+Echo.join(`room.${roomData.publicId}`)
+    .here((players: Player[]) => {
+        roomPlayer.value = players;
+    })
+    .joining((player: Player) => {
+        const alreadyExists = roomPlayer.value.some(
+            (p) => p.sessionId === player.sessionId,
+        );
+        if (alreadyExists) {
+            return;
+        }
+        roomPlayer.value.push(player);
+    })
+    .leaving((player: Player) => {
+        roomPlayer.value = roomPlayer.value.filter(
+            (p) => player.sessionId !== p.sessionId,
+        );
+    })
+    .error((error: any) => {
+        showToast(
+            '現在通信エラーが発生しています。ブラウザをリロードしてください。',
+        );
+    });
 </script>
 <template>
     <ModalWindow>
@@ -43,7 +77,7 @@ const showToast = (text: string) => {
             class="m-4 flex w-3/6 justify-around text-4xl font-bold text-white"
         >
             <span>現在</span>
-            <span>{{ roomData.players.length }}</span>
+            <span>{{ roomPlayer.length }}</span>
             <span>/</span>
             <span>{{ roomData.maxPlayer }}</span>
         </div>
@@ -76,11 +110,8 @@ const showToast = (text: string) => {
                 </svg>
             </button>
         </div>
-        <button
-            v-if="!isPLayerGathering"
-            class="btn btn-xs m-3 sm:btn-sm md:btn-md lg:btn-lg xl:btn-xl"
-        >
-            今すぐプレイする！
+        <button class="btn btn-xs m-3 sm:btn-sm md:btn-md lg:btn-lg xl:btn-xl">
+            {{ playButtonText }}
         </button>
     </ModalWindow>
 

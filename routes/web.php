@@ -34,7 +34,7 @@ Route::get('multi/rooms/{room}/join', [MultiRoomJoinController::class, '__invoke
     ->name('multi.rooms.join');
 
 // マルチゲームプレイ
-Route::group(['middleware' => ['room.auth']], function () {
+Route::group(['middleware' => ['room.auth', 'auth:magicLink']], function () {
     Route::get('multi/rooms/{room}/play', [GamePlayController::class, 'show'])
         ->whereUuid('room')
         ->name('multi.rooms.play.show');
