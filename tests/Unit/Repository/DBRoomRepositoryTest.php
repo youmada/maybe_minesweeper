@@ -2,6 +2,7 @@
 
 use App\Exceptions\RoomException;
 use App\Factories\RoomAggregateFactory;
+use App\Models\Player;
 use App\Repositories\DB\RoomRepository;
 use Illuminate\Support\Carbon;
 
@@ -12,29 +13,33 @@ beforeEach(function () {
         3,
         'owner',
         Carbon::now()->toDateString(),
+        true,
+        ['owner'],
     );
 
     $this->roomRepository = new RoomRepository;
 });
 
 it('can save the room data in DB', function () {
-
+    // 準備
     $dummyTime = now();
     Carbon::setTestNow(Carbon::parse($dummyTime));
+
     // 実行
     $room = $this->roomAggregate->getRoom();
     $roomState = $this->roomAggregate->getRoomState();
     $this->assertDatabaseMissing('rooms');
     $this->roomRepository->create($this->roomAggregate);
+
     // アサート
+    $player = Player::where('session_id', 'owner')->first();
     $this->assertDatabaseCount('rooms', 1);
     $this->assertDatabaseCount('room_states', 1);
     $this->assertDatabaseHas('rooms', [
         'name' => $room->getName(),
         'max_player' => $room->getMaxPlayer(),
         'is_private' => true,
-        'owner_id' => 'owner',
-        'players' => json_encode($room->getPlayers()),
+        'owner_id' => $player->id,
     ]);
 
     $this->assertDatabaseHas('room_states', [
@@ -43,11 +48,9 @@ it('can save the room data in DB', function () {
         'flag_limit' => $roomState->getFlagLimit(),
     ]);
 
-    $this->assertDatabaseHas('room_users',
+    $this->assertDatabaseHas('players',
         [
-            'room_id' => $this->roomId,
-            'user_id' => 'owner',
-            'joined_at' => $dummyTime,
+            'session_id' => 'owner',
         ]
     );
 });
@@ -65,7 +68,6 @@ it('can not save the room data in DB', function () {
 })->throws(RoomException::class);
 
 it('can get the room data from DB', function () {
-
     // 準備
     $this->roomRepository->create($this->roomAggregate);
 
@@ -84,17 +86,20 @@ it('can update room data in DB', function () {
     $this->roomRepository->create($this->roomAggregate);
     $this->roomAggregate->startRoom();
     $this->roomAggregate->join('user1');
+
     // 実行
     $this->roomRepository->update($this->roomAggregate, $this->roomId);
+
     // アサート
+    $owner = Player::where('session_id', 'owner')->first();
+    $user1 = Player::where('session_id', 'user1')->first();
     $room = $this->roomAggregate->getRoom();
     $roomState = $this->roomAggregate->getRoomState();
     $this->assertDatabaseHas('rooms', [
         'name' => $room->getName(),
         'max_player' => $room->getMaxPlayer(),
         'is_private' => true,
-        'owner_id' => 'owner',
-        'players' => json_encode($this->roomAggregate->getPlayers()),
+        'owner_id' => $owner->id,
     ]);
     $this->assertDatabaseHas('room_states', [
         'turn_order' => json_encode($roomState->getTurnOrder()),
@@ -102,16 +107,14 @@ it('can update room data in DB', function () {
         'flag_limit' => $roomState->getFlagLimit(),
     ]);
 
-    $this->assertDatabaseHas('room_users',
+    $this->assertDatabaseHas('players',
         [
-            'room_id' => $this->roomId,
-            'user_id' => 'owner',
+            'session_id' => 'owner',
         ]
     );
-    $this->assertDatabaseHas('room_users',
+    $this->assertDatabaseHas('players',
         [
-            'room_id' => $this->roomId,
-            'user_id' => 'user1',
+            'session_id' => 'user1',
         ]
     );
 });

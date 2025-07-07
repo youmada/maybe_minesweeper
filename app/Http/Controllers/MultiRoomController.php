@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Resources\RoomIndexResource;
+use App\Models\Player;
 use App\Models\Room;
 use App\Services\Minesweeper\MinesweeperService;
 use App\Services\Multi\CreateRoomService;
@@ -19,7 +20,14 @@ class MultiRoomController extends Controller
      */
     public function index(Request $request)
     {
-        $rooms = Room::where('owner_id', $request->session()->get('player_id', 'test'))->get();
+        // DB内部の主キーに変換する必要がある。
+        $player = Player::where('session_id', $request->session()->get('player_id'))->first();
+
+        if (! $player) {
+            // プレイヤーが存在しない場合は空のルームリストを返す
+            return Inertia::render('Multi/Rooms', ['data' => []]);
+        }
+        $rooms = Room::where('owner_id', $player->id)->get();
 
         return Inertia::render('Multi/Rooms', ['data' => RoomIndexResource::collection($rooms)->resolve()]);
     }

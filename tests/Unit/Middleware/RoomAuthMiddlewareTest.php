@@ -3,6 +3,7 @@
 namespace Tests\Unit\Middleware;
 
 use App\Http\Middleware\RoomAuthMiddleware;
+use App\Models\Player;
 use App\Models\Room;
 use App\Utils\UUIDFactory;
 use Illuminate\Support\Facades\Route;
@@ -15,10 +16,19 @@ beforeEach(function () {
         ->whereUuid('room')
         ->middleware(['web', RoomAuthMiddleware::class]);
 
+    $this->player = Player::factory()->create([
+        'session_id' => $this->playerId,
+    ]);
+
     $this->room = Room::factory()->create([
         'magic_link_token' => Str::random(32),
-        'players' => [$this->playerId],
         'public_id' => UUIDFactory::generate(),
+        'owner_id' => $this->player->id,
+    ]);
+
+    $this->room->players()->attach($this->player->id, [
+        'joined_at' => now(),
+        'left_at' => null,
     ]);
 });
 

@@ -26,7 +26,7 @@ it('creates a multi room successfully
     // 準備
     $this->assertDatabaseMissing('rooms');
     $this->assertDatabaseMissing('room_states');
-    $this->assertDatabaseMissing('room_users');
+    $this->assertDatabaseMissing('players');
     // 実行
     $service = new CreateRoomService($this->mockRoomRepository, $this->mockRoomFactory);
 
