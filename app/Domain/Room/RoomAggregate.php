@@ -33,19 +33,19 @@ class RoomAggregate
         return $this->roomState;
     }
 
-    public function join(string $userId): void
+    public function join(string $playerId): void
     {
-        if (! $this->room->canJoinPlayer()) {
+        if (! $this->room->canJoinPlayer($playerId)) {
             throw RoomException::playerException('ルーム上限人数に達しました');
         }
-        $this->room->joinRoom($userId);
-        $this->roomState->pushTurnOrder($userId);
+        $this->room->joinRoom($playerId);
+        $this->roomState->pushTurnOrder($playerId);
     }
 
     public function leave(string $userId): void
     {
         if (! $this->room->isJoined($userId)) {
-            throw RoomException::PlayerException('ユーザーが存在しません');
+            throw RoomException::PlayerException('プレイヤーが存在しません');
         }
         $this->room->leaveRoom($userId);
         $this->roomState->removeTurnOrder($userId);

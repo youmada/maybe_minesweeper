@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\Player;
 use App\Models\Room;
 use App\Utils\UUIDFactory;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -18,10 +19,9 @@ class RoomFactory extends Factory
         return [
             'public_id' => UUIDFactory::generate(),
             'name' => $this->faker->name(),
-            'owner_id' => $this->faker->word(),
+            'owner_id' => Player::factory(),
             'magic_link_token' => Str::random(32),
             'max_player' => Arr::random([2, 3, 4]),
-            'players' => [],
             'is_private' => $this->faker->boolean(),
             'expire_at' => Carbon::now()->addDays(1),
             'last_activity_at' => Carbon::now(),

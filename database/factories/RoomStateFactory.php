@@ -3,24 +3,23 @@
 namespace Database\Factories;
 
 use App\Models\Room;
-use App\Models\RoomUser;
+use App\Models\RoomState;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Str;
 
-class RoomUserFactory extends Factory
+class RoomStateFactory extends Factory
 {
-    protected $model = RoomUser::class;
+    protected $model = RoomState::class;
 
     public function definition(): array
     {
         return [
-            'user_id' => Str::random(32),
-            'joined_at' => Carbon::now(),
-            'left_at' => Carbon::now(),
+            'room_id' => Room::factory(),
+            'turn_order' => [],
+            'flag_limit' => 5,
+            'status' => 'waiting',
             'created_at' => Carbon::now(),
             'updated_at' => Carbon::now(),
-            'room_id' => Room::factory(),
         ];
     }
 }

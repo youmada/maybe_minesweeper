@@ -5,6 +5,7 @@ namespace App\Models;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
 use Ramsey\Uuid\Uuid;
@@ -35,7 +36,6 @@ class Room extends Model
         'owner_id',
         'max_player',
         'magic_link_token',
-        'players',
         'is_private',
         'expire_at',
     ];
@@ -46,13 +46,19 @@ class Room extends Model
 
     protected $casts = [
         'id' => 'string',
-        'players' => 'array',
         'is_private' => 'boolean',
     ];
 
     public function roomStates(): HasMany
     {
         return $this->hasMany(RoomState::class);
+    }
+
+    public function players(): belongsToMany
+    {
+        return $this->belongsToMany(Player::class, 'room_player')
+            ->withPivot('joined_at', 'left_at')
+            ->withTimestamps();
     }
 
     public function setPublicIdAttribute($value): void
@@ -79,11 +85,11 @@ class Room extends Model
          * - すでに参加済みのプレイヤーは常に true
          * - 未参加のプレイヤーは max_player 未満なら true
          */
-        if (in_array($playerId, $this->players, true)) {
+        if ($this->players()->where('session_id', $playerId)->exists()) {
             return true;
         }
 
-        return count($this->players) < $this->max_player;
+        return $this->players()->count() < $this->max_player;
     }
 
     public function searchByMagicLinkToken(string $magicLinkToken): ?Room
@@ -96,6 +102,18 @@ class Room extends Model
         return $query->where('public_id', Uuid::fromString($publicId)->getBytes());
     }
 
+    public static function canJoin(string $roomPublicId, string $sessionId): bool
+    {
+        $room = Room::where('expire_at', '>', Carbon::now())
+            ->findByPublicId($roomPublicId)
+            ->first();
+        if (! $room) {
+            return false;
+        }
+
+        return $room->players()->where('session_id', $sessionId)->exists();
+    }
+
     public function toArray(): array
     {
         $array = parent::toArray();
@@ -105,6 +123,12 @@ class Room extends Model
         foreach ($array as $key => $value) {
             $camelCasedArray[Str::camel($key)] = $value;
         }
+
+        $camelCasedArray['players'] = $this->players()->get()->map(function ($player) {
+            return $player->session_id;
+        })->toArray();
+
+        $camelCasedArray['ownerId'] = $this->players()->get()->first()->session_id;
 
         return $camelCasedArray;
     }

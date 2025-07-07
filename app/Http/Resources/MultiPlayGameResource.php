@@ -15,7 +15,7 @@ class MultiPlayGameResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            'public_id' => $this->public_id,
+            'publicId' => $this->public_id,
             'name' => $this->name,
             'maxPlayer' => $this->max_player,
             'players' => $this->players,

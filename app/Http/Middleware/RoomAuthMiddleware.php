@@ -11,23 +11,23 @@ class RoomAuthMiddleware
 {
     /**
      * Handle an incoming request.
+     * セッションにあるplayerIdがroom_playerテーブルに特録されている。かつ
+     * ルーム有効期限以内かつ
+     * ルームが存在している
      *
      * @param  \Closure(Request): (Response)  $next
      */
     public function handle(Request $request, Closure $next): Response
     {
-        $roomId = $request->route('room')->id;
-        $playerId = $request->session()->get('player_id', '');
+        $roomId = $request->route('room')->public_id;
+        $sessionId = $request->session()->get('player_id', '');
         try {
-            $isJoined = Room::whereJsonContains('players', $playerId)
-                ->where('id', $roomId)
-                ->where('expire_at', '>', now())
-                ->exists();
+            $canJoin = Room::canJoin($roomId, $sessionId);
         } catch (\Exception $e) {
-            $isJoined = false;
+            $canJoin = false;
         }
 
-        if (! $isJoined) {
+        if (! $canJoin) {
             abort(401);
         }
 

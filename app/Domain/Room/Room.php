@@ -38,15 +38,27 @@ class Room
         return $this->isPrivate;
     }
 
-    public function canJoinPlayer(): bool
+    /**
+     *  責任範囲：
+     *  一度参加したプレイヤーはプレイヤー上限に引っかからない
+     */
+    public function canJoinPlayer(string $playerId): bool
     {
+        if ($this->isJoined($playerId)) {
+            return true;
+        }
+
         return $this->getMaxPlayer() > count($this->players);
     }
 
-    public function joinRoom(string $user): bool
+    public function joinRoom(string $playerId): bool
     {
-        if ($this->canJoinPlayer()) {
-            $this->players[] = $user;
+        // すでに参加しているので、playersに追加しない
+        if ($this->isJoined($playerId)) {
+            return true;
+        }
+        if ($this->canJoinPlayer($playerId)) {
+            $this->players[] = $playerId;
 
             return true;
         }
