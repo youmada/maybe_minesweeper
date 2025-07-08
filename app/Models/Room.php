@@ -46,6 +46,7 @@ class Room extends Model
 
     protected $casts = [
         'id' => 'string',
+        'owner_id' => 'string',
         'is_private' => 'boolean',
     ];
 
@@ -128,7 +129,7 @@ class Room extends Model
             return $player->session_id;
         })->toArray();
 
-        $camelCasedArray['ownerId'] = $this->players()->get()->first()->session_id;
+        $camelCasedArray['ownerId'] = $this->players()->first()?->session_id;
 
         return $camelCasedArray;
     }

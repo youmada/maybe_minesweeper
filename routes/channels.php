@@ -2,9 +2,10 @@
 
 namespace App\Routes;
 
+use App\Models\Player;
 use Illuminate\Support\Facades\Broadcast;
 
-Broadcast::channel('room.{roomId}', function ($player, $roomId) {
+Broadcast::channel('room.{roomId}', function (Player $player, $roomId) {
     return [
         'sessionId' => $player->session_id,
     ];

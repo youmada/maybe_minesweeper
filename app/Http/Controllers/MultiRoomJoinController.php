@@ -6,7 +6,6 @@ use App\Models\Player;
 use App\Models\Room;
 use App\Services\Multi\JoinRoomService;
 use App\Services\Multi\MagicLinkService;
-use DB;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
@@ -27,15 +26,12 @@ class MultiRoomJoinController extends Controller
             abort(401);
         }
         // 参加したユーザIDを保存
-        DB::transaction(function () use ($JoinRoomService, $room, $playerId) {
-            if (! in_array($playerId, $room->players->toArray(), true)) {
-                $JoinRoomService($room->id, $playerId);
-            }
-        });
+
+        if (! in_array($playerId, $room->players->toArray(), true)) {
+            $JoinRoomService($room->id, $playerId);
+        }
 
         $player = Player::where('session_id', $playerId)->first();
-
-        $room->players()->syncWithoutDetaching([$player->id]);
 
         Auth::guard('magicLink')->login($player);
 

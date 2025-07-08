@@ -86,7 +86,6 @@ class RoomRepository implements RoomRepositoryInterface
     {
         $room = Room::where('id', $roomId)->first();
         $addPlayerIds = $roomAggregate->getPlayers();
-        //        $currentRoomPlayers = $room->players ?? [];
         try {
             $this->checkRoomAndStateExists($roomId);
 
@@ -96,6 +95,7 @@ class RoomRepository implements RoomRepositoryInterface
             Room::where('id', $roomId)->update($this->getMappedRoom($roomData));
             RoomState::where('room_id', $roomId)->update($this->getMappedRoomState($roomStateData, $roomId));
 
+            // ルームにプレイヤーを紐付ける
             $room->players()->detach();
             foreach ($addPlayerIds as $playerId) {
                 $player = Player::firstOrCreate([

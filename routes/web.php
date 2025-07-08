@@ -38,6 +38,9 @@ Route::group(['middleware' => ['room.auth', 'auth:magicLink']], function () {
     Route::get('multi/rooms/{room}/play', [GamePlayController::class, 'show'])
         ->whereUuid('room')
         ->name('multi.rooms.play.show');
+    Route::post('multi/rooms/{room}/play/start', [GamePlayController::class, 'store'])
+        ->whereUuid('room')
+        ->name('multi.rooms.play.store');
     Route::put('multi/rooms/{room}/play', [GamePlayController::class, 'update'])
         ->whereUuid('room')
         ->name('multi.rooms.play.update');

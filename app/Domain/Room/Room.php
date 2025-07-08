@@ -10,7 +10,7 @@ class Room
         private array $players,
         private string $expireAt,
         private readonly bool $isPrivate,
-        private readonly string $ownerId,
+        private readonly ?string $ownerId,
     ) {}
 
     public function getMaxPlayer(): int

@@ -10,16 +10,12 @@ beforeEach(function () {
     $this->player2 = PLayer::factory()->create([]);
     $this->room = Room::factory()->create([
         'owner_id' => $this->player1->id,
+        'max_player' => 2,
     ]);
     RoomState::factory()->recycle($this->room)->create();
-    $this->room->players()->attach($this->player1->id, [
-        'joined_at' => now(),
-        'left_at' => null,
-    ]);
-    $this->room->refresh();
 });
 
-it('can join a room. because of magic link check passed', function () {
+it('can join a room', function () {
     $response = $this->withSession(['player_id' => $this->player1->session_id])
         ->get("/multi/rooms/{$this->room->public_id}/join?token={$this->room->magic_link_token}");
     $response->assertRedirect('/multi/rooms/'.$this->room->public_id.'/play');
@@ -73,6 +69,11 @@ it('can not join a room. because of player limit is over.', function () {
     $this->room->update([
         'max_player' => 1,
     ]);
+    $this->room->players()->attach($this->player1->id, [
+        'joined_at' => now(),
+        'left_at' => null,
+    ]);
+    $this->room->refresh();
     $this->withSession(['player_id' => UUIDFactory::generate()])
         ->get("/multi/rooms/{$this->room->public_id}/join?token={$this->room->magic_link_token}")
         ->assertStatus(401);
