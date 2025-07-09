@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import PrimaryButton from '@/Components/PrimaryButton.vue';
-import { Head, Link } from '@inertiajs/vue3';
+import { Head, Link, router } from '@inertiajs/vue3';
 import { ref } from 'vue';
 
 type Room = {
@@ -41,8 +41,9 @@ const clipBoard = (link: string) => {
             </li>
             <li
                 v-for="(room, key) in rooms"
+                @click="router.get(room.magicLink)"
                 :key="key"
-                class="list-row m-4 bg-gray-700"
+                class="list-row m-4 cursor-pointer bg-gray-700"
             >
                 <div class="m-3 flex items-center">
                     <span class="text-md font-bold">{{ room.name }}</span>
@@ -52,7 +53,7 @@ const clipBoard = (link: string) => {
                 </div>
                 <div class="m-3">
                     <button
-                        @click="() => clipBoard(room.magicLink)"
+                        @click.stop="clipBoard(room.magicLink)"
                         class="btn btn-ghost btn-square"
                     >
                         <svg
