@@ -1,24 +1,66 @@
 <script setup lang="ts">
 import ModalWindow from '@/Components/ModalWindow.vue';
-import { computed, reactive, ref } from 'vue';
+import PrimaryButton from '@/Components/PrimaryButton.vue';
+import BoardTile from '@/Components/Tile.vue';
+import { useMinesweeper } from '@/Composables/useMInesweeper';
+import { useRoomChannel } from '@/Composables/useRoomChannel';
+import { useToast } from '@/Composables/useToast';
+import { Tile } from '@/custom/domain/mineSweeper';
+import { computed, onMounted, onUnmounted, reactive, ref } from 'vue';
 
 type RoomData = {
     publicId: string;
-    players: string[];
+    ownerId: string;
     maxPlayer: number;
     magicLink: string;
+    status: string;
 };
 
-type Player = {
-    sessionId: string;
+type GameState = {
+    width: number;
+    height: number;
+    numOfMines: number;
+    isGameStarted: boolean;
+    isGameOver: boolean;
+    isGameClear: boolean;
+    tileStates: Array<Array<Tile>>;
+    visitedTiles: Array<Tile>;
 };
+
 const props = defineProps<{
-    data: RoomData;
+    data: {
+        room: RoomData;
+        game: GameState;
+    };
 }>();
-const roomData = reactive(props.data);
+const roomData = reactive(props.data.room);
+const gameData = reactive(props.data.game);
+const isFlagMode = ref(false);
+
+const { showToast, isToastShow, toastText } = useToast();
+const { roomPlayers, leaveChannel } = useRoomChannel(roomData.publicId);
+const {
+    startGame,
+    settingMultiPlay,
+    gameState,
+    handleFlagAction,
+    handleTileAction,
+} = useMinesweeper();
+
+const restTiles = computed(() => {
+    const totalTiles = gameData.width * gameData.height;
+    return totalTiles - gameData.visitedTiles.length;
+});
+
+onMounted(async () => {
+    settingMultiPlay(roomData.publicId);
+});
+onUnmounted(() => {
+    leaveChannel(true);
+});
 
 const playButtonText = computed(() => {
-    if (roomPlayer.value.length >= roomData.maxPlayer) {
+    if (roomPlayers.value.length >= roomData.maxPlayer) {
         return 'ゲームスタート！';
     }
     return '今すぐプレイする';
@@ -28,46 +70,72 @@ const clipBoard = (link: string) => {
     navigator.clipboard.writeText(link);
     showToast('URLをコピーしました');
 };
-
-const toastText = ref('');
-const isToastShow = ref(false);
-const showToast = (text: string) => {
-    isToastShow.value = true;
-    toastText.value = text;
-    setTimeout(() => {
-        isToastShow.value = false;
-        toastText.value = '';
-    }, 2000);
+const handleGameStart = async () => {
+    // startGameは開始できるかをbooleanで返す
+    if (await startGame()) {
+        roomData.status = 'standby';
+    }
+};
+const toggleFlagMode = () => {
+    isFlagMode.value = !isFlagMode.value;
 };
 
-const roomPlayer = ref<Player[]>([]);
+const handleClickTile = (x: number, y: number) => {
+    // フラグ配置の時
+    if (isFlagMode.value) {
+        handleFlagAction(x, y);
+    } else {
+        handleTileAction(x, y);
+    }
+};
 
-Echo.join(`room.${roomData.publicId}`)
-    .here((players: Player[]) => {
-        roomPlayer.value = players;
-    })
-    .joining((player: Player) => {
-        const alreadyExists = roomPlayer.value.some(
-            (p) => p.sessionId === player.sessionId,
-        );
-        if (alreadyExists) {
-            return;
-        }
-        roomPlayer.value.push(player);
-    })
-    .leaving((player: Player) => {
-        roomPlayer.value = roomPlayer.value.filter(
-            (p) => player.sessionId !== p.sessionId,
-        );
-    })
-    .error((error: any) => {
-        showToast(
-            '現在通信エラーが発生しています。ブラウザをリロードしてください。',
-        );
-    });
+const isBoardReady = computed(() => {
+    return roomData.status === 'playing' || roomData.status === 'standby';
+});
 </script>
 <template>
-    <ModalWindow>
+    <div v-if="isBoardReady">
+        <div class="w-full">
+            <div
+                v-if="gameData.isGameStarted"
+                class="m-5 mx-auto flex w-fit rounded-2xl border-2 border-gray-500 p-5"
+            >
+                <div class="m-2 mr-4 flex justify-around">
+                    <p class="inline text-center text-2xl font-bold">
+                        <span> 残りタイル数 </span>
+                        <span>{{ restTiles }}</span>
+                    </p>
+                </div>
+                <PrimaryButton
+                    :class="{
+                        'bg-orange-400 text-white hover:bg-orange-400':
+                            isFlagMode,
+                    }"
+                    :clickFn="() => toggleFlagMode()"
+                    >フラグモード
+                </PrimaryButton>
+            </div>
+            <div class="m-auto flex w-fit flex-col">
+                <div
+                    class="flex w-fit"
+                    v-for="(verticalTile, rowIndex) in gameData.tileStates"
+                    :key="`row-${rowIndex}`"
+                >
+                    <div
+                        v-for="(tile, colIndex) in verticalTile"
+                        :key="`col-${colIndex}`"
+                    >
+                        <BoardTile
+                            @click="() => handleClickTile(tile.x, tile.y)"
+                            :tile="tile"
+                        ></BoardTile>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <ModalWindow v-else>
         <h2 class="m-4 text-3xl font-bold text-white">
             他のプレイヤーを待っています
         </h2>
@@ -77,7 +145,7 @@ Echo.join(`room.${roomData.publicId}`)
             class="m-4 flex w-3/6 justify-around text-4xl font-bold text-white"
         >
             <span>現在</span>
-            <span>{{ roomPlayer.length }}</span>
+            <span>{{ roomPlayers.length }}</span>
             <span>/</span>
             <span>{{ roomData.maxPlayer }}</span>
         </div>
@@ -110,7 +178,10 @@ Echo.join(`room.${roomData.publicId}`)
                 </svg>
             </button>
         </div>
-        <button class="btn btn-xs m-3 sm:btn-sm md:btn-md lg:btn-lg xl:btn-xl">
+        <button
+            @click="handleGameStart"
+            class="btn btn-xs m-3 border-gray-500 sm:btn-sm md:btn-md lg:btn-lg xl:btn-xl"
+        >
             {{ playButtonText }}
         </button>
     </ModalWindow>
