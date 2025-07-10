@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\Player;
 use App\Models\Room;
 use App\Models\RoomState;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -16,6 +17,7 @@ class RoomStateFactory extends Factory
         return [
             'room_id' => Room::factory(),
             'turn_order' => [],
+            'current_player' => Player::factory(),
             'flag_limit' => 5,
             'status' => 'waiting',
             'created_at' => Carbon::now(),

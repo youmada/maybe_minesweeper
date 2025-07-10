@@ -1,9 +1,9 @@
 <?php
 
+use App\Domain\Room\RoomStatus;
 use App\Models\Player;
 use App\Models\Room;
 use App\Models\RoomState;
-use App\Services\Minesweeper\MinesweeperService;
 use App\Utils\UUIDFactory;
 
 beforeEach(function () {
@@ -28,27 +28,17 @@ beforeEach(function () {
 });
 
 it('should start game play', function () {
-    $this->assertDatabaseMissing('game_states');
-    $mockService = Mockery::mock(MinesweeperService::class);
-    $mockService->shouldReceive('getGameStateForClient')
-        ->once();
-
-    $this->app->instance(MinesweeperService::class, $mockService);
+    $this->assertDatabaseHas('room_states', [
+        'room_id' => $this->room->id,
+        'status' => RoomStatus::WAITING->value,
+    ]);
     $response = $this->actingAs($this->player, 'magicLink')
         ->withSession(['player_id' => $this->player->session_id])
         ->post("multi/rooms/{$this->room->public_id}/play/start");
-
-    $response->assertOk();
-
-    $response->assertJsonStructure([
-        'game' => [
-            'board',
-            'width',
-            'height',
-        ],
-        'room' => [
-            'turnOrder',
-            'status',
-        ],
+    $this->assertDatabaseHas('room_states', [
+        'room_id' => $this->room->id,
+        'status' => RoomStatus::STANDBY->value,
     ]);
+
+    $response->assertStatus(201);
 });

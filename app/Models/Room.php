@@ -5,8 +5,8 @@ namespace App\Models;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
 use Ramsey\Uuid\Uuid;
 
@@ -50,9 +50,9 @@ class Room extends Model
         'is_private' => 'boolean',
     ];
 
-    public function roomStates(): HasMany
+    public function roomStates(): BelongsTo
     {
-        return $this->hasMany(RoomState::class);
+        return $this->belongsTo(RoomState::class);
     }
 
     public function players(): belongsToMany

@@ -27,7 +27,9 @@ class MultiRoomController extends Controller
             // プレイヤーが存在しない場合は空のルームリストを返す
             return Inertia::render('Multi/Rooms', ['data' => []]);
         }
-        $rooms = Room::where('owner_id', $player->id)->get();
+        $rooms = Room::where('owner_id', $player->id)
+            ->where('expire_at', '>', Carbon::now()->toDateString())
+            ->get();
 
         return Inertia::render('Multi/Rooms', ['data' => RoomIndexResource::collection($rooms)->resolve()]);
     }

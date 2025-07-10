@@ -2,12 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Events\PlayerJoinedRoom;
 use App\Http\Resources\MultiPlayGameResource;
 use App\Models\Room;
 use App\Models\RoomState;
-use App\Repositories\Composites\GameCompositeRepository;
-use App\Services\Minesweeper\MinesweeperService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -18,9 +15,6 @@ class GamePlayController extends Controller
      */
     public function show(Request $request, Room $room)
     {
-        $playerId = $request->session()->get('player_id') ?? '';
-        PlayerJoinedRoom::dispatch($room->id, $playerId);
-
         return Inertia::render('Multi/Play', ['data' => MultiPlayGameResource::make($room)->resolve()]);
     }
 
@@ -41,23 +35,11 @@ class GamePlayController extends Controller
     }
 
     // ゲーム開始処理を行う
-    public function store(Request $request, Room $room, GameCompositeRepository $gameCompositeRepository)
+    public function store(Request $request, Room $room)
     {
-        $gameService = app(MinesweeperService::class);
-        $gameState = $gameCompositeRepository->getState($room->id);
         $roomState = RoomState::where('room_id', $room->id)->first();
+        $roomState->update(['status' => 'standby']);
 
-        return response()->json([
-            'game' => [
-                'board' => $gameService->getGameStateForClient($gameState),
-                'width' => $gameState->getWidth(),
-                'height' => $gameState->getHeight(),
-            ],
-
-            'room' => [
-                'turnOrder' => $roomState->turn_order,
-                'status' => $roomState->status,
-            ],
-        ]);
+        return response()->json(['status' => 'ok'], 201);
     }
 }

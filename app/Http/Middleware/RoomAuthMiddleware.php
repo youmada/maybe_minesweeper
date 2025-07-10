@@ -4,22 +4,25 @@ namespace App\Http\Middleware;
 
 use App\Models\Room;
 use Closure;
-use Illuminate\Http\Request;
+use Illuminate\Auth\Middleware\Authenticate;
 use Symfony\Component\HttpFoundation\Response;
 
-class RoomAuthMiddleware
+class RoomAuthMiddleware extends Authenticate
 {
+    protected function redirectTo($request)
+    {
+        return route('Home');
+    }
+
     /**
      * Handle an incoming request.
      * セッションにあるplayerIdがroom_playerテーブルに特録されている。かつ
      * ルーム有効期限以内かつ
      * ルームが存在している
-     *
-     * @param  \Closure(Request): (Response)  $next
      */
-    public function handle(Request $request, Closure $next): Response
+    public function handle($request, Closure $next, ...$guards): Response
     {
-        $roomId = $request->route('room')->public_id;
+        $roomId = $request->route('room');
         $sessionId = $request->session()->get('player_id', '');
         try {
             $canJoin = Room::canJoin($roomId, $sessionId);

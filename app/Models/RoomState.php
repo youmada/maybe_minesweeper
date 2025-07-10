@@ -15,6 +15,7 @@ class RoomState extends Model
         'room_id',
         'flag_limit',
         'turn_order',
+        'current_player',
         'status',
     ];
 
@@ -27,6 +28,7 @@ class RoomState extends Model
     {
         return [
             'turn_order' => 'array',
+            'current_player' => 'string',
         ];
     }
 

@@ -9,7 +9,7 @@ use Inertia\Inertia;
 // ホーム画面ルート
 Route::get('/', function () {
     return Inertia::render('Home');
-});
+})->name('Home');
 
 // シングルプレイ設定画面ルート
 Route::get('/single', function () {
@@ -48,4 +48,4 @@ Route::group(['middleware' => ['room.auth', 'auth:magicLink']], function () {
         ->whereUuid('room')
         ->name('multi.rooms.play.destroy');
 });
-//require __DIR__.'/auth.php';
+// require __DIR__.'/auth.php';
