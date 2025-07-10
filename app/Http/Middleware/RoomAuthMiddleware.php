@@ -5,13 +5,14 @@ namespace App\Http\Middleware;
 use App\Models\Room;
 use Closure;
 use Illuminate\Auth\Middleware\Authenticate;
+use Illuminate\Http\RedirectResponse;
 use Symfony\Component\HttpFoundation\Response;
 
 class RoomAuthMiddleware extends Authenticate
 {
-    protected function redirectTo($request)
+    protected function redirectTo($request): string|RedirectResponse|null
     {
-        return route('Home');
+        return redirect()->route('Home');
     }
 
     /**

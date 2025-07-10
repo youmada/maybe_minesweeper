@@ -47,7 +47,6 @@ it("should create a room from user's request data.", function () {
         'maxPlayer' => 4,
         'expireAt' => 7,
     ]);
-
     $roomId = Room::where('owner_id', $this->player->id)->first()->id;
 
     $room = Room::find($roomId);
@@ -64,6 +63,7 @@ it("should create a room from user's request data.", function () {
     $this->assertDatabaseHas('room_states', [
         'room_id' => $roomId,
         'turn_order' => json_encode([]),
+        'current_player' => $player->id,
         'status' => 'waiting',
         'flag_limit' => 5,
     ]);

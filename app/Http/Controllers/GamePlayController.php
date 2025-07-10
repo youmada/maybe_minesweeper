@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\FetchRoomData;
 use App\Http\Resources\MultiPlayGameResource;
 use App\Models\Room;
 use App\Models\RoomState;
@@ -39,6 +40,8 @@ class GamePlayController extends Controller
     {
         $roomState = RoomState::where('room_id', $room->id)->first();
         $roomState->update(['status' => 'standby']);
+
+        FetchRoomData::dispatch($room);
 
         return response()->json(['status' => 'ok'], 201);
     }

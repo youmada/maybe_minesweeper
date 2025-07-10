@@ -39,7 +39,7 @@ class RoomRepository implements RoomRepositoryInterface
                     'session_id' => $toArrayRoom['ownerId'],
                 ]);
                 $room = Room::create($mappedRoom + ['magic_link_token' => $magicLinkToken, 'owner_id' => $player->id]);
-                RoomState::create($this->getMappedRoomState($toArrayRoomState, $room->id));
+                RoomState::create($this->getMappedRoomState($toArrayRoomState, $room->id) + ['current_player' => $player->id]);
 
                 $room->players()->attach($player->id, [
                     'joined_at' => now(),
