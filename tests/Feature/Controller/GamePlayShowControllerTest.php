@@ -25,7 +25,7 @@ beforeEach(function () {
 
 it('should response a room data by inertia.', function () {
     $response = $this->actingAs($this->player, 'magicLink')
-        ->withSession(['player_id' => $this->player->session_id])
+        ->withSession(['public_id' => $this->player->public_id])
         ->get("multi/rooms/{$this->room->public_id}/play");
 
     $response->assertInertia(fn (Assert $inertia) => $inertia
@@ -39,7 +39,7 @@ it('should response a room data by inertia.', function () {
                 ->where('magicLink', config('app.url')."/multi/rooms/{$this->room->public_id}/join?token={$this->room->magic_link_token}")
                 ->where('status', RoomState::where('room_id', $this->room->id)->first()->status)
                 ->where('turnOrder', RoomState::where('room_id', $this->room->id)->first()->turn_order)
-                ->where('currentPlayer', $this->player->session_id)
+                ->where('currentPlayer', $this->player->public_id)
             )
             ->has('game', fn (Assert $page) => $page
                 ->hasAll(['width', 'height', 'numOfMines', 'tileStates', 'isGameStarted', 'isGameOver', 'isGameClear', 'visitedTiles'])

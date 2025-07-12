@@ -17,7 +17,7 @@ beforeEach(function () {
         ->middleware(['web', RoomAuthMiddleware::class]);
 
     $this->player = Player::factory()->create([
-        'session_id' => $this->playerId,
+        'public_id' => $this->playerId,
     ]);
 
     $this->room = Room::factory()->create([
@@ -34,21 +34,21 @@ beforeEach(function () {
 
 it('can access magic link route', function () {
     $response = $this
-        ->withSession(['player_id' => $this->playerId])
+        ->withSession(['public_id' => $this->playerId])
         ->get('/magic-link/'.$this->room->public_id.'/play');
     $response->assertOk();
 });
 
 it('can not access magic link route. because of invalid player id', function () {
     $response = $this
-        ->withSession(['player_id' => 'invalid_player_id'])
+        ->withSession(['public_id' => 'invalid_public_id'])
         ->get('/magic-link/'.$this->room->public_id.'/play');
     $response->assertStatus(401);
 });
 
 it('can not access magic link route. because of room is not exists.', function () {
     $response = $this
-        ->withSession(['player_id' => $this->playerId])
+        ->withSession(['public_id' => $this->playerId])
         ->get('/magic-link/not-exists/play');
     $response->assertStatus(404);
 });
@@ -59,7 +59,7 @@ it("can not access magic link route. because of room' expire is over", function 
     ]);
     $this->room->refresh();
     $response = $this
-        ->withSession(['player_id' => $this->playerId])
+        ->withSession(['public_id' => $this->playerId])
         ->get('/magic-link/'.$this->room->public_id.'/play');
     $response->assertStatus(401);
 });

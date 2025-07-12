@@ -86,7 +86,7 @@ class Room extends Model
          * - すでに参加済みのプレイヤーは常に true
          * - 未参加のプレイヤーは max_player 未満なら true
          */
-        if ($this->players()->where('session_id', $playerId)->exists()) {
+        if ($this->players()->where('public_id', $playerId)->exists()) {
             return true;
         }
 
@@ -112,7 +112,7 @@ class Room extends Model
             return false;
         }
 
-        return $room->players()->where('session_id', $sessionId)->exists();
+        return $room->players()->where('public_id', $sessionId)->exists();
     }
 
     public function toArray(): array
@@ -126,10 +126,10 @@ class Room extends Model
         }
 
         $camelCasedArray['players'] = $this->players()->get()->map(function ($player) {
-            return $player->session_id;
+            return $player->public_id;
         })->toArray();
 
-        $camelCasedArray['ownerId'] = $this->players()->first()?->session_id;
+        $camelCasedArray['ownerId'] = $this->players()->first()?->public_id;
 
         return $camelCasedArray;
     }

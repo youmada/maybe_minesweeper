@@ -4,13 +4,12 @@ use App\Models\Player;
 use App\Models\Room;
 use App\Utils\UUIDFactory;
 use Carbon\Carbon;
-use Illuminate\Support\Str;
 use Inertia\Testing\AssertableInertia as Assert;
 
 beforeEach(function () {
-    $this->playerId = Str::random(40);
+    $this->playerId = UUIDFactory::random();
     $this->player = Player::factory()->create([
-        'session_id' => $this->playerId,
+        'public_id' => $this->playerId,
     ]);
 });
 
@@ -19,7 +18,7 @@ it("should response session user's room data", function () {
         'magic_link_token' => UUIDFactory::generate(),
         'owner_id' => $this->player->id,
     ]);
-    $response = $this->withSession(['player_id' => $this->playerId])->get('/multi/rooms');
+    $response = $this->withSession(['public_id' => $this->playerId])->get('/multi/rooms');
     $response->assertInertia(fn (Assert $page) => $page
         ->component('Multi/Rooms')
         ->has('data', 1)
@@ -39,7 +38,7 @@ it("should create a room from user's request data.", function () {
     $this->assertDatabaseCount('room_states', 0);
     $this->assertDatabaseCount('players', 1);
     $this->assertDatabaseCount('game_states', 0);
-    $response = $this->withSession(['player_id' => $this->playerId])->post('/multi/rooms', [
+    $response = $this->withSession(['public_id' => $this->playerId])->post('/multi/rooms', [
         'name' => 'TestRoom',
         'boardWidth' => 10,
         'boardHeight' => 10,
@@ -50,7 +49,7 @@ it("should create a room from user's request data.", function () {
     $roomId = Room::where('owner_id', $this->player->id)->first()->id;
 
     $room = Room::find($roomId);
-    $player = $room->players()->where('session_id', $this->playerId)->first();
+    $player = $room->players()->where('public_id', $this->playerId)->first();
     $this->assertDatabaseCount('rooms', 1);
     $this->assertDatabaseHas('rooms', [
         'name' => 'TestRoom',

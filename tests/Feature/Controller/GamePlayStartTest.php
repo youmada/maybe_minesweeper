@@ -33,7 +33,7 @@ it('should start game play', function () {
         'status' => RoomStatus::WAITING->value,
     ]);
     $response = $this->actingAs($this->player, 'magicLink')
-        ->withSession(['player_id' => $this->player->session_id])
+        ->withSession(['public_id' => $this->player->public_id])
         ->post("multi/rooms/{$this->room->public_id}/play/start");
     $this->assertDatabaseHas('room_states', [
         'room_id' => $this->room->id,

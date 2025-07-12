@@ -32,7 +32,7 @@ it('can save the room data in DB', function () {
     $this->roomRepository->create($this->roomAggregate);
 
     // アサート
-    $player = Player::where('session_id', 'owner')->first();
+    $player = Player::where('public_id', 'owner')->first();
     $this->assertDatabaseCount('rooms', 1);
     $this->assertDatabaseCount('room_states', 1);
     $this->assertDatabaseHas('rooms', [
@@ -50,7 +50,7 @@ it('can save the room data in DB', function () {
 
     $this->assertDatabaseHas('players',
         [
-            'session_id' => 'owner',
+            'public_id' => 'owner',
         ]
     );
 });
@@ -91,8 +91,8 @@ it('can update room data in DB', function () {
     $this->roomRepository->update($this->roomAggregate, $this->roomId);
 
     // アサート
-    $owner = Player::where('session_id', 'owner')->first();
-    $user1 = Player::where('session_id', 'user1')->first();
+    $owner = Player::where('public_id', 'owner')->first();
+    $user1 = Player::where('public_id', 'user1')->first();
     $room = $this->roomAggregate->getRoom();
     $roomState = $this->roomAggregate->getRoomState();
     $this->assertDatabaseHas('rooms', [
@@ -109,12 +109,12 @@ it('can update room data in DB', function () {
 
     $this->assertDatabaseHas('players',
         [
-            'session_id' => 'owner',
+            'public_id' => 'owner',
         ]
     );
     $this->assertDatabaseHas('players',
         [
-            'session_id' => 'user1',
+            'public_id' => 'user1',
         ]
     );
 });

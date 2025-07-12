@@ -20,7 +20,7 @@ Broadcast::channel('room.{publicId}', function (Player $player, $publicId) {
         return false;
     }
 
-    return ['sessionId' => $player->session_id, 'isCurrentTurn' => $currentPlayer === $player->session_id];
+    return ['publicId' => $player->public_id, 'isCurrentTurn' => $currentPlayer === $player->public_id];
 
 }, ['guards' => ['magicLink']]);
 

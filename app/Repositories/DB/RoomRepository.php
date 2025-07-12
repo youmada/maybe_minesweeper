@@ -36,7 +36,7 @@ class RoomRepository implements RoomRepositoryInterface
         try {
             $room = DB::transaction(function () use ($mappedRoom, $toArrayRoomState, $toArrayRoom, $magicLinkToken) {
                 $player = Player::firstOrCreate([
-                    'session_id' => $toArrayRoom['ownerId'],
+                    'public_id' => $toArrayRoom['ownerId'],
                 ]);
                 $room = Room::create($mappedRoom + ['magic_link_token' => $magicLinkToken, 'owner_id' => $player->id]);
                 RoomState::create($this->getMappedRoomState($toArrayRoomState, $room->id) + ['current_player' => $player->id]);
@@ -99,7 +99,7 @@ class RoomRepository implements RoomRepositoryInterface
             $room->players()->detach();
             foreach ($addPlayerIds as $playerId) {
                 $player = Player::firstOrCreate([
-                    'session_id' => $playerId,
+                    'public_id' => $playerId,
                 ]);
                 $room->players()->attach($player->id, [
                     'joined_at' => now(),

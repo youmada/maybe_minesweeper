@@ -21,7 +21,7 @@ class MultiRoomController extends Controller
     public function index(Request $request)
     {
         // DB内部の主キーに変換する必要がある。
-        $player = Player::where('session_id', $request->session()->get('player_id'))->first();
+        $player = Player::where('public_id', $request->session()->get('public_id'))->first();
 
         if (! $player) {
             // プレイヤーが存在しない場合は空のルームリストを返す
@@ -57,7 +57,7 @@ class MultiRoomController extends Controller
             'maxPlayer' => ['required', 'integer', 'min:2', 'max:6'],
         ]);
 
-        $ownerId = $request->session()->get('player_id');
+        $ownerId = Player::getPlayerIdentifier();
         $players = [$ownerId];
         $expireAt = Carbon::now()->addDays($attributes['expireAt'])->toDateString();
 

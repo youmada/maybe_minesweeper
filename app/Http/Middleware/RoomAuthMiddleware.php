@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Player;
 use App\Models\Room;
 use Closure;
 use Illuminate\Auth\Middleware\Authenticate;
@@ -24,7 +25,7 @@ class RoomAuthMiddleware extends Authenticate
     public function handle($request, Closure $next, ...$guards): Response
     {
         $roomId = $request->route('room');
-        $sessionId = $request->session()->get('player_id', '');
+        $sessionId = Player::getPlayerIdentifier();
         try {
             $canJoin = Room::canJoin($roomId, $sessionId);
         } catch (\Exception $e) {

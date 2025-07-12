@@ -26,7 +26,7 @@ class RoomState extends Model
 
     public function getCurrentPlayerAttribute()
     {
-        return Player::find($this->attributes['current_player'])->session_id ?? null;
+        return Player::find($this->attributes['current_player'])->public_id ?? null;
     }
 
     protected function casts(): array

@@ -13,7 +13,7 @@ class PlayerFactory extends Factory
     public function definition(): array
     {
         return [
-            'session_id' => UUIDFactory::generate(),
+            'public_id' => UUIDFactory::random(),
         ];
     }
 }

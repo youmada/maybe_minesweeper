@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('players', function (Blueprint $table) {
             $table->id();
-            $table->uuid('session_id')->comment('参加者ID(セッションID）')->index();
+            $table->uuid('public_id')->comment('参加者ID(セッションID）')->index();
             $table->timestamps();
         });
     }

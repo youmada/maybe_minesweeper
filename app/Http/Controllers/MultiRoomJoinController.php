@@ -18,7 +18,7 @@ class MultiRoomJoinController extends Controller
     public function __invoke(Request $request, Room $room, JoinRoomService $JoinRoomService)
     {
         $magicLinkToken = $request->query('token');
-        $playerId = $request->session()->get('player_id');
+        $playerId = Player::getPlayerIdentifier();
 
         $isValid = (new MagicLinkService)->verify($room->id, $magicLinkToken, $playerId);
 
@@ -27,11 +27,11 @@ class MultiRoomJoinController extends Controller
         }
         // 参加したユーザIDを保存
 
-        if (! in_array($playerId, $room->players->toArray(), true)) {
+        if (! $room->players->contains($playerId)) {
             $JoinRoomService($room->id, $playerId);
         }
 
-        $player = Player::where('session_id', $playerId)->first();
+        $player = Player::where('public_id', $playerId)->first();
 
         Auth::guard('magicLink')->login($player);
 

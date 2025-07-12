@@ -11,8 +11,14 @@ class Player extends Authenticatable
     use HasFactory;
 
     protected $fillable = [
-        'session_id',
+        'public_id',
     ];
+
+    // プレイヤー識別子を取得（将来的にAuthに切り替えやすいように）
+    public static function getPlayerIdentifier(): string
+    {
+        return session('public_id'); // 今はセッション、将来は Auth::id() に変更可
+    }
 
     public function getAuthIdentifierName(): string
     {
