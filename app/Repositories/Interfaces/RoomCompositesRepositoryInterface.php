@@ -7,7 +7,7 @@ use App\Domain\Room\RoomState;
 
 interface RoomCompositesRepositoryInterface
 {
-    public function save(RoomAggregate $roomAggregate, string $roomId): void;
+    public function create(RoomAggregate $roomAggregate): string;
 
     public function get(string $roomId): RoomAggregate|RoomState|null;
 

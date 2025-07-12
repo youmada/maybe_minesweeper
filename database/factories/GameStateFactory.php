@@ -4,6 +4,7 @@ namespace Database\Factories;
 
 use App\Domain\Minesweeper\Board;
 use App\Models\GameState;
+use App\Models\Room;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Carbon;
 
@@ -19,9 +20,9 @@ class GameStateFactory extends Factory
         return [
             'width' => $width,
             'height' => $height,
+            'room_id' => Room::factory(),
             'num_of_mines' => $this->faker->randomNumber(),
             'tile_states' => json_encode((new Board($width, $height))->getBoardState()),
-            'game_id' => $this->faker->word(),
             'is_game_started' => $this->faker->boolean(),
             'is_game_clear' => $this->faker->boolean(),
             'is_game_over' => $this->faker->boolean(),

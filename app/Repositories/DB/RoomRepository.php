@@ -6,45 +6,53 @@ use App\Domain\Room\Room as RoomDomain;
 use App\Domain\Room\RoomAggregate;
 use App\Domain\Room\RoomState as RoomStateDomain;
 use App\Exceptions\RoomException;
+use App\Models\Player;
 use App\Models\Room;
 use App\Models\RoomState;
-use App\Models\RoomUser;
 use App\Repositories\Interfaces\RoomRepositoryInterface;
-use Illuminate\Support\Carbon;
+use App\Utils\UUIDFactory;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 class RoomRepository implements RoomRepositoryInterface
 {
     /**
+     * createメソッドは必ず各ルーム作成で一度だけ呼び出す。
+     *
      * @throws RoomException
      */
-    public function save(RoomAggregate $roomAggregate, string $roomId): void
+    public function create(RoomAggregate $roomAggregate): ?string
     {
-        // すでに登録されている場合はスキップ
-        if (Room::where('id', $roomId)->exists()) {
-            return;
-        }
 
+        $publicRoomId = UUIDFactory::generate();
         $toArrayRoom = $roomAggregate->getRoom()->toArray();
         $toArrayRoomState = $roomAggregate->getRoomState()->toArray();
 
-        $mappedRoom = $this->getMappedRoom($toArrayRoom);
-
-        $mappedRoomState = $this->getMappedRoomState($toArrayRoomState, $roomId);
+        $mappedRoom = $this->getMappedRoom($toArrayRoom, $publicRoomId);
 
         $magicLinkToken = $this->generateUniqueToken();
 
         try {
-            Room::create($mappedRoom + ['magic_link_token' => $magicLinkToken]);
-            RoomState::create($mappedRoomState);
-            RoomUser::create([
-                'room_id' => $roomId,
-                'user_id' => $toArrayRoom['ownerId'],
-                'joined_at' => Carbon::now()->toDateTimeString(),
-            ]);
+            $room = DB::transaction(function () use ($mappedRoom, $toArrayRoomState, $toArrayRoom, $magicLinkToken) {
+                $player = Player::firstOrCreate([
+                    'public_id' => $toArrayRoom['ownerId'],
+                ]);
+                $room = Room::create($mappedRoom + ['magic_link_token' => $magicLinkToken, 'owner_id' => $player->id]);
+                RoomState::create($this->getMappedRoomState($toArrayRoomState, $room->id) + ['current_player' => $player->id]);
+
+                $room->players()->attach($player->id, [
+                    'joined_at' => now(),
+                    'left_at' => null,
+                ]);
+
+                return $room;
+            });
+
+            return $room->id;
+
         } catch (RoomException $e) {
-            Log::error("DB save method error for key {$roomId}: ".$e->getMessage());
+            Log::error("DB save method error for public room id {$publicRoomId}: ".$e->getMessage());
             throw $e;
         }
     }
@@ -76,8 +84,8 @@ class RoomRepository implements RoomRepositoryInterface
      */
     public function update(RoomAggregate $roomAggregate, string $roomId): void
     {
-        $addPlayers = $roomAggregate->getPlayers();
-        $currentRoomPlayers = Room::where('id', $roomId)->first()->players ?? [];
+        $room = Room::where('id', $roomId)->first();
+        $addPlayerIds = $roomAggregate->getPlayers();
         try {
             $this->checkRoomAndStateExists($roomId);
 
@@ -86,14 +94,21 @@ class RoomRepository implements RoomRepositoryInterface
 
             Room::where('id', $roomId)->update($this->getMappedRoom($roomData));
             RoomState::where('room_id', $roomId)->update($this->getMappedRoomState($roomStateData, $roomId));
-            foreach ($addPlayers as $player) {
-                if (! in_array($player, $currentRoomPlayers, true)) {
-                    RoomUser::create([
-                        'room_id' => $roomId,
-                        'user_id' => $player,
-                        'joined_at' => now(),
-                    ]);
+
+            // ルームにプレイヤーを紐付ける
+            //            $room->players()->detach();
+            $existingPlayers = $room->players()->pluck('players.public_id')->toArray();
+            foreach ($addPlayerIds as $playerId) {
+                if (in_array($playerId, $existingPlayers)) {
+                    continue;
                 }
+                $player = Player::firstOrCreate([
+                    'public_id' => $playerId,
+                ]);
+                $room->players()->attach($player->id, [
+                    'joined_at' => now(),
+                    'left_at' => null,
+                ]);
             }
             // room_usersテーブル
         } catch (RoomException $e) {
@@ -118,15 +133,20 @@ class RoomRepository implements RoomRepositoryInterface
 
     }
 
-    private function getMappedRoom(array $toArrayRoom): array
+    private function getMappedRoom(array $toArrayRoom, ?string $publicRoomId = null): array
     {
-        return [
+        $mapped = [
             'name' => $toArrayRoom['name'],
             'max_player' => $toArrayRoom['maxPlayer'],
             'is_private' => $toArrayRoom['isPrivate'],
-            'owner_id' => $toArrayRoom['ownerId'],
-            'players' => $toArrayRoom['players'],
+            'expire_at' => $toArrayRoom['expireAt'],
         ];
+
+        if (! is_null($publicRoomId)) {
+            $mapped['public_id'] = $publicRoomId;
+        }
+
+        return $mapped;
     }
 
     private function getMappedRoomState(array $toArrayRoomState, string $roomId): array

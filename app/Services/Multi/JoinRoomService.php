@@ -13,10 +13,12 @@ class JoinRoomService
     {
         // 現在のルームを取得
         $currentRoom = $this->roomRepository->get($roomId);
-        // 現在のルームにユーザを追加する
-        if ($currentRoom instanceof RoomAggregate) {
-            $currentRoom->join($playerId);
-            $this->roomRepository->update($currentRoom, $roomId);
+
+        if (! ($currentRoom instanceof RoomAggregate)) {
+            abort(500, 'サーバーで予期せぬエラーが発生しました。');
         }
+        // 現在のルームにユーザを追加する
+        $currentRoom->join($playerId);
+        $this->roomRepository->update($currentRoom, $roomId);
     }
 }

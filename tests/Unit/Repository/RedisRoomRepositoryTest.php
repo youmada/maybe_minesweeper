@@ -26,7 +26,7 @@ it('game states data could get from room repository.', function () {
     Redis::shouldReceive('get')
         ->once()
         ->with($this->expectedKey)
-        ->andReturn($this->roomState->toArray());
+        ->andReturn(json_encode($this->roomState));
 
     $this->repository->get($this->roomId);
 });

@@ -1,17 +1,21 @@
 <?php
 
 use App\Domain\Room\Room;
+use Carbon\Carbon;
+
+beforeEach(function () {
+    $this->room = new Room('test room', 3, [], Carbon::now()->toDateString(), false, 'owner');
+});
 
 it('can join player when not max player', function () {
-    $room = new Room('test room', 3, [], false, 'owner');
 
     $user = Str::uuid()->tostring();
 
-    expect($room->joinRoom($user))->toBeTrue();
+    expect($this->room->joinRoom($user))->toBeTrue();
 });
 
 it('can not join player when max player', function () {
-    $room = new Room('test room', 1, [], false, 'owner');
+    $room = new Room('test room', 1, [], 4, false, 'owner');
     $user1 = Str::uuid()->tostring();
     $user2 = Str::uuid()->tostring();
     // 1人目のユーザ
@@ -20,26 +24,24 @@ it('can not join player when max player', function () {
 });
 
 it('can leave player', function () {
-    $room = new Room('test room', 2, [], false, 'owner');
     $user1 = Str::uuid()->tostring();
     $user2 = Str::uuid()->tostring();
 
     // まず参加させる。
-    $room->joinRoom($user1);
-    $room->joinRoom($user2);
+    $this->room->joinRoom($user1);
+    $this->room->joinRoom($user2);
 
-    expect($room->leaveRoom($user1))->toBeTrue();
+    expect($this->room->leaveRoom($user1))->toBeTrue();
 });
 
 it('can not leave player when not joined', function () {
-    $room = new Room('test room', 2, [], false, 'owner');
     $user1 = Str::uuid()->tostring();
     $user2 = Str::uuid()->tostring();
 
-    $room->joinRoom($user1);
-    $room->joinRoom($user2);
+    $this->room->joinRoom($user1);
+    $this->room->joinRoom($user2);
 
     $unjoinedUser = Str::uuid()->tostring();
 
-    expect($room->leaveRoom($unjoinedUser))->toBeFalse();
+    expect($this->room->leaveRoom($unjoinedUser))->toBeFalse();
 });

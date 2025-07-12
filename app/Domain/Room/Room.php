@@ -8,8 +8,9 @@ class Room
         private readonly string $name,
         private readonly int $maxPlayer,
         private array $players,
+        private string $expireAt,
         private readonly bool $isPrivate,
-        private readonly string $ownerId,
+        private readonly ?string $ownerId,
     ) {}
 
     public function getMaxPlayer(): int
@@ -37,15 +38,27 @@ class Room
         return $this->isPrivate;
     }
 
-    public function canJoinPlayer(): bool
+    /**
+     *  責任範囲：
+     *  一度参加したプレイヤーはプレイヤー上限に引っかからない
+     */
+    public function canJoinPlayer(string $playerId): bool
     {
+        if ($this->isJoined($playerId)) {
+            return true;
+        }
+
         return $this->getMaxPlayer() > count($this->players);
     }
 
-    public function joinRoom(string $user): bool
+    public function joinRoom(string $playerId): bool
     {
-        if ($this->canJoinPlayer()) {
-            $this->players[] = $user;
+        // すでに参加しているので、playersに追加しない
+        if ($this->isJoined($playerId)) {
+            return true;
+        }
+        if ($this->canJoinPlayer($playerId)) {
+            $this->players[] = $playerId;
 
             return true;
         }
@@ -76,6 +89,7 @@ class Room
             'name' => $this->name,
             'maxPlayer' => $this->maxPlayer,
             'players' => $this->players,
+            'expireAt' => $this->expireAt,
             'isPrivate' => $this->isPrivate,
             'ownerId' => $this->ownerId,
         ];
@@ -87,6 +101,7 @@ class Room
             $attrs['name'],
             $attrs['maxPlayer'],
             $attrs['players'],
+            $attrs['expireAt'],
             $attrs['isPrivate'],
             $attrs['ownerId'],
         );

@@ -27,13 +27,13 @@ onMounted(() => {
         }
 
         // セーブデータから幅・高さ・地雷数を復元
-        const baordData = saveDataStore.getSaveData.board;
+        const boardData = saveDataStore.getSaveData.board;
         const arrayToVisitedTiles =
             saveDataStore.getSaveData.arrayToVisitedTiles;
         const totalMine = saveDataStore.getSaveData.numOfMines;
 
         // コンティニューゲーム
-        gameStore.continueGame(baordData, arrayToVisitedTiles, totalMine);
+        gameStore.continueGame(boardData, arrayToVisitedTiles, totalMine);
     } else {
         // easy / normal / hard の場合
         const currLevel = currentLevel(level);
@@ -45,14 +45,14 @@ onMounted(() => {
         gameStore.numOfMines = totalMine;
     }
     // 初期化完了
-    isInitiaraized.value = true;
+    isInitialized.value = true;
 });
 
 const gameStore = useGameStore();
 
 const props = defineProps<{ level?: string }>();
 const isError = ref(false);
-const isInitiaraized = ref(false);
+const isInitialized = ref(false);
 const saveDataStore = useSaveDataStore();
 const modes: { [name: string]: modeInfo } = {
     easy: {
@@ -102,7 +102,7 @@ const modeName = currentLevel(props.level?.toString() || '')?.modeName;
 </script>
 <template>
     <div class="flex h-full w-full flex-col">
-        <template v-if="isInitiaraized">
+        <template v-if="isInitialized">
             <div class="flex h-full w-full flex-col">
                 <div class="p-7 text-center">
                     <h1 class="text-4xl font-extrabold text-white">
@@ -113,12 +113,12 @@ const modeName = currentLevel(props.level?.toString() || '')?.modeName;
                 <div class="p-7 text-center">
                     <template v-if="gameStore.isGameStarted">
                         <PrimaryButton class="m-5" :click-fn="onSaveData"
-                            >ボードをセーブする</PrimaryButton
-                        >
+                            >ボードをセーブする
+                        </PrimaryButton>
                     </template>
                     <PrimaryButton class="m-5" :click-fn="returnToHome"
-                        >ホームに戻る</PrimaryButton
-                    >
+                        >ホームに戻る
+                    </PrimaryButton>
                 </div>
             </div>
         </template>
@@ -132,8 +132,8 @@ const modeName = currentLevel(props.level?.toString() || '')?.modeName;
                     ホームに戻って再度お試しください。
                 </p>
                 <PrimaryButton :click-fn="returnToHome"
-                    >ホームに戻る</PrimaryButton
-                >
+                    >ホームに戻る
+                </PrimaryButton>
             </div>
         </template>
     </div>

@@ -9,10 +9,14 @@ class CreateRoomService
 {
     public function __construct(protected RoomCompositesRepositoryInterface $roomRepository, protected RoomAggregateFactory $roomFactory) {}
 
-    public function __invoke(string $roomId, string $roomName, int $maxPlayers, $ownerId, $isPrivate, $players, $flagLimit): void
+    /**
+     * @return string roomId
+     */
+    public function __invoke(string $roomName, int $maxPlayers, $ownerId, string $expireAt, $isPrivate, $players, $flagLimit): string
     {
-        $roomAggregate = $this->roomFactory->create($roomName, $maxPlayers, $ownerId, $isPrivate, $players, $flagLimit);
+        $roomAggregate = $this->roomFactory->create($roomName, $maxPlayers, $ownerId, $expireAt, $isPrivate, $players, $flagLimit);
+
         // ルームを作成する。
-        $this->roomRepository->save($roomAggregate, $roomId);
+        return $this->roomRepository->create($roomAggregate);
     }
 }

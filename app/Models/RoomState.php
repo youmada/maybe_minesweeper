@@ -2,16 +2,20 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Str;
 
 class RoomState extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
         'room_id',
         'flag_limit',
         'turn_order',
+        'current_player',
         'status',
     ];
 
@@ -20,10 +24,16 @@ class RoomState extends Model
         return $this->belongsTo(Room::class);
     }
 
+    public function getCurrentPlayerAttribute()
+    {
+        return Player::find($this->attributes['current_player'])->public_id ?? null;
+    }
+
     protected function casts(): array
     {
         return [
             'turn_order' => 'array',
+            'current_player' => 'string',
         ];
     }
 

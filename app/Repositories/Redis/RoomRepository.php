@@ -33,7 +33,7 @@ class RoomRepository implements RoomStateRepositoryInterface
 
         try {
             $value = Redis::get($key);
-            $roomState = RoomState::fromArray($value);
+            $roomState = RoomState::fromArray(json_decode($value, true));
         } catch (Exception $e) {
             Log::error("Redis getState error for key {$key}: ".$e->getMessage());
 
