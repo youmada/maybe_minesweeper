@@ -2,7 +2,7 @@
 import TurnOrderPlayerTag from '@/Components/TurnOrderPlayerTag.vue';
 
 type Player = {
-    sessionId: string;
+    id: string;
     isCurrentTurn: boolean;
 };
 defineProps<{
@@ -15,7 +15,7 @@ defineProps<{
             <li class="m-5">
                 <TurnOrderPlayerTag
                     v-for="(player, index) in players"
-                    :key="player.sessionId"
+                    :key="player.id"
                     :name="`プレイヤー${index + 1}`"
                     :isCurrentTurn="player.isCurrentTurn"
                 ></TurnOrderPlayerTag>

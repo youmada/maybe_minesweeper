@@ -1,14 +1,18 @@
 <script setup lang="ts">
+import MagicLinkButton from '@/Components/MagicLinkButton.vue';
 import ModalWindow from '@/Components/ModalWindow.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import BoardTile from '@/Components/Tile.vue';
+import TurnOrderPlate from '@/Components/TurnOrderPlate.vue';
 import { useMinesweeper } from '@/Composables/useMInesweeper';
 import { useRoomChannel } from '@/Composables/useRoomChannel';
+import { useRoomData } from '@/Composables/useRoomData';
 import { useToast } from '@/Composables/useToast';
 import { Tile } from '@/custom/domain/mineSweeper';
 import { computed, onMounted, onUnmounted, reactive, ref } from 'vue';
 
 type RoomData = {
+    name: string;
     publicId: string;
     ownerId: string;
     maxPlayer: number;
@@ -39,13 +43,9 @@ const isFlagMode = ref(false);
 
 const { showToast, isToastShow, toastText } = useToast();
 const { roomPlayers, leaveChannel } = useRoomChannel(roomData.publicId);
-const {
-    startGame,
-    settingMultiPlay,
-    gameState,
-    handleFlagAction,
-    handleTileAction,
-} = useMinesweeper();
+const { isRoomReady } = useRoomData(roomData.publicId);
+const { startGame, settingMultiPlay, handleFlagAction, handleTileAction } =
+    useMinesweeper();
 
 const restTiles = computed(() => {
     const totalTiles = gameData.width * gameData.height;
@@ -90,6 +90,7 @@ const handleClickTile = (x: number, y: number) => {
 };
 
 const isBoardReady = computed(() => {
+    if (isRoomReady.value) return true;
     return roomData.status === 'playing' || roomData.status === 'standby';
 });
 </script>
@@ -133,6 +134,17 @@ const isBoardReady = computed(() => {
                 </div>
             </div>
         </div>
+
+        <div class="fixed bottom-10 right-5">
+            <TurnOrderPlate :players="roomPlayers"></TurnOrderPlate>
+            <div>
+                <p>ルーム名：{{ roomData.name }}</p>
+                <MagicLinkButton
+                    :magicLink="roomData.magicLink"
+                    :clipBoard="clipBoard"
+                ></MagicLinkButton>
+            </div>
+        </div>
     </div>
 
     <ModalWindow v-else>
@@ -158,25 +170,10 @@ const isBoardReady = computed(() => {
             >
                 {{ roomData.magicLink }}
             </p>
-            <button
-                @click="() => clipBoard(roomData.magicLink)"
-                class="btn btn-ghost btn-square"
-            >
-                <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke-width="1.5"
-                    stroke="currentColor"
-                    class="size-6"
-                >
-                    <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        d="M15.666 3.888A2.25 2.25 0 0 0 13.5 2.25h-3c-1.03 0-1.9.693-2.166 1.638m7.332 0c.055.194.084.4.084.612v0a.75.75 0 0 1-.75.75H9a.75.75 0 0 1-.75-.75v0c0-.212.03-.418.084-.612m7.332 0c.646.049 1.288.11 1.927.184 1.1.128 1.907 1.077 1.907 2.185V19.5a2.25 2.25 0 0 1-2.25 2.25H6.75A2.25 2.25 0 0 1 4.5 19.5V6.257c0-1.108.806-2.057 1.907-2.185a48.208 48.208 0 0 1 1.927-.184"
-                    />
-                </svg>
-            </button>
+            <MagicLinkButton
+                :magicLink="roomData.magicLink"
+                :clipBoard="clipBoard"
+            ></MagicLinkButton>
         </div>
         <button
             @click="handleGameStart"
