@@ -20,9 +20,11 @@ Broadcast::channel('room.{publicId}', function (Player $player, $publicId) {
         return false;
     }
 
-    return ['publicId' => $player->public_id, 'isCurrentTurn' => $currentPlayer === $player->public_id];
+    $joinedAt = $player->rooms()->where('rooms.id', $roomId)->first()->pivot->joined_at;
 
-}, ['guards' => ['magicLink']]);
+    return ['id' => $player->public_id, 'joined_at' => $joinedAt, 'isCurrentTurn' => $currentPlayer === $player->public_id];
+
+});
 
 Broadcast::channel('room.{publicId}.data', function (Player $player, $publicId) {
     return $player

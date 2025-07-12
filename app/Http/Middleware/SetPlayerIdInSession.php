@@ -17,7 +17,7 @@ class SetPlayerIdInSession
     public function handle(Request $request, Closure $next): Response
     {
         if (! $request->session()->has('public_id')) {
-            $request->session()->put('public_id', UUIDFactory::generate());
+            $request->session()->put('public_id', UUIDFactory::random());
         }
 
         return $next($request);

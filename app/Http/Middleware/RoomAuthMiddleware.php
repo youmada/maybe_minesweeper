@@ -26,14 +26,11 @@ class RoomAuthMiddleware extends Authenticate
     {
         $roomId = $request->route('room');
         $sessionId = Player::getPlayerIdentifier();
-        try {
-            $canJoin = Room::canJoin($roomId, $sessionId);
-        } catch (\Exception $e) {
-            $canJoin = false;
-        }
+        dump($sessionId);
+        $canJoin = Room::canJoin($roomId, $sessionId);
 
         if (! $canJoin) {
-            abort(401);
+            abort(403, 'このルームには参加することができません');
         }
 
         return $next($request);

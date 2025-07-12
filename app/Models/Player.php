@@ -15,9 +15,9 @@ class Player extends Authenticatable
     ];
 
     // プレイヤー識別子を取得（将来的にAuthに切り替えやすいように）
-    public static function getPlayerIdentifier(): string
+    public static function getPlayerIdentifier(): ?string
     {
-        return session('public_id'); // 今はセッション、将来は Auth::id() に変更可
+        return session('public_id', null); // 今はセッション、将来は Auth::id() に変更可
     }
 
     public function getAuthIdentifierName(): string

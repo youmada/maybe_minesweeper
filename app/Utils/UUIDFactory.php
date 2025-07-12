@@ -11,7 +11,7 @@ class UUIDFactory
         return Str::uuid()->toString();
     }
 
-    public static function random($length = 16)
+    public static function random(?int $length = 16)
     {
         return Str::random($length);
     }

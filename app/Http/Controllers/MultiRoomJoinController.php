@@ -23,7 +23,7 @@ class MultiRoomJoinController extends Controller
         $isValid = (new MagicLinkService)->verify($room->id, $magicLinkToken, $playerId);
 
         if (! $isValid) {
-            abort(401);
+            abort(401, '参加URLが違っています');
         }
         // 参加したユーザIDを保存
 

@@ -21,14 +21,14 @@ class MultiRoomController extends Controller
     public function index(Request $request)
     {
         // DB内部の主キーに変換する必要がある。
-        $player = Player::where('public_id', $request->session()->get('public_id'))->first();
+        $player = Player::where('public_id', Player::getPlayerIdentifier())->first();
 
         if (! $player) {
             // プレイヤーが存在しない場合は空のルームリストを返す
             return Inertia::render('Multi/Rooms', ['data' => []]);
         }
         $rooms = Room::where('owner_id', $player->id)
-            ->where('expire_at', '>', Carbon::now()->toDateString())
+            ->where('expire_at', '>', Carbon::now())
             ->get();
 
         return Inertia::render('Multi/Rooms', ['data' => RoomIndexResource::collection($rooms)->resolve()]);

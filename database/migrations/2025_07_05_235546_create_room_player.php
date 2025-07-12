@@ -20,6 +20,8 @@ return new class extends Migration
             $table->timestamp('joined_at')->nullable();
             $table->timestamp('left_at')->nullable();
             $table->timestamps();
+
+            $table->unique(['room_id', 'player_id']);
         });
     }
 

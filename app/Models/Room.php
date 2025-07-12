@@ -78,6 +78,11 @@ class Room extends Model
         return $this->expire_at > Carbon::today();
     }
 
+    public function isFull(): bool
+    {
+        return $this->players()->count() >= $this->max_player;
+    }
+
     public function isRoomJoined(string $playerId): bool
     {
         /**
@@ -103,12 +108,16 @@ class Room extends Model
         return $query->where('public_id', Uuid::fromString($publicId)->getBytes());
     }
 
-    public static function canJoin(string $roomPublicId, string $sessionId): bool
+    public static function canJoin(string $roomPublicId, ?string $sessionId): bool
     {
         $room = Room::where('expire_at', '>', Carbon::now())
             ->findByPublicId($roomPublicId)
             ->first();
         if (! $room) {
+            return false;
+        }
+
+        if ($sessionId === null) {
             return false;
         }
 
