@@ -7,7 +7,7 @@ defineProps<{
 
 <template>
     <button
-        @click="() => clipBoard(magicLink)"
+        @click.stop="() => clipBoard(magicLink)"
         class="btn btn-ghost btn-square"
     >
         <svg
