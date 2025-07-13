@@ -5,6 +5,7 @@ namespace App\Routes;
 use App\Models\Player;
 use App\Models\Room;
 use App\Models\RoomState;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Broadcast;
 
 Broadcast::channel('room.{publicId}', function (Player $player, $publicId) {
@@ -22,7 +23,7 @@ Broadcast::channel('room.{publicId}', function (Player $player, $publicId) {
 
     $joinedAt = $player->rooms()->where('rooms.id', $roomId)->first()->pivot->joined_at;
 
-    return ['id' => $player->public_id, 'joined_at' => $joinedAt, 'isCurrentTurn' => $currentPlayer === $player->public_id];
+    return ['id' => $player->public_id, 'joinedAt' => Carbon::parse($joinedAt)->toISOString(), 'isCurrentTurn' => $currentPlayer === $player->public_id];
 
 });
 

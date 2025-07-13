@@ -26,7 +26,6 @@ class RoomAuthMiddleware extends Authenticate
     {
         $roomId = $request->route('room');
         $sessionId = Player::getPlayerIdentifier();
-        dump($sessionId);
         $canJoin = Room::canJoin($roomId, $sessionId);
 
         if (! $canJoin) {

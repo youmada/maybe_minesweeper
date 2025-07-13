@@ -33,7 +33,9 @@ class MultiRoomJoinController extends Controller
 
         $player = Player::where('public_id', $playerId)->first();
 
-        Auth::guard('magicLink')->login($player);
+        if (! Auth::guard('magicLink')->check()) {
+            Auth::guard('magicLink')->login($player);
+        }
 
         return Inertia::location(route('multi.rooms.play.show', ['room' => $room]));
     }
