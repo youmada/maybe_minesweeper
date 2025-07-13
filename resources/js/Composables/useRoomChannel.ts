@@ -6,9 +6,10 @@ type Player = {
     id: string;
     joinedAt: string;
     isCurrentTurn: boolean;
+    isOwn?: boolean;
 };
 
-export function useRoomChannel(roomPublicId: string) {
+export function useRoomChannel(roomPublicId: string, currentPlayerId: string) {
     const roomPlayers = ref<Player[]>([]);
     const { showToast } = useToast();
 
@@ -16,20 +17,31 @@ export function useRoomChannel(roomPublicId: string) {
 
     const { channel, leaveChannel } = useEchoPresence(`room.${roomPublicId}`);
     channel().here((players: Player[]) => {
-        roomPlayers.value = players;
-    });
-    channel().joining((player: Player) => {
-        const exists = roomPlayers.value.some((p) => p.id === player.id);
-        if (!exists) {
-            roomPlayers.value.push(player);
-            console.log(roomPlayers.value);
-            roomPlayers.value = roomPlayers.value.sort(
+        // `isOwn`フラグを追加してソート
+        roomPlayers.value = players
+            .map((player) => ({
+                ...player,
+                isOwn: player.id === currentPlayerId, // プレイヤーが自分か別のプレイヤーか判定
+            }))
+            .sort(
                 (a, b) =>
                     new Date(a.joinedAt).getTime() -
                     new Date(b.joinedAt).getTime(),
             );
-            console.log(roomPlayers.value);
-        }
+    });
+    channel().joining((player: Player) => {
+        const exists = roomPlayers.value.some((p) => p.id === player.id);
+        if (exists) return;
+        roomPlayers.value.push({
+            ...player,
+            isOwn: player.id === currentPlayerId,
+        });
+
+        // ソート
+        roomPlayers.value = roomPlayers.value.sort(
+            (a, b) =>
+                new Date(a.joinedAt).getTime() - new Date(b.joinedAt).getTime(),
+        );
     });
     channel().leaving((player: Player) => {
         roomPlayers.value = roomPlayers.value.filter((p) => p.id !== player.id);

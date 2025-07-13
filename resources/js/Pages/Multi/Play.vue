@@ -32,6 +32,12 @@ type GameState = {
 };
 
 const props = defineProps<{
+    auth: {
+        user: {
+            id: string;
+            public_id: string;
+        };
+    };
     data: {
         room: RoomData;
         game: GameState;
@@ -42,7 +48,10 @@ const gameData = reactive(props.data.game);
 const isFlagMode = ref(false);
 
 const { showToast, isToastShow, toastText } = useToast();
-const { roomPlayers, leaveChannel } = useRoomChannel(roomData.publicId);
+const { roomPlayers, leaveChannel } = useRoomChannel(
+    roomData.publicId,
+    props.auth.user.public_id,
+);
 const { isRoomReady } = useRoomData(roomData.publicId);
 const { startGame, settingMultiPlay, handleFlagAction, handleTileAction } =
     useMinesweeper();
@@ -137,8 +146,10 @@ const isBoardReady = computed(() => {
 
         <div class="fixed bottom-10 right-5">
             <TurnOrderPlate :players="roomPlayers"></TurnOrderPlate>
-            <div>
-                <p>ルーム名：{{ roomData.name }}</p>
+            <div class="flex h-auto">
+                <p class="flex h-auto items-center">
+                    ルーム名：{{ roomData.name }}
+                </p>
                 <MagicLinkButton
                     :magicLink="roomData.magicLink"
                     :clipBoard="clipBoard"

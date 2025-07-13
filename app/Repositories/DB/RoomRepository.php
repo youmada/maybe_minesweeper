@@ -11,6 +11,7 @@ use App\Models\Room;
 use App\Models\RoomState;
 use App\Repositories\Interfaces\RoomRepositoryInterface;
 use App\Utils\UUIDFactory;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
@@ -42,7 +43,7 @@ class RoomRepository implements RoomRepositoryInterface
                 RoomState::create($this->getMappedRoomState($toArrayRoomState, $room->id) + ['current_player' => $player->id]);
 
                 $room->players()->attach($player->id, [
-                    'joined_at' => now(),
+                    'joined_at' => Carbon::now()->format('Y-m-d H:i:s'),
                     'left_at' => null,
                 ]);
 
@@ -106,7 +107,7 @@ class RoomRepository implements RoomRepositoryInterface
                     'public_id' => $playerId,
                 ]);
                 $room->players()->attach($player->id, [
-                    'joined_at' => now(),
+                    'joined_at' => Carbon::now()->format('Y-m-d H:i:s'),
                     'left_at' => null,
                 ]);
             }
