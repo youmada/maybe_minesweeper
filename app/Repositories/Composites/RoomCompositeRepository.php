@@ -42,12 +42,17 @@ class RoomCompositeRepository implements RoomCompositesRepositoryInterface
     /**
      * @throws \Exception
      */
-    public function update(RoomAggregate $roomAggregate, string $roomId): void
+    public function update(RoomAggregate|RoomState $room, string $roomId): void
     {
-        // TODO: DBに保存するのは、ゲーム中断時なのでroom状態を取得して、条件分岐させる。
         // プレイ中は高速に Redis、終了時は DB へも upsert
-        $this->redisRepo->update($roomAggregate->getRoomState(), $roomId);
-        $this->dbRepo->update($roomAggregate, $roomId);
+        // RoomStateを渡されるのはredisでのリポジトリアクセス
+        // redisでのアクセスはRoomStatus::PLAYINGなので下記条件分岐で問題ない
+        if ($room instanceof RoomState) {
+            $this->redisRepo->update($room, $roomId);
+
+            return;
+        }
+        $this->dbRepo->update($room, $roomId);
     }
 
     /**

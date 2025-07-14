@@ -11,7 +11,7 @@ interface RoomCompositesRepositoryInterface
 
     public function get(string $roomId): RoomAggregate|RoomState|null;
 
-    public function update(RoomAggregate $roomAggregate, string $roomId): void;
+    public function update(RoomAggregate $room, string $roomId): void;
 
     public function delete(string $roomId): void;
 }
