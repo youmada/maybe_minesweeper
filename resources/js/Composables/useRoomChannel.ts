@@ -52,11 +52,6 @@ export function useRoomChannel(roomPublicId: string, currentPlayerId: string) {
         );
     });
 
-    channel().listen('RoomStatus', (e: any) => {
-        roomStatus.value = e.status;
-        console.log(e);
-    });
-
     return {
         roomPlayers,
         roomStatus,
