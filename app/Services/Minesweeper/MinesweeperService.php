@@ -133,9 +133,7 @@ class MinesweeperService
         $gameState = $this->setMinesOnTheBoard($firstClickPosX, $firstClickPosY, $state);
         $this->repository->updateState($gameState, $roomId);
 
-        //        dump($gameState);
         // 初回クリック操作
-        //        dump($state);
 
         return $this->handleClickTile($roomId, $firstClickPosX, $firstClickPosY, TileActionMode::OPEN);
     }

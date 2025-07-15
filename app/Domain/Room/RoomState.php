@@ -3,6 +3,7 @@
 namespace App\Domain\Room;
 
 use App\Domain\Minesweeper\TileActionMode;
+use App\Exceptions\RoomException;
 
 class RoomState
 {
@@ -110,6 +111,14 @@ class RoomState
     public function canOperate(string $user): bool
     {
         return $this->getCurrentOrder() === $user;
+    }
+
+    public function operate(string $userId, TileActionMode $actionMode): void
+    {
+        if (! $this->canOperate($userId) || ! $this->isMoveToNextTurn()) {
+            throw RoomException::operationNotAllowed('このターン操作はできません');
+        }
+        $this->processRoomAction($actionMode);
     }
 
     public function toArray(): array

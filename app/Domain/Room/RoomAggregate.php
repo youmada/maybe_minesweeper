@@ -74,7 +74,7 @@ class RoomAggregate
     public function operate(string $userId, TileActionMode $actionMode): void
     {
         if (! $this->canOperate($userId)) {
-            throw RoomException::operationNotAllowed('このターンで操作はできません');
+            throw RoomException::operationNotAllowed('このターン操作はできません');
         }
         $this->roomState->processRoomAction($actionMode);
     }
