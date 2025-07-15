@@ -89,41 +89,50 @@ class GameService
         // 地雷を設置可能な位置数
         $availableTiles = $width * $height - count($excludePositions);
 
-        if ($numOfMines > $availableTiles) {
+        if ($numOfMines >= $availableTiles) {
             throw new \InvalidArgumentException('地雷数が多すぎます');
         }
 
-        // 地雷設置
-        $minesToPlace = $numOfMines;
-        while ($minesToPlace > 0) {
-            $x = mt_rand(0, $width - 1);
-            $y = mt_rand(0, $height - 1);
-
-            // 除外位置をチェック
-            $exclude = false;
-            foreach ($excludePositions as $pos) {
-                if ($x === $pos['x'] && $y === $pos['y']) {
-                    $exclude = true;
-                    break;
+        // 1. 配置可能な候補を全列挙
+        $candidates = [];
+        for ($y = 0; $y < $height; $y++) {
+            for ($x = 0; $x < $width; $x++) {
+                // 除外ゾーンに含まれないなら候補に追加
+                $isExcluded = false;
+                foreach ($excludePositions as $pos) {
+                    if ($x === $pos['x'] && $y === $pos['y']) {
+                        $isExcluded = true;
+                        break;
+                    }
+                }
+                if (! $isExcluded) {
+                    $candidates[] = ['x' => $x, 'y' => $y];
                 }
             }
+        }
 
-            if (! $exclude && ! $boardTiles[$y][$x]->isMine()) {
-                $boardTiles[$y][$x]->setMine(true);
-                $minesToPlace--;
+        // 2. ランダムに並べ替え、必要数だけ取り出す
+        shuffle($candidates);
+        $selected = array_slice($candidates, 0, $numOfMines);
 
-                // 周辺タイルの地雷カウントを更新
-                for ($dy = -1; $dy <= 1; $dy++) {
-                    for ($dx = -1; $dx <= 1; $dx++) {
-                        if ($dx === 0 && $dy === 0) {
-                            continue;
-                        }
+        // 3. 地雷設置＆周辺タイルの地雷カウントを更新
+        foreach ($selected as $pos) {
+            $x = $pos['x'];
+            $y = $pos['y'];
+            $boardTiles[$y][$x]->setMine(true);
 
-                        $nx = $x + $dx;
-                        $ny = $y + $dy;
-                        if ($nx >= 0 && $nx < $width && $ny >= 0 && $ny < $height) {
-                            $boardTiles[$ny][$nx]->incrementAdjacentMines();
-                        }
+            // 地雷設置の周囲8マスをチェックして周辺地雷数を更新する
+            for ($dy = -1; $dy <= 1; $dy++) {
+                for ($dx = -1; $dx <= 1; $dx++) {
+                    // これは地雷ポジション
+                    if ($dx === 0 && $dy === 0) {
+                        continue;
+                    }
+                    $ny = $y + $dy;
+                    $nx = $x + $dx;
+                    // 境界値をチェック
+                    if ($nx >= 0 && $nx < $width && $ny >= 0 && $ny < $height) {
+                        $boardTiles[$ny][$nx]->incrementAdjacentMines();
                     }
                 }
             }
