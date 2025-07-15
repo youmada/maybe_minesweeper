@@ -32,14 +32,17 @@ export function useMinesweeper() {
         roomConfig.roomId = roomId;
     };
 
-    const handleTileAction = (x: number, y: number) => {
-        const response = axios.post(
-            `multi/rooms/${roomConfig.roomId}/play/open`,
+    const handleOpenAction = async (x: number, y: number) => {
+        const response = await axios.put(
+            `/multi/rooms/${roomConfig.roomId}/play/operate`,
             {
                 x: x,
                 y: y,
+                operation: 'open',
             },
         );
+        // ここに関してはpiniaストアに通知トースト管理を作成して、呼び出す。
+        checkResponseStatus(response);
     };
 
     const startGame = async (): Promise<boolean> => {
@@ -54,10 +57,32 @@ export function useMinesweeper() {
         return response.status === 201;
     };
 
-    const handleFlagAction = (x: number, y: number) => {};
+    const handleFlagAction = async (x: number, y: number) => {
+        const response = await axios.put(
+            `/multi/rooms/${roomConfig.roomId}/play/operate`,
+            {
+                x: x,
+                y: y,
+                operation: 'flag',
+            },
+        );
+        checkResponseStatus(response);
+    };
+
+    const checkResponseStatus = (response: any) => {
+        switch (response.status) {
+            case 201:
+                console.log('success');
+                break;
+            case 400:
+                console.log('player action is invalid');
+                break;
+            case 500:
+                console.log('server error');
+        }
+    };
     return {
-        gameState,
-        handleTileAction,
+        handleOpenAction,
         handleFlagAction,
         settingMultiPlay,
         startGame,

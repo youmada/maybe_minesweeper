@@ -31,7 +31,7 @@ class FetchRoomData implements ShouldBroadcast
     public function broadcastOn(): array
     {
         return [
-            new PrivateChannel("room.{$this->room->public_id}"),
+            new PrivateChannel("room.{$this->room->public_id}.data"),
         ];
     }
 

@@ -4,12 +4,13 @@ import ModalWindow from '@/Components/ModalWindow.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import BoardTile from '@/Components/Tile.vue';
 import TurnOrderPlate from '@/Components/TurnOrderPlate.vue';
+import { useGameStateChannel } from '@/Composables/useGameStateChannel';
 import { useMinesweeper } from '@/Composables/useMInesweeper';
 import { useRoomChannel } from '@/Composables/useRoomChannel';
 import { useRoomData } from '@/Composables/useRoomData';
 import { useToast } from '@/Composables/useToast';
 import { Tile } from '@/custom/domain/mineSweeper';
-import { computed, onMounted, onUnmounted, reactive, ref } from 'vue';
+import { computed, onMounted, onUnmounted, reactive, ref, watch } from 'vue';
 
 type RoomData = {
     name: string;
@@ -53,7 +54,8 @@ const { roomPlayers, leaveChannel } = useRoomChannel(
     props.auth.user.public_id,
 );
 const { isRoomReady } = useRoomData(roomData.publicId);
-const { startGame, settingMultiPlay, handleFlagAction, handleTileAction } =
+const { gameState } = useGameStateChannel(roomData.publicId);
+const { startGame, settingMultiPlay, handleFlagAction, handleOpenAction } =
     useMinesweeper();
 
 const restTiles = computed(() => {
@@ -66,6 +68,12 @@ onMounted(async () => {
 });
 onUnmounted(() => {
     leaveChannel(true);
+});
+
+watch(gameState, (newValue) => {
+    if (newValue && newValue.data) {
+        Object.assign(gameData, newValue.data);
+    }
 });
 
 const playButtonText = computed(() => {
@@ -94,7 +102,7 @@ const handleClickTile = (x: number, y: number) => {
     if (isFlagMode.value) {
         handleFlagAction(x, y);
     } else {
-        handleTileAction(x, y);
+        handleOpenAction(x, y);
     }
 };
 

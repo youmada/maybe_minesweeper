@@ -12,10 +12,7 @@ Broadcast::channel('room.{publicId}', function (Player $player, $publicId) {
 
     $roomId = Room::findByPublicId($publicId)->first()->id;
     $currentPlayer = RoomState::where('room_id', $roomId)->first()->current_player;
-    $isAuth = $player
-        ->rooms()
-        ->findByPublicId($publicId)
-        ->exists();
+    $isAuth = isRoomExists($player, $publicId);
 
     if (! $isAuth) {
         return false;
@@ -28,9 +25,18 @@ Broadcast::channel('room.{publicId}', function (Player $player, $publicId) {
 });
 
 Broadcast::channel('room.{publicId}.data', function (Player $player, $publicId) {
+    return isRoomExists($player, $publicId);
+
+}, ['guards' => ['magicLink']]);
+
+Broadcast::channel('game.{publicId}', function (Player $player, $publicId) {
+    return isRoomExists($player, $publicId);
+});
+
+function isRoomExists(Player $player, $publicId): bool
+{
     return $player
         ->rooms()
         ->findByPublicId($publicId)
         ->exists();
-
-}, ['guards' => ['magicLink']]);
+}

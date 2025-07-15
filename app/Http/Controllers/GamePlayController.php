@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Domain\Minesweeper\TileActionMode;
 use App\Events\FetchRoomData;
+use App\Events\GameDataApplyClient;
 use App\Http\Resources\MultiPlayGameResource;
 use App\Models\GameState;
 use App\Models\Room;
@@ -31,10 +32,12 @@ class GamePlayController extends Controller
     public function update(Request $request, Room $room, AdvanceTurnService $advanceTurnService, MinesweeperService $minesweeperService)
     {
 
+        // 元データ取得
         $roomState = RoomState::where('room_id', $room->id)->first();
         $gameState = GameState::where('room_id', $room->id)->first();
         $width = $gameState->width - 1;
         $height = $gameState->height - 1;
+
         $this->authorize('update', $roomState);
 
         $attributes = $request->validate([
@@ -43,10 +46,12 @@ class GamePlayController extends Controller
             'operation' => ['required', 'string', 'in:open,flag'],
         ]);
 
+        // 初回クリック処理
         if ($roomState->status === 'standby') {
             if ($attributes['operation'] === 'flag') {
-                return response()->json(['status' => 'invalid operation', 'message' => '予期しない処理を検知しました'], 400);
+                return response()->json(['message' => '予期しない処理を検知しました'], 400);
             }
+
             try {
                 DB::transaction(function () use ($room, $roomState, $minesweeperService, $attributes) {
                     $minesweeperService->processGameStart($room->id, $attributes['x'], $attributes['y']);
@@ -56,8 +61,10 @@ class GamePlayController extends Controller
             } catch (\Throwable $e) {
                 Log::error($e->getMessage());
 
-                return response()->json(['status' => 'error', 'message' => '更新処理でエラーが発生しました'], 500);
+                return response()->json(['message' => '更新処理でエラーが発生しました'], 500);
             }
+            // 盤面更新イベント
+            GameDataApplyClient::dispatch($room);
 
             return response()->json(['status' => 'gameStart'], 201);
         }
@@ -73,12 +80,14 @@ class GamePlayController extends Controller
         } catch (\Exception $e) {
             Log::error($e->getMessage());
 
-            return response()->json(['status' => 'error', 'message' => '内部でエラーが発生しました。'], 500);
+            return response()->json(['message' => '内部でエラーが発生しました。'], 500);
         } catch (\Throwable $e) {
             Log::error($e->getMessage());
 
-            return response()->json(['status' => 'error', 'message' => '更新処理でエラーが発生しました'], 500);
+            return response()->json(['message' => '更新処理でエラーが発生しました'], 500);
         }
+        // 盤面更新イベント
+        GameDataApplyClient::dispatch($room);
 
         return response()->json(['status' => 'ok'], 201);
     }
