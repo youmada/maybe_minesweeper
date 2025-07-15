@@ -1,6 +1,6 @@
 <?php
 
-namespace Unit;
+namespace Tests\Unit;
 
 use App\Domain\Minesweeper\GameService;
 use InvalidArgumentException;
@@ -10,7 +10,7 @@ use PHPUnit\Framework\TestCase;
 class MineTest extends TestCase
 {
     #[Test]
-    public function set_Mines()
+    public function set_mines()
     {
         $board = GameService::createBoard(3, 3);
         $boardTiles = $board->getBoardState();

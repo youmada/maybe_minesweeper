@@ -1,8 +1,11 @@
 <?php
 
+namespace Tests\Unit\Domain;
+
 use App\Domain\Minesweeper\TileActionMode;
 use App\Domain\Room\RoomState;
 use App\Domain\Room\RoomStatus;
+use Illuminate\Support\Str;
 
 beforeEach(function () {
     $this->flagLimit = 5;

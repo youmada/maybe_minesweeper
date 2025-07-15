@@ -1,6 +1,6 @@
 <?php
 
-namespace Unit;
+namespace Tests\Unit;
 
 use App\Domain\Minesweeper\GameService;
 use PHPUnit\Framework\Attributes\Test;

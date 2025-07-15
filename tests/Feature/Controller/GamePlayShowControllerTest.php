@@ -21,6 +21,8 @@ beforeEach(function () {
         'joined_at' => now(),
         'left_at' => null,
     ]);
+    // Redisにテストデータをセット
+    $this->seedGameState($this->room->id);
 });
 
 it('should response a room data by inertia.', function () {

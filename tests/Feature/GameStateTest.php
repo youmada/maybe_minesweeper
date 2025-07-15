@@ -1,6 +1,6 @@
 <?php
 
-namespace Feature;
+namespace Tests\Feature;
 
 use App\Domain\Minesweeper\GameService;
 use App\Domain\Minesweeper\GameState;

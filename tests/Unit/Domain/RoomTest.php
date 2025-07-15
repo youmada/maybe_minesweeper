@@ -1,7 +1,10 @@
 <?php
 
+namespace Tests\Unit\Domain;
+
 use App\Domain\Room\Room;
 use Carbon\Carbon;
+use Illuminate\Support\Str;
 
 beforeEach(function () {
     $this->room = new Room('test room', 3, [], Carbon::now()->toDateString(), false, 'owner');
