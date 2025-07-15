@@ -3,12 +3,11 @@
 namespace App\Services\Multi;
 
 use App\Domain\Minesweeper\TileActionMode;
-use App\Domain\Room\RoomAggregate;
 use App\Repositories\Interfaces\RoomCompositesRepositoryInterface;
 
 class AdvanceTurnService
 {
-    public function __construct(protected RoomCompositesRepositoryInterface $roomRepository, protected RoomAggregate $roomFactory) {}
+    public function __construct(protected RoomCompositesRepositoryInterface $roomRepository) {}
 
     public function __invoke(string $roomId, string $userId, TileActionMode $actionMode): void
     {

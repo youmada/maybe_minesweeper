@@ -41,7 +41,7 @@ Route::group(['middleware' => ['room.auth', 'auth:magicLink']], function () {
     Route::post('multi/rooms/{room}/play/start', [GamePlayController::class, 'store'])
         ->whereUuid('room')
         ->name('multi.rooms.play.store');
-    Route::put('multi/rooms/{room}/play', [GamePlayController::class, 'update'])
+    Route::put('multi/rooms/{room}/play/operate', [GamePlayController::class, 'update'])
         ->whereUuid('room')
         ->name('multi.rooms.play.update');
     Route::delete('multi/rooms/{room}/play', [GamePlayController::class, 'destroy'])
