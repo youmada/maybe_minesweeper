@@ -33,10 +33,12 @@ Broadcast::channel('game.{publicId}', function (Player $player, $publicId) {
     return isRoomExists($player, $publicId);
 });
 
-function isRoomExists(Player $player, $publicId): bool
-{
-    return $player
-        ->rooms()
-        ->findByPublicId($publicId)
-        ->exists();
+if (! function_exists(__NAMESPACE__.'\isRoomExists')) {
+    function isRoomExists(Player $player, $publicId): bool
+    {
+        return $player
+            ->rooms()
+            ->findByPublicId($publicId)
+            ->exists();
+    }
 }
