@@ -2,7 +2,8 @@
 
 namespace App\Repositories\Redis;
 
-use App\Domain\Room\RoomState;
+use App\Domain\Room\RoomAggregate;
+use App\Factories\RoomAggregateFactory;
 use App\Repositories\Interfaces\RoomStateRepositoryInterface;
 use Exception;
 use Illuminate\Support\Facades\Log;
@@ -15,10 +16,10 @@ class RoomRepository implements RoomStateRepositoryInterface
     /**
      * @throws Exception
      */
-    public function save(RoomState $roomState, string $roomId): void
+    public function save(RoomAggregate $roomAggregate, string $roomId): void
     {
         $key = $this->prefix.':'.$roomId;
-        $value = json_encode($roomState->toArray());
+        $value = json_encode(['room' => $roomAggregate->getRoom()->toArray(), 'roomState' => $roomAggregate->getRoomState()->toArray()]);
         try {
             Redis::set($key, $value);
         } catch (Exception $e) {
@@ -27,29 +28,29 @@ class RoomRepository implements RoomStateRepositoryInterface
         }
     }
 
-    public function get(string $roomId): ?RoomState
+    public function get(string $roomId): ?RoomAggregate
     {
         $key = $this->prefix.':'.$roomId;
 
         try {
             $value = Redis::get($key);
-            $roomState = RoomState::fromArray(json_decode($value, true));
+            $roomAggregate = RoomAggregateFactory::createFromRedis(json_decode($value, true));
         } catch (Exception $e) {
             Log::error("Redis getState error for key {$key}: ".$e->getMessage());
 
             return null;
         }
 
-        return $roomState;
+        return $roomAggregate;
     }
 
     /**
      * @throws Exception
      */
-    public function update(RoomState $roomState, string $roomId): void
+    public function update(RoomAggregate $roomAggregate, string $roomId): void
     {
         $key = $this->prefix.':'.$roomId;
-        $value = json_encode($roomState->toArray());
+        $value = json_encode(['room' => $roomAggregate->getRoom()->toArray(), 'roomState' => $roomAggregate->getRoomState()->toArray()]);
         try {
             Redis::set($key, $value);
         } catch (Exception $e) {

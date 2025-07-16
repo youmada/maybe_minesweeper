@@ -11,16 +11,18 @@ beforeEach(function () {
     $this->redisRepository = Mockery::mock(RedisRepository::class);
     $this->dbRepository = Mockery::mock(DBRepository::class);
     $this->compositeRepository = new RoomCompositeRepository($this->redisRepository, $this->dbRepository);
-    $this->roomState = Mockery::mock(RoomState::class);
+    //    $this->roomState = Mockery::mock(RoomState::class);
+    $this->roomAggregate = Mockery::mock(RoomAggregate::class);
+    //    $this->room = Mockery::mock(RoomState::class);
 });
 
 it('should call get on Redis repository during PLAYING', function () {
     $this->redisRepository->shouldReceive('get')
         ->once()
         ->with('dummy-123')
-        ->andReturn($this->roomState);
+        ->andReturn($this->roomAggregate);
 
-    $this->roomState->shouldReceive('getStatus')
+    $this->roomAggregate->shouldReceive('getRoomStatus')
         ->once()
         ->andReturn(RoomStatus::PLAYING->value);
 
@@ -33,9 +35,9 @@ it('should call get on DB repository during PLAYING', function () {
     $this->redisRepository->shouldReceive('get')
         ->once()
         ->with('dummy-123')
-        ->andReturn($this->roomState);
+        ->andReturn($this->roomAggregate);
 
-    $this->roomState->shouldReceive('getStatus')
+    $this->roomAggregate->shouldReceive('getRoomStatus')
         ->once()
         ->andReturn(RoomStatus::FINISHED->value);
 
@@ -45,19 +47,27 @@ it('should call get on DB repository during PLAYING', function () {
     $this->compositeRepository->get('dummy-123');
 });
 
-it('should call update on Redis repository from arguments RoomAggregate', function () {
+it('should not call update on DB repository during PLAYING', function () {
+    $this->roomAggregate->shouldReceive('getRoomStatus')
+        ->once()
+        ->andReturn(RoomStatus::PLAYING->value);
     $this->redisRepository->shouldReceive('update')
         ->once()
-        ->with($this->roomState, 'dummy-123');
+        ->with($this->roomAggregate, 'dummy-123');
     $this->dbRepository->shouldNotReceive('update');
-    $this->compositeRepository->update($this->roomState, 'dummy-123');
+    $this->compositeRepository->update($this->roomAggregate, 'dummy-123');
 });
 
-it('should call update on DB repository from arguments RoomState', function () {
-    $roomAggregate = Mockery::mock(RoomAggregate::class);
-    $this->redisRepository->shouldNotReceive('update');
+it('should call update on DB repository during no PLAYING', function () {
+    $this->roomAggregate->shouldReceive('getRoomStatus')
+        ->once()
+        ->andReturn(RoomStatus::WAITING->value);
+    $this->redisRepository->shouldReceive('update')
+        ->once()
+        ->with($this->roomAggregate, 'dummy-123');
     $this->dbRepository->shouldReceive('update')
         ->once()
-        ->with($roomAggregate, 'dummy-123');
-    $this->compositeRepository->update($roomAggregate, 'dummy-123');
+        ->with($this->roomAggregate, 'dummy-123');
+
+    $this->compositeRepository->update($this->roomAggregate, 'dummy-123');
 });

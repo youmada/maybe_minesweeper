@@ -14,4 +14,14 @@ class RoomAggregateFactory
 
         return new RoomAggregate($room, $roomState);
     }
+
+    public static function createFromRedis(array $data): RoomAggregate
+    {
+        $roomData = $data['room'];
+        $roomStateData = $data['roomState'];
+        $room = new Room($roomData['name'], $roomData['maxPlayer'], $roomData['players'], $roomData['expireAt'], $roomData['isPrivate'], $roomData['ownerId']);
+        $roomState = RoomStateFactory::createFromRedis($roomStateData);
+
+        return new RoomAggregate($room, $roomState);
+    }
 }
