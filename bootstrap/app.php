@@ -20,9 +20,8 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'room.auth' => \App\Http\Middleware\RoomAuthMiddleware::class,
         ]);
+        $middleware->redirectGuestsTo(fn () => route('Home'));
 
         //
     })
-    ->withExceptions(function (Exceptions $exceptions) {
-        //
-    })->create();
+    ->withExceptions(function (Exceptions $exceptions) {})->create();

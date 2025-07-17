@@ -5,10 +5,12 @@ namespace App\Http\Controllers;
 use App\Domain\Minesweeper\TileActionMode;
 use App\Events\FetchRoomData;
 use App\Events\GameDataApplyClient;
+use App\Events\RoomStateApplyClientEvent;
 use App\Http\Resources\MultiPlayGameResource;
-use App\Models\GameState;
 use App\Models\Room;
 use App\Models\RoomState;
+use App\Repositories\Composites\GameCompositeRepository;
+use App\Repositories\Composites\RoomCompositeRepository;
 use App\Services\Minesweeper\MinesweeperService;
 use App\Services\Multi\AdvanceTurnService;
 use Illuminate\Http\Request;
@@ -33,10 +35,11 @@ class GamePlayController extends Controller
     {
 
         // 元データ取得
-        $roomState = RoomState::where('room_id', $room->id)->first();
-        $gameState = GameState::where('room_id', $room->id)->first();
-        $width = $gameState->width - 1;
-        $height = $gameState->height - 1;
+        //        $roomState = RoomState::where('room_id', $room->id)->first();
+        $roomState = app(RoomCompositeRepository::class)->get($room->id);
+        $gameState = app(GameCompositeRepository::class)->getState($room->id);
+        $width = $gameState->getWidth() - 1;
+        $height = $gameState->getHeight() - 1;
 
         $this->authorize('update', $roomState);
 
@@ -47,7 +50,7 @@ class GamePlayController extends Controller
         ]);
 
         // 初回クリック処理
-        if ($roomState->status === 'standby') {
+        if ($roomState->getRoomStatus() === 'standby') {
             if ($attributes['operation'] === 'flag') {
                 return response()->json(['message' => '予期しない処理を検知しました'], 400);
             }
@@ -56,15 +59,17 @@ class GamePlayController extends Controller
                 DB::transaction(function () use ($room, $roomState, $minesweeperService, $attributes) {
                     $minesweeperService->processGameStart($room->id, $attributes['x'], $attributes['y']);
 
-                    $roomState->update(['status' => 'playing']);
+                    $roomState->startRoom();
+                    //                    $roomState->update(['status' => 'playing']);
                 });
             } catch (\Throwable $e) {
                 Log::error($e->getMessage());
 
                 return response()->json(['message' => '更新処理でエラーが発生しました'], 500);
             }
-            // 盤面更新イベント
+            // 盤面更新とターン更新イベント
             GameDataApplyClient::dispatch($room);
+            RoomStateApplyClientEvent::dispatch($room);
 
             return response()->json(['status' => 'gameStart'], 201);
         }
@@ -86,8 +91,9 @@ class GamePlayController extends Controller
 
             return response()->json(['message' => '更新処理でエラーが発生しました'], 500);
         }
-        // 盤面更新イベント
+        // 盤面更新とターン更新イベント
         GameDataApplyClient::dispatch($room);
+        RoomStateApplyClientEvent::dispatch($room);
 
         return response()->json(['status' => 'ok'], 201);
     }

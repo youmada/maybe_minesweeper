@@ -71,6 +71,16 @@ class RoomAggregate
         return $this->roomState->getStatus();
     }
 
+    public function getActionState(): array
+    {
+        return $this->roomState->getActionState();
+    }
+
+    public function getFlagLimit(): int
+    {
+        return $this->roomState->getFlagLimit();
+    }
+
     public function operate(string $userId, TileActionMode $actionMode): void
     {
         if (! $this->canOperate($userId)) {

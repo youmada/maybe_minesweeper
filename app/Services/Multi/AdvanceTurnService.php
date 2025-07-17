@@ -13,8 +13,10 @@ class AdvanceTurnService
     {
         // 現在のルームを取得
         $currentRoom = $this->roomRepository->get($roomId);
-
         $currentRoom->operate($userId, $actionMode);
+        if ($currentRoom->isTurnFinished()) {
+            $currentRoom->nextTurn();
+        }
         $this->roomRepository->update($currentRoom, $roomId);
     }
 }

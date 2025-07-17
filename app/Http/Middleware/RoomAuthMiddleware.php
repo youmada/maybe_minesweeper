@@ -13,7 +13,7 @@ class RoomAuthMiddleware extends Authenticate
 {
     protected function redirectTo($request): string|RedirectResponse|null
     {
-        return redirect()->route('Home');
+        return redirect()->route('/');
     }
 
     /**
