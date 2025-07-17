@@ -2,8 +2,10 @@
 
 namespace App\Policies;
 
+use App\Domain\Room\RoomAggregate;
+use App\Domain\Room\RoomState;
 use App\Models\Player;
-use App\Models\RoomState;
+// use App\Models\RoomState;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
 class RoomStatePolicy
@@ -16,16 +18,16 @@ class RoomStatePolicy
 
     //    public function create(Player $user): bool {}
 
-    public function update(Player $user, RoomState $roomState): bool
+    public function update(Player $user, RoomAggregate $roomAggregate): bool
     {
-        if ($roomState->status === 'finished') {
+        if ($roomAggregate->getRoomStatus() === 'finished') {
             return false;
         }
-        if ($roomState->status === 'waiting') {
+        if ($roomAggregate->getRoomStatus() === 'waiting') {
             return false;
         }
 
-        return $user->public_id === $roomState->current_player;
+        return $user->public_id === $roomAggregate->getCurrentOrder();
     }
 
     //    public function delete(Player $user, RoomState $roomState): bool {}
