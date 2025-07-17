@@ -1,6 +1,7 @@
 <script setup lang="ts">
 // 全ページ共通の基本的なレイアウト
 // 内容：slotを画面中央にして、背景をダークモードにする。
+import Toast from '@/Components/Toast.vue';
 import { Link } from '@inertiajs/vue3';
 </script>
 
@@ -17,4 +18,5 @@ import { Link } from '@inertiajs/vue3';
             <slot></slot>
         </div>
     </div>
+    <Toast />
 </template>
