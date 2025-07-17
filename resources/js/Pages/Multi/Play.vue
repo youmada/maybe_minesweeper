@@ -7,10 +7,11 @@ import TurnOrderPlate from '@/Components/TurnOrderPlate.vue';
 import { useGameStateChannel } from '@/Composables/useGameStateChannel';
 import { useMinesweeper } from '@/Composables/useMInesweeper';
 import { useRoomChannel } from '@/Composables/useRoomChannel';
-import { useRoomData } from '@/Composables/useRoomData';
-import { useToast } from '@/Composables/useToast';
+import { useRoomState } from '@/Composables/useRoomState';
+import { useRoomStatus } from '@/Composables/useRoomStatus';
 import { Tile } from '@/custom/domain/mineSweeper';
-import { computed, onMounted, onUnmounted, reactive, ref, watch } from 'vue';
+import useToastStore from '@/stores/notificationToast';
+import { computed, onMounted, onUnmounted, reactive, ref } from 'vue';
 
 type RoomData = {
     name: string;
@@ -19,8 +20,8 @@ type RoomData = {
     maxPlayer: number;
     magicLink: string;
     status: string;
+    currentPlayer: string;
 };
-
 type GameState = {
     width: number;
     height: number;
@@ -48,13 +49,12 @@ const roomData = reactive(props.data.room);
 const gameData = reactive(props.data.game);
 const isFlagMode = ref(false);
 
-const { showToast, isToastShow, toastText } = useToast();
-const { roomPlayers, leaveChannel } = useRoomChannel(
+const { popUpToast } = useToastStore();
+const { roomPlayers, leaveChannel, changeCurrentPlayer } = useRoomChannel(
     roomData.publicId,
     props.auth.user.public_id,
 );
-const { isRoomReady } = useRoomData(roomData.publicId);
-const { gameState } = useGameStateChannel(roomData.publicId);
+const { isRoomReady } = useRoomStatus(roomData.publicId);
 const { startGame, settingMultiPlay, handleFlagAction, handleOpenAction } =
     useMinesweeper();
 
@@ -65,15 +65,11 @@ const restTiles = computed(() => {
 
 onMounted(async () => {
     settingMultiPlay(roomData.publicId);
+    useGameStateChannel(roomData.publicId, gameData);
+    useRoomState(roomData.publicId, changeCurrentPlayer);
 });
 onUnmounted(() => {
     leaveChannel(true);
-});
-
-watch(gameState, (newValue) => {
-    if (newValue && newValue.data) {
-        Object.assign(gameData, newValue.data);
-    }
 });
 
 const playButtonText = computed(() => {
@@ -85,7 +81,7 @@ const playButtonText = computed(() => {
 
 const clipBoard = (link: string) => {
     navigator.clipboard.writeText(link);
-    showToast('URLをコピーしました');
+    popUpToast('URLをコピーしました');
 };
 const handleGameStart = async () => {
     // startGameは開始できるかをbooleanで返す
@@ -97,12 +93,12 @@ const toggleFlagMode = () => {
     isFlagMode.value = !isFlagMode.value;
 };
 
-const handleClickTile = (x: number, y: number) => {
+const handleClickTile = async (x: number, y: number) => {
     // フラグ配置の時
     if (isFlagMode.value) {
-        handleFlagAction(x, y);
+        await handleFlagAction(x, y);
     } else {
-        handleOpenAction(x, y);
+        await handleOpenAction(x, y);
     }
 };
 
@@ -201,12 +197,6 @@ const isBoardReady = computed(() => {
             {{ playButtonText }}
         </button>
     </ModalWindow>
-
-    <div v-show="isToastShow" class="toast z-40">
-        <div class="alert alert-info">
-            <span class="text-base font-bold text-white">{{ toastText }}</span>
-        </div>
-    </div>
 </template>
 
 <style scoped></style>

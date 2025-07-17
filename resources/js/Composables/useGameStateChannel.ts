@@ -1,6 +1,6 @@
 import { Tile } from '@/custom/domain/mineSweeper';
 import { useEcho } from '@laravel/echo-vue';
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
 
 type GameState = {
     data: {
@@ -14,7 +14,10 @@ type GameState = {
     };
 };
 
-export function useGameStateChannel(roomPublicId: string) {
+export function useGameStateChannel(
+    roomPublicId: string,
+    gameData: GameState['data'],
+) {
     const { channel } = useEcho(`game.${roomPublicId}`, [
         'GameDataApplyClient',
     ]);
@@ -32,7 +35,10 @@ export function useGameStateChannel(roomPublicId: string) {
     channel().listen('GameDataApplyClient', (data: GameState) => {
         gameState.value = data;
     });
-    return {
-        gameState,
-    };
+
+    watch(gameState, (newValue) => {
+        if (newValue && newValue.data) {
+            Object.assign(gameData, newValue.data);
+        }
+    });
 }

@@ -51,11 +51,7 @@ class RoomCompositeRepository implements RoomCompositesRepositoryInterface
     public function update(RoomAggregate $roomAggregate, string $roomId): void
     {
         // プレイ中は高速に Redis、終了時は DB へも upsert
-        // RoomStateを渡されるのはredisでのリポジトリアクセス
-        // redisでのアクセスはRoomStatus::PLAYINGなので下記条件分岐で問題ない
-        \Illuminate\Support\Facades\Log::info('redis update');
         $this->redisRepo->update($roomAggregate, $roomId);
-        \Illuminate\Support\Facades\Log::info('db update');
         if ($roomAggregate->getRoomStatus() === RoomStatus::PLAYING->value) {
             return;
         }

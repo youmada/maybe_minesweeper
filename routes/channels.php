@@ -27,9 +27,14 @@ Broadcast::channel('room.{publicId}', function (Player $player, $publicId) {
 Broadcast::channel('room.{publicId}.data', function (Player $player, $publicId) {
     return isRoomExists($player, $publicId);
 
-}, ['guards' => ['magicLink']]);
+});
 
 Broadcast::channel('game.{publicId}', function (Player $player, $publicId) {
+    return isRoomExists($player, $publicId);
+});
+
+Broadcast::channel('room.{publicId}.state', function (Player $player, $publicId) {
+
     return isRoomExists($player, $publicId);
 });
 

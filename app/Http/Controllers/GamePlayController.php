@@ -35,7 +35,6 @@ class GamePlayController extends Controller
     {
 
         // 元データ取得
-        //        $roomState = RoomState::where('room_id', $room->id)->first();
         $roomState = app(RoomCompositeRepository::class)->get($room->id);
         $gameState = app(GameCompositeRepository::class)->getState($room->id);
         $width = $gameState->getWidth() - 1;
@@ -60,7 +59,7 @@ class GamePlayController extends Controller
                     $minesweeperService->processGameStart($room->id, $attributes['x'], $attributes['y']);
 
                     $roomState->startRoom();
-                    //                    $roomState->update(['status' => 'playing']);
+                    app(RoomCompositeRepository::class)->update($roomState, $room->id);
                 });
             } catch (\Throwable $e) {
                 Log::error($e->getMessage());

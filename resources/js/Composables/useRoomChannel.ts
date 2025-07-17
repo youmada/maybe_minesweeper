@@ -1,4 +1,4 @@
-import { useToast } from '@/Composables/useToast';
+import useToastStore from '@/stores/notificationToast';
 import { useEchoPresence } from '@laravel/echo-vue';
 import { ref } from 'vue';
 
@@ -11,9 +11,7 @@ type Player = {
 
 export function useRoomChannel(roomPublicId: string, currentPlayerId: string) {
     const roomPlayers = ref<Player[]>([]);
-    const { showToast } = useToast();
-
-    const roomStatus = ref('');
+    const { popUpToast } = useToastStore();
 
     const { channel, leaveChannel } = useEchoPresence(`room.${roomPublicId}`);
     channel().here((players: Player[]) => {
@@ -47,14 +45,31 @@ export function useRoomChannel(roomPublicId: string, currentPlayerId: string) {
         roomPlayers.value = roomPlayers.value.filter((p) => p.id !== player.id);
     });
     channel().error(() => {
-        showToast(
+        popUpToast(
             '現在通信エラーが発生しています。ブラウザをリロードしてください。',
+            'warning',
         );
     });
 
+    const changeCurrentPlayer = (currentPlayerId: string) => {
+        roomPlayers.value = roomPlayers.value.map((player) => {
+            if (player.id === currentPlayerId) {
+                return {
+                    ...player,
+                    isCurrentTurn: true,
+                };
+            } else {
+                return {
+                    ...player,
+                    isCurrentTurn: false,
+                };
+            }
+        });
+    };
+
     return {
         roomPlayers,
-        roomStatus,
         leaveChannel,
+        changeCurrentPlayer,
     };
 }

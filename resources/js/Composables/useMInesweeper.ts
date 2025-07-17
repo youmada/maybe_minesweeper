@@ -1,48 +1,36 @@
-import { Tile } from '@/custom/domain/mineSweeper';
+import useToastStore from '@/stores/notificationToast';
 import axios from 'axios';
 import { reactive, ref } from 'vue';
-
-type Game = {
-    tileStates: Array<Array<Tile>>;
-    width: number;
-    height: number;
-    visitedTiles: Array<Tile>;
-    isGameStarted: boolean;
-    isGameOver: boolean;
-    isGameClear: boolean;
-};
 
 export function useMinesweeper() {
     // 内部定数
     const isDuplicateClick = ref(false);
-
-    const gameState = ref<Game>({
-        tileStates: [],
-        width: 0,
-        height: 0,
-        visitedTiles: [],
-        isGameStarted: false,
-        isGameOver: false,
-        isGameClear: false,
-    });
     const roomConfig = reactive<{ roomId: string | null }>({
         roomId: null,
     });
+    const { popUpToast } = useToastStore();
     const settingMultiPlay = (roomId: string) => {
         roomConfig.roomId = roomId;
     };
 
     const handleOpenAction = async (x: number, y: number) => {
-        const response = await axios.put(
-            `/multi/rooms/${roomConfig.roomId}/play/operate`,
-            {
-                x: x,
-                y: y,
-                operation: 'open',
-            },
-        );
-        // ここに関してはpiniaストアに通知トースト管理を作成して、呼び出す。
-        checkResponseStatus(response);
+        try {
+            const response = await axios.put(
+                `/multi/rooms/${roomConfig.roomId}/play/operate`,
+                {
+                    x: x,
+                    y: y,
+                    operation: 'open',
+                },
+            );
+            checkResponseStatus(response);
+        } catch (error: any) {
+            if (error.response) {
+                checkResponseStatus(error.response); // 失敗時もstatus別に分けられる
+            } else {
+                popUpToast('通信エラーが発生しました', 'error');
+            }
+        }
     };
 
     const startGame = async (): Promise<boolean> => {
@@ -58,27 +46,41 @@ export function useMinesweeper() {
     };
 
     const handleFlagAction = async (x: number, y: number) => {
-        const response = await axios.put(
-            `/multi/rooms/${roomConfig.roomId}/play/operate`,
-            {
-                x: x,
-                y: y,
-                operation: 'flag',
-            },
-        );
-        checkResponseStatus(response);
+        try {
+            const response = await axios.put(
+                `/multi/rooms/${roomConfig.roomId}/play/operate`,
+                {
+                    x: x,
+                    y: y,
+                    operation: 'flag',
+                },
+            );
+            checkResponseStatus(response);
+        } catch (error: any) {
+            if (error.response) {
+                checkResponseStatus(error.response); // 失敗時もstatus別に分けられる
+            } else {
+                popUpToast('通信エラーが発生しました', 'error');
+            }
+        }
     };
 
     const checkResponseStatus = (response: any) => {
         switch (response.status) {
             case 201:
-                console.log('success');
                 break;
             case 400:
-                console.log('player action is invalid');
+                popUpToast('このターン操作することはできません', 'warning');
+                break;
+            case 403:
+                popUpToast('このターン操作することはできません', 'warning');
                 break;
             case 500:
-                console.log('server error');
+                popUpToast('サーバーでエラーが発生しました', 'error');
+                break;
+            default:
+                popUpToast('予期せぬエラーが発生しました', 'error');
+                break;
         }
     };
     return {

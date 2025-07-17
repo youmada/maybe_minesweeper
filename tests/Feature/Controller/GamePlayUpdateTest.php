@@ -1,9 +1,11 @@
 <?php
 
 use App\Events\GameDataApplyClient;
+use App\Events\RoomStateApplyClientEvent;
 use App\Models\Player;
 use App\Models\Room;
 use App\Models\RoomState;
+use App\Repositories\Composites\RoomCompositeRepository;
 use App\Services\Minesweeper\MinesweeperService;
 use App\Services\Multi\CreateRoomService;
 use App\Services\Multi\JoinRoomService;
@@ -39,10 +41,7 @@ it('should update game state by open operation', function () {
 
     // アサート
     $response->assertStatus(201);
-    $this->assertDatabaseHas('room_states', [
-        'room_id' => $this->room->id,
-        'status' => 'playing',
-    ]);
+    expect(app(RoomCompositeRepository::class)->get($this->room->id)->getRoomStatus())->toEqual('playing');
 });
 
 it('should update game state by flag operation', function () {
@@ -75,18 +74,6 @@ it('should response 403, when the status at the time for request is waiting', fu
     $response->assertStatus(403);
 });
 
-it('should process start game, when the room status standby', function () {
-
-    $response = $this->withSession(['public_id' => $this->player->public_id])
-        ->actingAs($this->player, 'magicLink')
-        ->put("/multi/rooms/{$this->room->public_id}/play/operate", ['x' => 1, 'y' => 1, 'operation' => 'open']);
-    $response->assertStatus(201);
-    $this->assertDatabaseHas('room_states', [
-        'room_id' => $this->room->id,
-        'status' => 'playing',
-    ]);
-});
-
 it('should validate a data', function ($x, $y, $operation, $status) {
     $response = $this->withSession(['public_id' => $this->player->public_id])
         ->actingAs($this->player, 'magicLink')
@@ -102,28 +89,28 @@ it('should validate a data', function ($x, $y, $operation, $status) {
     ['x' => 10, 'y' => 10, 'operation' => 'open', 'status' => 422],
 ]);
 
-it('should dispatch a event when action mode is open', function () {
+it('should dispatch a event when action mode is open or flag', function ($mode) {
 
     Event::fake();
+    $this->roomState->update(['status' => 'playing']);
+    $this->roomState->refresh();
 
     $this->withSession(['public_id' => $this->player->public_id])
         ->actingAs($this->player, 'magicLink')
-        ->put("/multi/rooms/{$this->room->public_id}/play/operate", ['x' => 1, 'y' => 1, 'operation' => 'open']);
+        ->put("/multi/rooms/{$this->room->public_id}/play/operate", ['x' => 1, 'y' => 1, 'operation' => $mode]);
 
     Event::assertDispatched(GameDataApplyClient::class);
-});
+    Event::assertDispatched(RoomStateApplyClientEvent::class);
+})->with([
+    ['open'],
+    ['flag'],
+]);
 
-it('should dispatch a event when action mode is flag', function () {
-    $this->roomState->update([
-        'status' => 'playing',
-    ]);
-
+it('should response 400 status code by actions flag. when room status standby', function () {
+    $this->roomState->update(['status' => 'standby']);
     $this->roomState->refresh();
-    Event::fake();
-
-    $this->withSession(['public_id' => $this->player->public_id])
+    $response = $this->withSession(['public_id' => $this->player->public_id])
         ->actingAs($this->player, 'magicLink')
         ->put("/multi/rooms/{$this->room->public_id}/play/operate", ['x' => 1, 'y' => 1, 'operation' => 'flag']);
-
-    Event::assertDispatched(GameDataApplyClient::class);
+    $response->assertStatus(400);
 });
