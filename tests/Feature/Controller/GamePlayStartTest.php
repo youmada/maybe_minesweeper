@@ -1,9 +1,11 @@
 <?php
 
 use App\Domain\Room\RoomStatus;
+use App\Factories\RoomAggregateFactory;
 use App\Models\Player;
 use App\Models\Room;
 use App\Models\RoomState;
+use App\Repositories\Composites\RoomCompositeRepository;
 use App\Utils\UUIDFactory;
 
 beforeEach(function () {
@@ -21,6 +23,15 @@ beforeEach(function () {
         'joined_at' => now(),
         'left_at' => null,
     ]);
+
+    $room = RoomAggregateFactory::create($this->room->name,
+        3,
+        $this->player->public_id,
+        \Carbon\Carbon::now()->addDay(),
+        true,
+        [$this->player->public_id],
+        5);
+    app(RoomCompositeRepository::class)->update($room, $this->room->id);
 
     $this->width = 5;
     $this->height = 5;

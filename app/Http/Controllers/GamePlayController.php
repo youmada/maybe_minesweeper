@@ -3,12 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Domain\Minesweeper\TileActionMode;
+use App\Domain\Room\RoomStatus;
 use App\Events\FetchRoomData;
 use App\Events\GameDataApplyClient;
 use App\Events\RoomStateApplyClientEvent;
 use App\Http\Resources\MultiPlayGameResource;
 use App\Models\Room;
-use App\Models\RoomState;
 use App\Repositories\Composites\GameCompositeRepository;
 use App\Repositories\Composites\RoomCompositeRepository;
 use App\Services\Minesweeper\MinesweeperService;
@@ -108,8 +108,9 @@ class GamePlayController extends Controller
     // ゲーム開始処理を行う
     public function store(Request $request, Room $room)
     {
-        $roomState = RoomState::where('room_id', $room->id)->first();
-        $roomState->update(['status' => 'standby']);
+        $roomState = app(RoomCompositeRepository::class)->get($room->id);
+        $roomState->getRoomState()->changeStatus(RoomStatus::STANDBY);
+        app(RoomCompositeRepository::class)->update($roomState, $room->id);
 
         FetchRoomData::dispatch($room);
 
