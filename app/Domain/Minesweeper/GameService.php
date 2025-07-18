@@ -142,7 +142,7 @@ class GameService
     /**
      * タイルを開く
      */
-    public static function openTile(Board $board, Tile $tile, \SplObjectStorage $visitedTiles): void
+    public static function openTile(Board $board, Tile $tile, array &$visitedTiles): void
     {
         // すでに開かれているタイルは処理しない
         if ($tile->isOpen()) {
@@ -150,7 +150,7 @@ class GameService
         }
 
         // すでに処理済みのタイルは処理しない
-        if ($visitedTiles->contains($tile)) {
+        if (isset($visitedTiles["{$tile->x()}-{$tile->y()}"])) {
             return;
         }
 
@@ -160,7 +160,7 @@ class GameService
         }
 
         // 訪問済みに追加
-        $visitedTiles->attach($tile);
+        $visitedTiles["{$tile->x()}-{$tile->y()}"] = true;
 
         // フラグが立っている場合は外す
         if ($tile->isFlag()) {

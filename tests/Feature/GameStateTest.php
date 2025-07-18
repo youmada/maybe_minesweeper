@@ -142,12 +142,8 @@ class GameStateTest extends TestCase
         $originalGameState = new GameState($board, $width, $height, $numOfMines);
         $originalGameState->startGame();
 
-        $visitedTiles = $originalGameState->getVisitedTiles();
-        $visitedTiles->attach($boardTiles[2][2]); // 開いたタイルを追加
-
         // 実行 - シリアライズとデシリアライズ
         $serialized = $originalGameState->toArray();
-        //        dump($serialized);
         $restoredState = GameState::fromArray($serialized);
 
         // 検証 - 元の状態と復元後の状態を比較
@@ -166,8 +162,9 @@ class GameStateTest extends TestCase
 
         // 訪問済みタイルの検証
         $restoredVisitedTiles = $restoredState->getVisitedTiles();
-        $this->assertTrue($restoredVisitedTiles->contains($restoredBoard[2][2]));
-        $this->assertEquals(1, $restoredVisitedTiles->count());
+        $relevantTile = $boardTiles[2][2];
+        $this->assertTrue($restoredState->isTileVisited($relevantTile));
+        $this->assertEquals(1, count($restoredVisitedTiles));
     }
 
     #[Test]

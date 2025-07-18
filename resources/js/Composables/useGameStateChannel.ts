@@ -10,7 +10,7 @@ type GameState = {
         isGameOver: boolean;
         isGameClear: boolean;
         tileStates: Array<Array<Tile>>;
-        visitedTiles: Array<Tile>;
+        visitedTiles: number;
     };
 };
 
@@ -29,7 +29,7 @@ export function useGameStateChannel(
             isGameOver: false,
             isGameClear: false,
             tileStates: [],
-            visitedTiles: [],
+            visitedTiles: 0,
         },
     });
     channel().listen('GameDataApplyClient', (data: GameState) => {

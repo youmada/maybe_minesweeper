@@ -30,7 +30,7 @@ type GameState = {
     isGameOver: boolean;
     isGameClear: boolean;
     tileStates: Array<Array<Tile>>;
-    visitedTiles: Array<Tile>;
+    visitedTiles: number;
 };
 
 const props = defineProps<{
@@ -60,7 +60,8 @@ const { startGame, settingMultiPlay, handleFlagAction, handleOpenAction } =
 
 const restTiles = computed(() => {
     const totalTiles = gameData.width * gameData.height;
-    return totalTiles - gameData.visitedTiles.length;
+    console.log(gameData.visitedTiles);
+    return totalTiles - gameData.visitedTiles;
 });
 
 onMounted(async () => {
@@ -93,8 +94,17 @@ const toggleFlagMode = () => {
     isFlagMode.value = !isFlagMode.value;
 };
 
+const checkFlagTileOrOpenedTile = (x: number, y: number) => {
+    const currentTile = gameData.tileStates[y][x];
+    return currentTile.isOpen || currentTile.isFlag;
+};
+
 const handleClickTile = async (x: number, y: number) => {
     // フラグ配置の時
+    if (checkFlagTileOrOpenedTile(x, y)) {
+        popUpToast('操作することができません！', 'warning');
+        return;
+    }
     if (isFlagMode.value) {
         await handleFlagAction(x, y);
     } else {
@@ -122,8 +132,10 @@ const isBoardReady = computed(() => {
                 </div>
                 <PrimaryButton
                     :class="{
-                        'bg-orange-400 text-white hover:bg-orange-400':
+                        'bg-orange-500 text-white hover:bg-orange-300':
                             isFlagMode,
+                        'bg-gray-300 text-gray-500 hover:bg-gray-100':
+                            !isFlagMode,
                     }"
                     :clickFn="() => toggleFlagMode()"
                     >フラグモード

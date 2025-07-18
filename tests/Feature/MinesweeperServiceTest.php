@@ -53,7 +53,7 @@ class MinesweeperServiceTest extends TestCase
     public function when_tile_click_by_open_action(): void
     {
         // 準備
-        $gameState = $this->mineSweeperService->initializeGame($this->roomId, $this->width, $this->height,
+        $initGameState = $this->mineSweeperService->initializeGame($this->roomId, $this->width, $this->height,
             $this->numOfMines);
         $clickTileX = $this->width / 2;
         $clickTileY = $this->height / 2;
