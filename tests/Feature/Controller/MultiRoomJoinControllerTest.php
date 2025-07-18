@@ -3,16 +3,23 @@
 use App\Models\Player;
 use App\Models\Room;
 use App\Models\RoomState;
+use App\Services\Multi\CreateRoomService;
 use App\Utils\UUIDFactory;
+use Illuminate\Support\Carbon;
 
 beforeEach(function () {
     $this->player1 = Player::factory()->create([]);
     $this->player2 = PLayer::factory()->create([]);
-    $this->room = Room::factory()->create([
-        'owner_id' => $this->player1->id,
-        'max_player' => 2,
-    ]);
-    RoomState::factory()->recycle($this->room)->create();
+    $roomId = app(CreateRoomService::class)(
+        roomName: 'test room',
+        maxPlayers: 2,
+        ownerId: $this->player1->public_id,
+        expireAt: Carbon::now()->addDay(),
+        isPrivate: true,
+        players: [$this->player1->public_id],
+        flagLimit: 5);
+    $this->room = Room::find($roomId);
+    $this->roomState = RoomState::where('room_id', $this->room->id)->first();
 });
 
 it('can join a room', function () {
@@ -55,11 +62,6 @@ it('can not join a room. because of room is not exists.', function () {
 });
 
 it('can join a room. because of player is already registered.', function () {
-    $this->room->players()->attach($this->player1->id, [
-        'joined_at' => now(),
-        'left_at' => null,
-    ]);
-    $this->room->refresh();
     $response = $this->withSession(['public_id' => $this->player1->public_id])
         ->get("/multi/rooms/{$this->room->public_id}/join?token={$this->room->magic_link_token}");
     $response->assertRedirect('/multi/rooms/'.$this->room->public_id.'/play');
@@ -68,10 +70,6 @@ it('can join a room. because of player is already registered.', function () {
 it('can not join a room. because of player limit is over.', function () {
     $this->room->update([
         'max_player' => 1,
-    ]);
-    $this->room->players()->attach($this->player1->id, [
-        'joined_at' => now(),
-        'left_at' => null,
     ]);
     $this->room->refresh();
     $this->withSession(['public_id' => UUIDFactory::generate()])

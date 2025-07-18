@@ -1,8 +1,10 @@
 <?php
 
+use App\Factories\RoomAggregateFactory;
 use App\Models\Player;
 use App\Models\Room;
 use App\Models\RoomState;
+use App\Repositories\Composites\RoomCompositeRepository;
 use App\Utils\UUIDFactory;
 use Inertia\Testing\AssertableInertia as Assert;
 
@@ -21,6 +23,16 @@ beforeEach(function () {
         'joined_at' => now(),
         'left_at' => null,
     ]);
+    $room = RoomAggregateFactory::create($this->room->name,
+        3,
+        $this->player->public_id,
+        \Carbon\Carbon::now()->addDay(),
+        true,
+        [$this->player->public_id],
+        5);
+    app(RoomCompositeRepository::class)->update($room, $this->room->id);
+    // Redisにテストデータをセット
+    $this->seedGameState($this->room->id);
 });
 
 it('should response a room data by inertia.', function () {
@@ -40,6 +52,8 @@ it('should response a room data by inertia.', function () {
                 ->where('status', RoomState::where('room_id', $this->room->id)->first()->status)
                 ->where('turnOrder', RoomState::where('room_id', $this->room->id)->first()->turn_order)
                 ->where('currentPlayer', $this->player->public_id)
+                ->has('turnActionState', fn (Assert $page) => $page
+                    ->hasAll(['flagLimit', 'flagCount']))
             )
             ->has('game', fn (Assert $page) => $page
                 ->hasAll(['width', 'height', 'numOfMines', 'tileStates', 'isGameStarted', 'isGameOver', 'isGameClear', 'visitedTiles'])

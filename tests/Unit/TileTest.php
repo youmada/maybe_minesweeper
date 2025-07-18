@@ -1,6 +1,6 @@
 <?php
 
-namespace Unit;
+namespace Tests\Unit;
 
 use App\Domain\Minesweeper\GameService;
 use PHPUnit\Framework\Attributes\Test;
@@ -88,7 +88,7 @@ class TileTest extends TestCase
         $board = GameService::createBoard(10, 10);
         $boardTiles = $board->getBoardState();
         $tile = $boardTiles[5][5];
-        $visitedTiles = new \SplObjectStorage;
+        $visitedTiles = [];
 
         GameService::openTile($board, $tile, $visitedTiles);
 
@@ -105,8 +105,8 @@ class TileTest extends TestCase
         // フラグを立てておく(処理が早期リターンしていることを確認するため)
         $tile->setFlag(true);
 
-        $visitedTiles = new \SplObjectStorage;
-        $visitedTiles->attach($tile);
+        $visitedTiles = [];
+        $visitedTiles[] = $tile;
 
         GameService::openTile($board, $tile, $visitedTiles);
 
@@ -120,7 +120,7 @@ class TileTest extends TestCase
         $boardTiles = $board->getBoardState();
         $boardTiles[3][3]->setMine(true);
         $tile = $boardTiles[5][5];
-        $visitedTiles = new \SplObjectStorage;
+        $visitedTiles = [];
 
         GameService::openTile($board, $tile, $visitedTiles);
 
@@ -142,7 +142,7 @@ class TileTest extends TestCase
         $boardTiles = $board->getBoardState();
         $tile = $boardTiles[5][5];
         $tile->setFlag(true);
-        $visitedTiles = new \SplObjectStorage;
+        $visitedTiles = [];
 
         GameService::openTile($board, $tile, $visitedTiles);
 

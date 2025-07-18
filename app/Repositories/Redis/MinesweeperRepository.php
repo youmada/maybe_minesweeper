@@ -31,10 +31,8 @@ class MinesweeperRepository implements GameRepositoryInterface
     public function getState(string $roomId): ?GameState
     {
         $key = $this->prefix.':'.$roomId;
-
         try {
             $value = Redis::get($key);
-
         } catch (Exception $e) {
             Log::error("Redis getState error for key {$key}: ".$e->getMessage());
 

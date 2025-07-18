@@ -5,7 +5,7 @@ type RoomData = {
     status: string;
 };
 
-export function useRoomData(roomPublicId: string) {
+export function useRoomStatus(roomPublicId: string) {
     const { channel } = useEcho(`room.${roomPublicId}.data`, ['FetchRoomData']);
     const roomState = ref<RoomData>({
         status: '',

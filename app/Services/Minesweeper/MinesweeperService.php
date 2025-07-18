@@ -104,6 +104,7 @@ class MinesweeperService
             if (! $currentClickTile->isFlag()) {
                 // タイルを開く
                 GameService::openTile($board, $currentClickTile, $visitedTiles);
+                $state->setVisitedTiles($visitedTiles);
                 // タイルが地雷かチェックする
                 if (GameService::checkGameOver($currentClickTile)) {
                     $state->endGame(false);
@@ -133,9 +134,7 @@ class MinesweeperService
         $gameState = $this->setMinesOnTheBoard($firstClickPosX, $firstClickPosY, $state);
         $this->repository->updateState($gameState, $roomId);
 
-        //        dump($gameState);
         // 初回クリック操作
-        //        dump($state);
 
         return $this->handleClickTile($roomId, $firstClickPosX, $firstClickPosY, TileActionMode::OPEN);
     }

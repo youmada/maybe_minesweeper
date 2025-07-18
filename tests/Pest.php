@@ -13,9 +13,11 @@
 
 pest()->extend(Tests\TestCase::class)
  // ->use(Illuminate\Foundation\Testing\RefreshDatabase::class)
+    ->use(\Tests\Traits\CreatesGameState::class)
     ->in('Feature');
 
 pest()->extend(Tests\TestCase::class)
+    ->use(\Tests\Traits\CreatesGameState::class)
     ->in('Unit');
 
 /*

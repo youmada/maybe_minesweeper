@@ -1,10 +1,13 @@
 <?php
 
+namespace Tests\Unit\Domain;
+
 use App\Domain\Minesweeper\TileActionMode;
 use App\Domain\Room\RoomStatus;
 use App\Exceptions\RoomException;
 use App\Factories\RoomAggregateFactory;
 use Carbon\Carbon;
+use Illuminate\Support\Str;
 
 beforeEach(function () {
     $this->roomName = 'test room';

@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import ModalWindow from '@/Components/ModalWindow.vue';
 import { default as PrimaryButton } from '@/Components/PrimaryButton.vue';
+import BoardTile from '@/Components/Tile.vue';
 import { useGameStore } from '@/stores/gameStore';
 import { useSaveDataStore } from '@/stores/singlePlayData';
 import { router } from '@inertiajs/vue3';
 import { computed } from 'vue';
-import BoardTile from './Tile.vue';
 
 const gameStore = useGameStore();
 const restOpenTiles = computed(() => {
@@ -32,6 +32,8 @@ function restartGame() {
     }
     gameStore.initiaraize(gameStore.width, gameStore.height);
 }
+
+console.log(gameStore.board);
 </script>
 
 <template>
@@ -53,12 +55,16 @@ function restartGame() {
                     'hover:bg-orange-400': gameStore.isFlagMode,
                 }"
                 :clickFn="() => gameStore.toggleFlagMode()"
-                >フラグモード</PrimaryButton
-            >
+                >フラグモード
+            </PrimaryButton>
         </div>
         <div class="m-auto flex w-fit flex-col">
-            <div class="flex w-fit" v-for="verticalTile in gameStore.board">
-                <div v-for="tile in verticalTile">
+            <div
+                class="flex w-fit"
+                v-for="(verticalTile, y) in gameStore.board"
+                :key="`row-${y}`"
+            >
+                <div v-for="(tile, x) in verticalTile" :key="`col-${x}`">
                     <BoardTile
                         @click="() => gameStore.handleClickTile(tile.x, tile.y)"
                         :tile="tile"
@@ -75,16 +81,16 @@ function restartGame() {
         color="#0059ff"
     >
         <PrimaryButton :class="'my-5 w-auto'" :clickFn="() => restartGame()"
-            >もう一度プレイ</PrimaryButton
-        >
+            >もう一度プレイ
+        </PrimaryButton>
         <PrimaryButton
             :class="'my-5 w-auto'"
             :clickFn="() => router.visit('/single')"
-            >難易度をえらぶ</PrimaryButton
-        >
+            >難易度をえらぶ
+        </PrimaryButton>
         <PrimaryButton :class="'my-5 w-auto'" :clickFn="() => router.visit('/')"
-            >タイトルに戻る</PrimaryButton
-        >
+            >タイトルに戻る
+        </PrimaryButton>
     </ModalWindow>
     <ModalWindow
         v-if="gameStore.isGameOver"
@@ -92,7 +98,7 @@ function restartGame() {
         color="red"
     >
         <PrimaryButton :clickFn="() => restartGame()"
-            >もう一度プレイ！</PrimaryButton
-        >
+            >もう一度プレイ！
+        </PrimaryButton>
     </ModalWindow>
 </template>

@@ -7,6 +7,7 @@ export interface Tile {
     isMine: boolean;
     isOpen: boolean;
     isFlag: boolean;
+    adjacentMines: number;
 }
 
 // ボード全体
@@ -26,6 +27,7 @@ export function createBoard(width: number, height: number): Board {
                 isMine: false,
                 isOpen: false,
                 isFlag: false,
+                adjacentMines: 0,
             });
         }
         board.push(row);
@@ -75,6 +77,9 @@ export function setMines(
         if (tile.isMine) continue; // すでに地雷がある
         tile.isMine = true;
         excludeTiles.add(key);
+        getAroundTiles(board, rx, ry).forEach((t) => {
+            t.adjacentMines++;
+        });
         minesToPlace--;
     }
 }

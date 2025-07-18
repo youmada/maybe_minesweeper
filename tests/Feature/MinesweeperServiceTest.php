@@ -1,6 +1,6 @@
 <?php
 
-namespace Feature;
+namespace Tests\Feature;
 
 use App\Domain\Minesweeper\GameService;
 use App\Domain\Minesweeper\GameState;
@@ -42,7 +42,7 @@ class MinesweeperServiceTest extends TestCase
         $gameState = $this->mineSweeperService->initializeGame($this->roomId, $this->width, $this->height,
             $this->numOfMines);
 
-        //検証
+        // 検証
 
         $this->assertInstanceOf(GameState::class, $gameState, 'ゲーム状態が正しく初期化されていません');
         $this->assertEquals($this->width, $gameState->getWidth());
@@ -53,7 +53,7 @@ class MinesweeperServiceTest extends TestCase
     public function when_tile_click_by_open_action(): void
     {
         // 準備
-        $gameState = $this->mineSweeperService->initializeGame($this->roomId, $this->width, $this->height,
+        $initGameState = $this->mineSweeperService->initializeGame($this->roomId, $this->width, $this->height,
             $this->numOfMines);
         $clickTileX = $this->width / 2;
         $clickTileY = $this->height / 2;
@@ -202,7 +202,7 @@ class MinesweeperServiceTest extends TestCase
     }
 
     #[Test]
-    public function getGameStateForClient_returns_data_in_expected_format(): void
+    public function get_game_state_for_client_returns_data_in_expected_format(): void
     {
         // 準備
         $this->mineSweeperService->initializeGame($this->roomId, $this->width, $this->height, $this->numOfMines);

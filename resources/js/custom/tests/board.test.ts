@@ -33,6 +33,7 @@ describe('ボードクラスのテスト', () => {
                     isMine: false,
                     isOpen: false,
                     isFlag: false,
+                    adjacentMines: 0,
                 });
             });
         });

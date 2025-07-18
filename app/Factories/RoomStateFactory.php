@@ -23,12 +23,14 @@ class RoomStateFactory
 
     public static function createFromRedis(array $data): RoomState
     {
+        $turnActionState = $data['turnActionState'];
+
         return new RoomState(
             $data['turnOrder'],
             $data['currentOrderIndex'],
             RoomStatus::from($data['status']),
-            $data['flagCount'],
-            $data['tileOpened'],
+            $turnActionState['flagCount'] ?? 0,
+            $turnActionState['tileOpened'] ?? false,
             $data['flagLimit']
         );
     }

@@ -3,7 +3,6 @@
 namespace App\Domain\Minesweeper;
 
 use InvalidArgumentException;
-use SplObjectStorage;
 
 class GameState
 {
@@ -15,7 +14,7 @@ class GameState
 
     private int $numOfMines;
 
-    private SplObjectStorage $visitedTiles;
+    private array $visitedTiles;
 
     private bool $isGameStarted;
 
@@ -29,7 +28,7 @@ class GameState
         $this->width = $width;
         $this->height = $height;
         $this->numOfMines = $numOfMines;
-        $this->visitedTiles = new SplObjectStorage;
+        $this->visitedTiles = [];
         $this->isGameStarted = false;
         $this->isGameOver = false;
         $this->isGameClear = false;
@@ -65,9 +64,14 @@ class GameState
         return $this->numOfMines;
     }
 
-    public function getVisitedTiles(): SplObjectStorage
+    public function getVisitedTiles(): array
     {
         return $this->visitedTiles;
+    }
+
+    public function setVisitedTiles(array $visitedTiles): void
+    {
+        $this->visitedTiles = $visitedTiles;
     }
 
     public function isGameStarted(): bool
@@ -103,14 +107,14 @@ class GameState
 
     public function addVisitedTile(Tile $tile): self
     {
-        $this->visitedTiles->attach($tile);
+        $this->visitedTiles["{$tile->x()}-{$tile->y()}"] = true;
 
         return $this;
     }
 
     public function isTileVisited(Tile $tile): bool
     {
-        return $this->visitedTiles->contains($tile);
+        return isset($this->visitedTiles["{$tile->x()}-{$tile->y()}"]);
     }
 
     // シリアライズ関連メソッド
@@ -127,17 +131,16 @@ class GameState
         }
 
         // 訪問済みタイルの位置を記録
-        $visitedPositions = [];
-        foreach ($this->visitedTiles as $tile) {
-            $visitedPositions[] = ['x' => $tile->x(), 'y' => $tile->y()];
-        }
+        $visitedPositions = array_map(function ($isVisited) {
+            return true;
+        }, $this->visitedTiles);
 
         return [
             'tileStates' => $serializedBoard,
             'width' => $this->width,
             'height' => $this->height,
             'numOfMines' => $this->numOfMines,
-            'visitedTiles' => $visitedPositions,
+            'visitedTiles' => count($visitedPositions),
             'isGameStarted' => $this->isGameStarted,
             'isGameOver' => $this->isGameOver,
             'isGameClear' => $this->isGameClear,
@@ -204,7 +207,7 @@ class GameState
             }
         }
 
-        $restoreState = new GameState($boardInstance, $width, $height, $numOfMines);
+        $restoreState = new self($boardInstance, $width, $height, $numOfMines);
 
         // ゲーム状態を復元
         $restoreState->isGameStarted = $serialized['isGameStarted'];
@@ -228,11 +231,19 @@ class GameState
         $boardInstance = GameService::createBoard($width, $height);
         $boardInstance->restoreBoard($tileStates);
 
-        $gameState = new self($boardInstance, $width, $height, $numOfMines);
-        $gameState->isGameStarted = $isGameStarted;
-        $gameState->isGameClear = $isGameClear;
-        $gameState->isGameOver = $isGameOver;
+        $restoreGameState = new self($boardInstance, $width, $height, $numOfMines);
+        $restoreGameState->isGameStarted = $isGameStarted;
+        $restoreGameState->isGameClear = $isGameClear;
+        $restoreGameState->isGameOver = $isGameOver;
+        // 展開されたタイル情報を復元
+        foreach ($boardInstance->getBoardState() as $row) {
+            foreach ($row as $tile) {
+                if ($tile->isOpen()) {
+                    $restoreGameState->addVisitedTile($tile);
+                }
+            }
+        }
 
-        return $gameState;
+        return $restoreGameState;
     }
 }
