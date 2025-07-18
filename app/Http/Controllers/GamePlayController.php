@@ -4,9 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Domain\Minesweeper\TileActionMode;
 use App\Domain\Room\RoomStatus;
-use App\Events\FetchRoomData;
 use App\Events\GameDataApplyClient;
 use App\Events\RoomStateApplyClientEvent;
+use App\Events\RoomStatusApplyClient;
 use App\Http\Resources\MultiPlayGameResource;
 use App\Models\Room;
 use App\Repositories\Composites\GameCompositeRepository;
@@ -70,6 +70,9 @@ class GamePlayController extends Controller
             GameDataApplyClient::dispatch($room);
             RoomStateApplyClientEvent::dispatch($room);
 
+            // ルームとゲームのステータス通知イベント
+            RoomStatusApplyClient::dispatch($room);
+
             return response()->json(['status' => 'gameStart'], 201);
         }
 
@@ -94,6 +97,9 @@ class GamePlayController extends Controller
         GameDataApplyClient::dispatch($room);
         RoomStateApplyClientEvent::dispatch($room);
 
+        // ルームとゲームのステータス通知イベント
+        RoomStatusApplyClient::dispatch($room);
+
         return response()->json(['status' => 'ok'], 201);
     }
 
@@ -106,13 +112,14 @@ class GamePlayController extends Controller
     }
 
     // ゲーム開始処理を行う
-    public function store(Request $request, Room $room)
+    public function store(Request $request, Room $room, RoomCompositeRepository $roomCompositeRepository)
     {
-        $roomState = app(RoomCompositeRepository::class)->get($room->id);
+        $roomState = $roomCompositeRepository->get($room->id);
         $roomState->getRoomState()->changeStatus(RoomStatus::STANDBY);
-        app(RoomCompositeRepository::class)->update($roomState, $room->id);
 
-        FetchRoomData::dispatch($room);
+        $roomCompositeRepository->update($roomState, $room->id);
+
+        RoomStatusApplyClient::dispatch($room);
 
         return response()->json(['status' => 'ok'], 201);
     }
