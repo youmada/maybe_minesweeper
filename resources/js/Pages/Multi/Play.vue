@@ -11,7 +11,7 @@ import { useRoomState } from '@/Composables/useRoomState';
 import { useRoomStatus } from '@/Composables/useRoomStatus';
 import { Tile } from '@/custom/domain/mineSweeper';
 import useToastStore from '@/stores/notificationToast';
-import { computed, onMounted, onUnmounted, reactive, ref } from 'vue';
+import { computed, onMounted, onUnmounted, reactive, ref, watch } from 'vue';
 
 type RoomData = {
     name: string;
@@ -21,6 +21,10 @@ type RoomData = {
     magicLink: string;
     status: string;
     currentPlayer: string;
+    turnActionState: {
+        flagCount: number;
+        flagLimit: number;
+    };
 };
 type GameState = {
     width: number;
@@ -55,24 +59,30 @@ const { roomPlayers, leaveChannel, changeCurrentPlayer } = useRoomChannel(
     props.auth.user.public_id,
 );
 const { isRoomReady } = useRoomStatus(roomData.publicId);
+const { roomState } = useRoomState(roomData.publicId, changeCurrentPlayer);
 const { startGame, settingMultiPlay, handleFlagAction, handleOpenAction } =
     useMinesweeper();
 
 const restTiles = computed(() => {
     const totalTiles = gameData.width * gameData.height;
-    console.log(gameData.visitedTiles);
     return totalTiles - gameData.visitedTiles;
 });
 
 onMounted(async () => {
     settingMultiPlay(roomData.publicId);
     useGameStateChannel(roomData.publicId, gameData);
-    useRoomState(roomData.publicId, changeCurrentPlayer);
 });
 onUnmounted(() => {
     leaveChannel(true);
 });
-
+watch(roomState, (newValue) => {
+    if (newValue.data && newValue) {
+        roomData.turnActionState.flagCount =
+            newValue.data.turnActionState.flagCount;
+        roomData.turnActionState.flagLimit =
+            newValue.data.turnActionState.flagLimit;
+    }
+});
 const playButtonText = computed(() => {
     if (roomPlayers.value.length >= roomData.maxPlayer) {
         return 'ゲームスタート！';
@@ -96,6 +106,7 @@ const toggleFlagMode = () => {
 
 const checkFlagTileOrOpenedTile = (x: number, y: number) => {
     const currentTile = gameData.tileStates[y][x];
+    if (isFlagMode.value) return currentTile.isOpen;
     return currentTile.isOpen || currentTile.isFlag;
 };
 
@@ -124,22 +135,44 @@ const isBoardReady = computed(() => {
                 v-if="gameData.isGameStarted"
                 class="m-5 mx-auto flex w-fit rounded-2xl border-2 border-gray-500 p-5"
             >
-                <div class="m-2 mr-4 flex justify-around">
-                    <p class="inline text-center text-2xl font-bold">
+                <div class="m-2 flex justify-around">
+                    <p class="flex items-center text-center text-2xl font-bold">
                         <span> 残りタイル数 </span>
-                        <span>{{ restTiles }}</span>
+                        <span class="ml-2">{{ restTiles }}</span>
                     </p>
                 </div>
-                <PrimaryButton
-                    :class="{
-                        'bg-orange-500 text-white hover:bg-orange-300':
-                            isFlagMode,
-                        'bg-gray-300 text-gray-500 hover:bg-gray-100':
-                            !isFlagMode,
-                    }"
-                    :clickFn="() => toggleFlagMode()"
-                    >フラグモード
-                </PrimaryButton>
+                <div class="m-3 flex flex-col items-center">
+                    <div class="mb-1 flex text-lg font-bold">
+                        <span>{{ roomData.turnActionState.flagCount }}</span>
+                        <span>/</span>
+                        <span>{{ roomData.turnActionState.flagLimit }}</span>
+                    </div>
+                    <PrimaryButton
+                        class="h-1/2"
+                        :class="{
+                            'bg-orange-500 text-white hover:bg-orange-300':
+                                isFlagMode,
+                            'bg-gray-300 text-gray-500 hover:bg-gray-100':
+                                !isFlagMode,
+                        }"
+                        :clickFn="() => toggleFlagMode()"
+                    >
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke-width="1.5"
+                            stroke="currentColor"
+                            class="size-6"
+                        >
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                d="M3 3v1.5M3 21v-6m0 0 2.77-.693a9 9 0 0 1 6.208.682l.108.054a9 9 0 0 0 6.086.71l3.114-.732a48.524 48.524 0 0 1-.005-10.499l-3.11.732a9 9 0 0 1-6.085-.711l-.108-.054a9 9 0 0 0-6.208-.682L3 4.5M3 15V4.5"
+                            />
+                        </svg>
+                    </PrimaryButton>
+                </div>
             </div>
             <div class="m-auto flex w-fit flex-col">
                 <div
