@@ -82,6 +82,9 @@ class GameState extends Model
         'created_at' => 'datetime:Y-m-d H:i:s',
         'updated_at' => 'datetime:Y-m-d H:i:s',
         'tile_states' => 'array',
+        'is_game_started' => 'boolean',
+        'is_game_clear' => 'boolean',
+        'is_game_over' => 'boolean',
     ];
 
     public function toArray(): array

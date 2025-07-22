@@ -3,6 +3,7 @@
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Http\Request;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -20,7 +21,14 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'room.auth' => \App\Http\Middleware\RoomAuthMiddleware::class,
         ]);
-        $middleware->redirectGuestsTo(fn () => route('Home'));
+        $middleware->redirectGuestsTo(function (Request $request) {
+            // JSONリクエストやInertiaリクエストなら401を返す
+            if ($request->expectsJson() || $request->header('X-Inertia')) {
+                abort(401, '認証に失敗しました');
+            }
+
+            return route('Home');
+        });
 
         //
     })

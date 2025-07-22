@@ -117,7 +117,13 @@ class GamePlayController extends Controller
         $roomState = $roomCompositeRepository->get($room->id);
         $roomState->getRoomState()->changeStatus(RoomStatus::STANDBY);
 
-        $roomCompositeRepository->update($roomState, $room->id);
+        try {
+            $roomCompositeRepository->update($roomState, $room->id);
+        } catch (\Exception $e) {
+            Log::error($e->getMessage());
+
+            return response()->json(['status' => 'error'], 500);
+        }
 
         RoomStatusApplyClient::dispatch($room);
 
