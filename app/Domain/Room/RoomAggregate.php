@@ -116,4 +116,9 @@ class RoomAggregate
     {
         return $this->roomState->isMoveToNextTurn();
     }
+
+    public function changeStatus(RoomStatus $status): void
+    {
+        $this->roomState->changeStatus($status);
+    }
 }

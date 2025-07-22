@@ -93,10 +93,10 @@ class GameState
     {
         if ($this->isGameStarted()) {
             if ($this->isGameClear()) {
-                return GameStatus::GAME_OVER->value;
+                return GameStatus::GAME_CLEAR->value;
             }
             if ($this->isGameOver()) {
-                return GameStatus::GAME_CLEAR->value;
+                return GameStatus::GAME_OVER->value;
             }
 
             return GameStatus::IN_PROGRESS->value;
