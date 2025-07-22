@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import MagicLinkButton from '@/Components/MagicLinkButton.vue';
-import ModalWindow from '@/Components/ModalWindow.vue';
+import MultiPlayStandbyModal from '@/Components/MultiPlayStandbyModal.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import BoardTile from '@/Components/Tile.vue';
 import TurnOrderPlate from '@/Components/TurnOrderPlate.vue';
@@ -9,33 +9,9 @@ import { useMinesweeper } from '@/Composables/useMInesweeper';
 import { useRoomChannel } from '@/Composables/useRoomChannel';
 import { useRoomState } from '@/Composables/useRoomState';
 import { useRoomStatus } from '@/Composables/useRoomStatus';
-import { Tile } from '@/custom/domain/mineSweeper';
 import useToastStore from '@/stores/notificationToast';
+import { GameState, RoomData } from '@/types/inertiaProps';
 import { computed, onMounted, onUnmounted, reactive, ref, watch } from 'vue';
-
-type RoomData = {
-    name: string;
-    publicId: string;
-    ownerId: string;
-    maxPlayer: number;
-    magicLink: string;
-    status: string;
-    currentPlayer: string;
-    turnActionState: {
-        flagCount: number;
-        flagLimit: number;
-    };
-};
-type GameState = {
-    width: number;
-    height: number;
-    numOfMines: number;
-    isGameStarted: boolean;
-    isGameOver: boolean;
-    isGameClear: boolean;
-    tileStates: Array<Array<Tile>>;
-    visitedTiles: number;
-};
 
 const props = defineProps<{
     auth: {
@@ -58,7 +34,7 @@ const { roomPlayers, leaveChannel, changeCurrentPlayer } = useRoomChannel(
     roomData.publicId,
     props.auth.user.public_id,
 );
-const { isRoomReady } = useRoomStatus(roomData.publicId);
+const { isRoomReady, status } = useRoomStatus(roomData.publicId);
 const { roomState } = useRoomState(roomData.publicId, changeCurrentPlayer);
 const { startGame, settingMultiPlay, handleFlagAction, handleOpenAction } =
     useMinesweeper();
@@ -129,6 +105,11 @@ const isBoardReady = computed(() => {
 });
 </script>
 <template>
+    <div>
+        <p v-if="status.game.status === 'game_over'">負けたー</p>
+        <p v-else-if="status.game.status === 'game_clear'">カッター</p>
+        <p v-else>特になし</p>
+    </div>
     <div v-if="isBoardReady">
         <div class="w-full">
             <div
@@ -207,41 +188,15 @@ const isBoardReady = computed(() => {
         </div>
     </div>
 
-    <ModalWindow v-else>
-        <h2 class="m-4 text-3xl font-bold text-white">
-            他のプレイヤーを待っています
-        </h2>
-
-        <!-- ルーム参加人数UI -->
-        <div
-            class="m-4 flex w-3/6 justify-around text-4xl font-bold text-white"
-        >
-            <span>現在</span>
-            <span>{{ roomPlayers.length }}</span>
-            <span>/</span>
-            <span>{{ roomData.maxPlayer }}</span>
-        </div>
-        <div
-            class="m-3 flex w-3/6 cursor-pointer justify-around rounded-md border-2 border-solid border-gray-600"
-        >
-            <p
-                @click="() => clipBoard(roomData.magicLink)"
-                class="flex w-4/5 items-center overflow-y-clip overflow-x-scroll text-nowrap text-gray-500"
-            >
-                {{ roomData.magicLink }}
-            </p>
-            <MagicLinkButton
-                :magicLink="roomData.magicLink"
-                :clipBoard="clipBoard"
-            ></MagicLinkButton>
-        </div>
-        <button
-            @click="handleGameStart"
-            class="btn btn-xs m-3 border-gray-500 sm:btn-sm md:btn-md lg:btn-lg xl:btn-xl"
-        >
-            {{ playButtonText }}
-        </button>
-    </ModalWindow>
+    <template v-else>
+        <MultiPlayStandbyModal
+            :roomData="roomData"
+            :roomPlayers="roomPlayers"
+            :handleGameStart="handleGameStart"
+            :clipBoard="clipBoard"
+            :playButtonText="playButtonText"
+        />
+    </template>
 </template>
 
 <style scoped></style>

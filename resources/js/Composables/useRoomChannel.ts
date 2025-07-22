@@ -1,13 +1,7 @@
 import useToastStore from '@/stores/notificationToast';
+import { Player } from '@/types/inertiaProps';
 import { useEchoPresence } from '@laravel/echo-vue';
 import { ref } from 'vue';
-
-type Player = {
-    id: string;
-    joinedAt: string;
-    isCurrentTurn: boolean;
-    isOwn?: boolean;
-};
 
 export function useRoomChannel(roomPublicId: string, currentPlayerId: string) {
     const roomPlayers = ref<Player[]>([]);
