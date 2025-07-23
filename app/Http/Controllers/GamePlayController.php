@@ -114,6 +114,9 @@ class GamePlayController extends Controller
     // ゲーム開始処理を行う
     public function store(Request $request, Room $room, RoomCompositeRepository $roomCompositeRepository)
     {
+        $roomAggregate = $roomCompositeRepository->get($room->id);
+        $this->authorize('restore', $roomAggregate);
+
         $roomState = $roomCompositeRepository->get($room->id);
         $roomState->getRoomState()->changeStatus(RoomStatus::STANDBY);
 

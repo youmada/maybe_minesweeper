@@ -25,6 +25,8 @@ class PlayContinueController extends Controller
         // 元データ取得
         $roomState = $roomRepository->get($room->id) ?? throw new Exception("Game not found: {$room->id}");
 
+        $this->authorize('continue-action', $roomState);
+
         // ゲームデータを削除&ゲームデータを再構築
         $newGameState = $minesweeperService->continueGame($room->id);
 
