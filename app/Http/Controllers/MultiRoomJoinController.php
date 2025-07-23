@@ -31,7 +31,7 @@ class MultiRoomJoinController extends Controller
             $JoinRoomService($room->id, $playerId);
         }
 
-        $player = Player::where('public_id', $playerId)->first();
+        $player = Player::where('public_id', $playerId)->firstOrFail();
 
         if (! Auth::guard('magicLink')->check()) {
             Auth::guard('magicLink')->login($player);

@@ -3,6 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Domain\Room\RoomStatus;
+use App\Events\GameDataApplyClient;
+use App\Events\RoomStateApplyClientEvent;
+use App\Events\RoomStatusApplyClient;
 use App\Models\Room;
 use App\Repositories\Composites\GameCompositeRepository;
 use App\Repositories\Composites\RoomCompositeRepository;
@@ -31,6 +34,10 @@ class PlayContinueController extends Controller
         // 状態を保存する
         $roomRepository->update($roomState, $room->id);
         $gameRepository->saveState($newGameState, $room->id);
+
+        RoomStateApplyClientEvent::dispatch($room);
+        RoomStatusApplyClient::dispatch($room);
+        GameDataApplyClient::dispatch($room);
 
         return response()->json(['message' => 'ok'], 201);
     }

@@ -1,6 +1,9 @@
 <?php
 
 use App\Domain\Room\RoomStatus;
+use App\Events\GameDataApplyClient;
+use App\Events\RoomStateApplyClientEvent;
+use App\Events\RoomStatusApplyClient;
 use App\Models\GameState;
 use App\Models\Player;
 use App\Models\Room;
@@ -95,4 +98,15 @@ it('should not a route access, when magicLink middleware process is failure', fu
         ->postJson("/multi/rooms/{$this->room->public_id}/play/continue");
 
     $response->assertStatus(403);
+});
+
+it('should dispatch the room status and room data for client event', function () {
+    Event::fake();
+    $this->withSession(['public_id' => $this->player->public_id])
+        ->actingAs($this->player, 'magicLink')
+        ->postJson("/multi/rooms/{$this->room->public_id}/play/continue");
+
+    Event::assertDispatched(RoomStateApplyClientEvent::class);
+    Event::assertDispatched(RoomStatusApplyClient::class);
+    Event::assertDispatched(GameDataApplyClient::class);
 });
