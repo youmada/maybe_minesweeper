@@ -1,33 +1,27 @@
 <?php
 
 use App\Domain\Room\RoomStatus;
+use App\Events\RoomStatusApplyClient;
 use App\Models\Player;
 use App\Models\Room;
-use App\Models\RoomState;
-use App\Utils\UUIDFactory;
+use App\Services\Multi\CreateRoomService;
+use Carbon\Carbon;
 
 beforeEach(function () {
     $this->player = Player::factory()->create();
-    $this->publicId = UUIDFactory::generate();
-    $this->room = Room::factory()->create([
-        'public_id' => $this->publicId,
-    ]
-    );
-    $this->roomState = RoomState::factory()->create([
-        'room_id' => $this->room->id,
-        'status' => 'waiting',
-    ]);
-    $this->room->players()->attach($this->player->id, [
-        'joined_at' => now(),
-        'left_at' => null,
-    ]);
-
-    $this->width = 5;
-    $this->height = 5;
-    $this->numOfMines = 5;
+    $roomId = app(CreateRoomService::class)(
+        roomName: 'test room',
+        maxPlayers: 2,
+        ownerId: $this->player->public_id,
+        expireAt: Carbon::now()->addDay(),
+        isPrivate: true,
+        players: [$this->player->public_id],
+        flagLimit: 5);
+    $this->room = Room::find($roomId);
 });
 
 it('should start game play', function () {
+    Event::fake();
     $this->assertDatabaseHas('room_states', [
         'room_id' => $this->room->id,
         'status' => RoomStatus::WAITING->value,
@@ -41,4 +35,14 @@ it('should start game play', function () {
     ]);
 
     $response->assertStatus(201);
+});
+
+it('should dispatch a status apply event', function () {
+    Event::fake();
+    $this->actingAs($this->player, 'magicLink')
+        ->withSession(['public_id' => $this->player->public_id])
+        ->post("multi/rooms/{$this->room->public_id}/play/start");
+
+    Event::assertDispatched(RoomStatusApplyClient::class);
+
 });

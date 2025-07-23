@@ -81,12 +81,28 @@ class GameState
 
     public function isGameOver(): bool
     {
-        return $this->isGameOver;
+        return $this->isGameOver && ! $this->isGameClear;
     }
 
     public function isGameClear(): bool
     {
         return $this->isGameClear;
+    }
+
+    public function getGameStatus(): string
+    {
+        if ($this->isGameStarted()) {
+            if ($this->isGameClear()) {
+                return GameStatus::GAME_CLEAR->value;
+            }
+            if ($this->isGameOver()) {
+                return GameStatus::GAME_OVER->value;
+            }
+
+            return GameStatus::IN_PROGRESS->value;
+        }
+
+        return GameStatus::WAITING->value;
     }
 
     // 状態管理用メソッド

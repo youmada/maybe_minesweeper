@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import MagicLinkButton from '@/Components/MagicLinkButton.vue';
-import ModalWindow from '@/Components/ModalWindow.vue';
+import MultiPlayContinueModal from '@/Components/MultiPlayContinueModal.vue';
+import MultiPlayStandbyModal from '@/Components/MultiPlayStandbyModal.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import BoardTile from '@/Components/Tile.vue';
 import TurnOrderPlate from '@/Components/TurnOrderPlate.vue';
@@ -9,33 +10,10 @@ import { useMinesweeper } from '@/Composables/useMInesweeper';
 import { useRoomChannel } from '@/Composables/useRoomChannel';
 import { useRoomState } from '@/Composables/useRoomState';
 import { useRoomStatus } from '@/Composables/useRoomStatus';
-import { Tile } from '@/custom/domain/mineSweeper';
 import useToastStore from '@/stores/notificationToast';
+import { GameState, RoomData } from '@/types/inertiaProps';
+import { router } from '@inertiajs/vue3';
 import { computed, onMounted, onUnmounted, reactive, ref, watch } from 'vue';
-
-type RoomData = {
-    name: string;
-    publicId: string;
-    ownerId: string;
-    maxPlayer: number;
-    magicLink: string;
-    status: string;
-    currentPlayer: string;
-    turnActionState: {
-        flagCount: number;
-        flagLimit: number;
-    };
-};
-type GameState = {
-    width: number;
-    height: number;
-    numOfMines: number;
-    isGameStarted: boolean;
-    isGameOver: boolean;
-    isGameClear: boolean;
-    tileStates: Array<Array<Tile>>;
-    visitedTiles: number;
-};
 
 const props = defineProps<{
     auth: {
@@ -123,12 +101,50 @@ const handleClickTile = async (x: number, y: number) => {
     }
 };
 
+const handleContinueGame = async () => {
+    await axios.post(`/multi/rooms/${roomData.publicId}/play/continue`);
+};
+
+const handleLeaveRoom = async () => {
+    router.visit('/');
+};
+
 const isBoardReady = computed(() => {
     if (isRoomReady.value) return true;
     return roomData.status === 'playing' || roomData.status === 'standby';
 });
+
+const gameStatus = computed(() => {
+    if (gameData.isGameStarted) {
+        if (gameData.isGameClear) {
+            return 'game_clear';
+        }
+        if (gameData.isGameOver) {
+            return 'game_over';
+        }
+    }
+    return 'standby';
+});
 </script>
 <template>
+    <div>
+        <template v-if="gameStatus === 'game_over'">
+            <MultiPlayContinueModal
+                title="やっちまったぜ！ ゲームオーバーだ"
+                color="#D92C54"
+                :continueFn="handleContinueGame"
+                :leaveRoomFn="handleLeaveRoom"
+            />
+        </template>
+        <template v-if="gameStatus === 'game_clear'">
+            <MultiPlayContinueModal
+                title="よくやった！ゲームクリアおめでとう！！"
+                color="#3D74B6"
+                :continueFn="handleContinueGame"
+                :leaveRoomFn="handleLeaveRoom"
+            />
+        </template>
+    </div>
     <div v-if="isBoardReady">
         <div class="w-full">
             <div
@@ -207,41 +223,15 @@ const isBoardReady = computed(() => {
         </div>
     </div>
 
-    <ModalWindow v-else>
-        <h2 class="m-4 text-3xl font-bold text-white">
-            他のプレイヤーを待っています
-        </h2>
-
-        <!-- ルーム参加人数UI -->
-        <div
-            class="m-4 flex w-3/6 justify-around text-4xl font-bold text-white"
-        >
-            <span>現在</span>
-            <span>{{ roomPlayers.length }}</span>
-            <span>/</span>
-            <span>{{ roomData.maxPlayer }}</span>
-        </div>
-        <div
-            class="m-3 flex w-3/6 cursor-pointer justify-around rounded-md border-2 border-solid border-gray-600"
-        >
-            <p
-                @click="() => clipBoard(roomData.magicLink)"
-                class="flex w-4/5 items-center overflow-y-clip overflow-x-scroll text-nowrap text-gray-500"
-            >
-                {{ roomData.magicLink }}
-            </p>
-            <MagicLinkButton
-                :magicLink="roomData.magicLink"
-                :clipBoard="clipBoard"
-            ></MagicLinkButton>
-        </div>
-        <button
-            @click="handleGameStart"
-            class="btn btn-xs m-3 border-gray-500 sm:btn-sm md:btn-md lg:btn-lg xl:btn-xl"
-        >
-            {{ playButtonText }}
-        </button>
-    </ModalWindow>
+    <template v-else>
+        <MultiPlayStandbyModal
+            :roomData="roomData"
+            :roomPlayers="roomPlayers"
+            :handleGameStart="handleGameStart"
+            :clipBoard="clipBoard"
+            :playButtonText="playButtonText"
+        />
+    </template>
 </template>
 
 <style scoped></style>

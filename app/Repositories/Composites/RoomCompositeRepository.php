@@ -7,7 +7,6 @@ use App\Domain\Room\RoomStatus;
 use App\Repositories\DB\RoomRepository as DBRepository;
 use App\Repositories\Interfaces\RoomCompositesRepositoryInterface;
 use App\Repositories\Redis\RoomRepository as RedisRepository;
-use Illuminate\Support\Facades\Log;
 
 class RoomCompositeRepository implements RoomCompositesRepositoryInterface
 {
@@ -32,15 +31,9 @@ class RoomCompositeRepository implements RoomCompositesRepositoryInterface
     public function get(string $roomId): ?RoomAggregate
     {
         $roomAggregate = $this->redisRepo->get($roomId);
-        //        Log::info($roomState->getStatus());
-        //        Log::info($roomState->getStatus() === RoomStatus::PLAYING->value ? 'redis get' : 'db get');
         if ($roomAggregate->getRoomStatus() === RoomStatus::PLAYING->value) {
-            \Illuminate\Support\Facades\Log::info('redis get');
-
             return $roomAggregate;
         } else {
-            \Illuminate\Support\Facades\Log::info('db get');
-
             return $this->dbRepo->get($roomId);
         }
     }

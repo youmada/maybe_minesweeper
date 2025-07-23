@@ -1,29 +1,40 @@
 import { useEcho } from '@laravel/echo-vue';
 import { computed, ref } from 'vue';
 
-type RoomData = {
-    status: string;
-};
+interface Status {
+    room: {
+        status: string;
+    };
+    game: {
+        status: string;
+    };
+}
 
 export function useRoomStatus(roomPublicId: string) {
-    const { channel } = useEcho(`room.${roomPublicId}.data`, ['FetchRoomData']);
-    const roomState = ref<RoomData>({
-        status: '',
+    const { channel } = useEcho(`room.${roomPublicId}.data`, [
+        'RoomStatusApplyClient',
+    ]);
+    const status = ref<Status>({
+        room: {
+            status: '',
+        },
+        game: {
+            status: '',
+        },
     });
-    channel().listen('FetchRoomData', (data: RoomData) => {
-        console.log(data);
-        roomState.value = data;
+    channel().listen('RoomStatusApplyClient', (data: Status) => {
+        status.value = data;
     });
 
     const isRoomReady = computed(() => {
         return (
-            roomState.value.status === 'playing' ||
-            roomState.value.status === 'standby'
+            status.value.room.status === 'playing' ||
+            status.value.room.status === 'standby'
         );
     });
 
     return {
-        roomState,
+        status,
         isRoomReady,
     };
 }

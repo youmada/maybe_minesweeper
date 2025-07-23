@@ -6,16 +6,10 @@ use App\Models\Player;
 use App\Models\Room;
 use Closure;
 use Illuminate\Auth\Middleware\Authenticate;
-use Illuminate\Http\RedirectResponse;
 use Symfony\Component\HttpFoundation\Response;
 
 class RoomAuthMiddleware extends Authenticate
 {
-    protected function redirectTo($request): string|RedirectResponse|null
-    {
-        return redirect()->route('/');
-    }
-
     /**
      * Handle an incoming request.
      * セッションにあるplayerIdがroom_playerテーブルに特録されている。かつ

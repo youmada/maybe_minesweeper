@@ -3,7 +3,8 @@
 namespace App\Events;
 
 use App\Models\Room;
-use App\Models\RoomState;
+use App\Repositories\Composites\GameCompositeRepository;
+use App\Repositories\Composites\RoomCompositeRepository;
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PrivateChannel;
@@ -11,7 +12,7 @@ use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-class FetchRoomData implements ShouldBroadcast
+class RoomStatusApplyClient implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
@@ -37,10 +38,17 @@ class FetchRoomData implements ShouldBroadcast
 
     public function broadcastWith(): array
     {
-        $roomState = RoomState::where('room_id', $this->room->id)->first();
+
+        $roomState = app(RoomCompositeRepository::class)->get($this->room->id);
+        $gameState = app(GameCompositeRepository::class)->getState($this->room->id);
 
         return [
-            'status' => $roomState->status,
+            'room' => [
+                'status' => $roomState->getRoomStatus(),
+            ],
+            'game' => [
+                'status' => $gameState->getGameStatus(),
+            ],
         ];
     }
 }

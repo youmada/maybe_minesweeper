@@ -3,12 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Domain\Minesweeper\TileActionMode;
-use App\Events\FetchRoomData;
+use App\Domain\Room\RoomStatus;
 use App\Events\GameDataApplyClient;
 use App\Events\RoomStateApplyClientEvent;
+use App\Events\RoomStatusApplyClient;
 use App\Http\Resources\MultiPlayGameResource;
 use App\Models\Room;
-use App\Models\RoomState;
 use App\Repositories\Composites\GameCompositeRepository;
 use App\Repositories\Composites\RoomCompositeRepository;
 use App\Services\Minesweeper\MinesweeperService;
@@ -70,6 +70,9 @@ class GamePlayController extends Controller
             GameDataApplyClient::dispatch($room);
             RoomStateApplyClientEvent::dispatch($room);
 
+            // ルームとゲームのステータス通知イベント
+            RoomStatusApplyClient::dispatch($room);
+
             return response()->json(['status' => 'gameStart'], 201);
         }
 
@@ -94,6 +97,9 @@ class GamePlayController extends Controller
         GameDataApplyClient::dispatch($room);
         RoomStateApplyClientEvent::dispatch($room);
 
+        // ルームとゲームのステータス通知イベント
+        RoomStatusApplyClient::dispatch($room);
+
         return response()->json(['status' => 'ok'], 201);
     }
 
@@ -106,12 +112,20 @@ class GamePlayController extends Controller
     }
 
     // ゲーム開始処理を行う
-    public function store(Request $request, Room $room)
+    public function store(Request $request, Room $room, RoomCompositeRepository $roomCompositeRepository)
     {
-        $roomState = RoomState::where('room_id', $room->id)->first();
-        $roomState->update(['status' => 'standby']);
+        $roomState = $roomCompositeRepository->get($room->id);
+        $roomState->getRoomState()->changeStatus(RoomStatus::STANDBY);
 
-        FetchRoomData::dispatch($room);
+        try {
+            $roomCompositeRepository->update($roomState, $room->id);
+        } catch (\Exception $e) {
+            Log::error($e->getMessage());
+
+            return response()->json(['status' => 'error'], 500);
+        }
+
+        RoomStatusApplyClient::dispatch($room);
 
         return response()->json(['status' => 'ok'], 201);
     }

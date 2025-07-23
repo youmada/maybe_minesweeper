@@ -56,12 +56,13 @@ class MinesweeperService
      */
     public function continueGame(string $roomId): GameState
     {
-        $state = $this->repository->getState($roomId);
-        if (! $state) {
-            throw new Exception("Game not found: {$roomId}");
-        }
+        // 再生成のためのデータを取得する
+        $oldGameState = $this->repository->getState($roomId) ?? throw new Exception("Game not found: {$roomId}");
+        // 現在のゲームデータを削除
+        $this->repository->deleteState($roomId);
 
-        return $state;
+        // 現在のwidthなどの情報で再生成
+        return $this->initializeGame($roomId, $oldGameState->getWidth(), $oldGameState->getHeight(), $oldGameState->getNumOfMines());
     }
 
     protected function setMinesOnTheBoard(int $firstClickPosX, int $firstClickPosY, GameState $gameState): GameState
