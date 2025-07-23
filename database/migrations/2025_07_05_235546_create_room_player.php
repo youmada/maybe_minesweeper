@@ -19,6 +19,7 @@ return new class extends Migration
             $table->foreignIdFor(Player::class)->constrained()->onDelete('cascade');
             $table->timestamp('joined_at')->nullable();
             $table->timestamp('left_at')->nullable();
+            $table->timestamp('last_exists_at')->nullable()->index()->comment('ルーム強制退出用');
             $table->timestamps();
 
             $table->unique(['room_id', 'player_id']);

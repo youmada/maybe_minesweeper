@@ -4,6 +4,7 @@ use App\Http\Controllers\GamePlayController;
 use App\Http\Controllers\MultiRoomController;
 use App\Http\Controllers\MultiRoomJoinController;
 use App\Http\Controllers\PlayContinueController;
+use App\Http\Controllers\PlayerHeartBeatController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -57,5 +58,10 @@ Route::group(['middleware' => ['room.auth', 'auth:magicLink']], function () {
     Route::post('multi/rooms/{room}/play/continue', [PlayContinueController::class, '__invoke'])
         ->whereUuid('room')
         ->name('multi.rooms.play.continue');
+
+    // プレイヤールーム在籍チェック
+    Route::put('multi/rooms/{room}/play/heartbeat', [PlayerHeartBeatController::class, '__invoke'])
+        ->whereUuid('room')
+        ->name('multi.rooms.play.heartbeat');
 });
 // require __DIR__.'/auth.php';
