@@ -7,7 +7,7 @@ defineProps<{
     roomPlayers: Player[];
     playButtonText: string;
     roomData: RoomData;
-    handleGameStart: Promise<void>;
+    handleGameStart: () => Promise<void>;
     clipBoard: (link: string) => void;
 }>();
 </script>
@@ -42,7 +42,7 @@ defineProps<{
             ></MagicLinkButton>
         </div>
         <button
-            @click="handleGameStart"
+            @click="async () => await handleGameStart()"
             class="btn btn-xs m-3 border-gray-500 sm:btn-sm md:btn-md lg:btn-lg xl:btn-xl"
         >
             {{ playButtonText }}

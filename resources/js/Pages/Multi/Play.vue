@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import MagicLinkButton from '@/Components/MagicLinkButton.vue';
+import MultiPlayContinueModal from '@/Components/MultiPlayContinueModal.vue';
 import MultiPlayStandbyModal from '@/Components/MultiPlayStandbyModal.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import BoardTile from '@/Components/Tile.vue';
@@ -11,6 +12,7 @@ import { useRoomState } from '@/Composables/useRoomState';
 import { useRoomStatus } from '@/Composables/useRoomStatus';
 import useToastStore from '@/stores/notificationToast';
 import { GameState, RoomData } from '@/types/inertiaProps';
+import { router } from '@inertiajs/vue3';
 import { computed, onMounted, onUnmounted, reactive, ref, watch } from 'vue';
 
 const props = defineProps<{
@@ -34,7 +36,7 @@ const { roomPlayers, leaveChannel, changeCurrentPlayer } = useRoomChannel(
     roomData.publicId,
     props.auth.user.public_id,
 );
-const { isRoomReady, status } = useRoomStatus(roomData.publicId);
+const { isRoomReady } = useRoomStatus(roomData.publicId);
 const { roomState } = useRoomState(roomData.publicId, changeCurrentPlayer);
 const { startGame, settingMultiPlay, handleFlagAction, handleOpenAction } =
     useMinesweeper();
@@ -99,16 +101,49 @@ const handleClickTile = async (x: number, y: number) => {
     }
 };
 
+const handleContinueGame = async () => {
+    await axios.post(`/multi/rooms/${roomData.publicId}/play/continue`);
+};
+
+const handleLeaveRoom = async () => {
+    router.visit('/');
+};
+
 const isBoardReady = computed(() => {
     if (isRoomReady.value) return true;
     return roomData.status === 'playing' || roomData.status === 'standby';
 });
+
+const gameStatus = computed(() => {
+    if (gameData.isGameStarted) {
+        if (gameData.isGameClear) {
+            return 'game_clear';
+        }
+        if (gameData.isGameOver) {
+            return 'game_over';
+        }
+    }
+    return 'standby';
+});
 </script>
 <template>
     <div>
-        <p v-if="status.game.status === 'game_over'">負けたー</p>
-        <p v-else-if="status.game.status === 'game_clear'">カッター</p>
-        <p v-else>特になし</p>
+        <template v-if="gameStatus === 'game_over'">
+            <MultiPlayContinueModal
+                title="やっちまったぜ！ ゲームオーバーだ"
+                color="#D92C54"
+                :continueFn="handleContinueGame"
+                :leaveRoomFn="handleLeaveRoom"
+            />
+        </template>
+        <template v-if="gameStatus === 'game_clear'">
+            <MultiPlayContinueModal
+                title="よくやった！ゲームクリアおめでとう！！"
+                color="#3D74B6"
+                :continueFn="handleContinueGame"
+                :leaveRoomFn="handleLeaveRoom"
+            />
+        </template>
     </div>
     <div v-if="isBoardReady">
         <div class="w-full">
