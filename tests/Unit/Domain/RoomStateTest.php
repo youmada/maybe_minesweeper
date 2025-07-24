@@ -147,3 +147,38 @@ it('can not process action when current order is not in turn order', function ()
     expect($this->roomState->canOperate($this->user1))->toBeFalse();
 
 });
+
+it('should reset order index when room leaving player is current turn player', function () {
+    expect($this->roomState->getCurrentOrder())->toEqual($this->user1);
+
+    $this->roomState->removeTurnOrder($this->user1);
+
+    expect($this->roomState->getCurrentOrder())->toEqual($this->user2);
+});
+
+it('adjust the turn index when the previous turn player exits the room', function () {
+    // 前回のターンのプレイヤーが部屋を退出した場合、インデックスを調整して、現在ターンのプレイヤーを維持する
+    $this->roomState->nextTurn();
+    expect($this->roomState->getCurrentOrder())->toEqual($this->user2);
+
+    $this->roomState->removeTurnOrder($this->user1);
+    expect($this->roomState->getCurrentOrder())->toEqual($this->user2);
+});
+
+it('adjust the turn index when the current turn player at the end of the turn order exits', function () {
+    // ターン順番が末尾の現在ターンプレイヤーが退出した場合、インデックスを0にする。
+    $this->roomState->nextTurn();
+    $this->roomState->nextTurn();
+    expect($this->roomState->getCurrentOrder())->toEqual($this->user3);
+
+    $this->roomState->removeTurnOrder($this->user3);
+    expect($this->roomState->getCurrentOrder())->toEqual($this->user1);
+});
+
+it('should handle all players leaving', function () {
+    $this->roomState->removeTurnOrder($this->user1);
+    $this->roomState->removeTurnOrder($this->user2);
+    $this->roomState->removeTurnOrder($this->user3);
+
+    expect($this->roomState->getCurrentOrder())->toBeNull(); // or throw or optional
+});

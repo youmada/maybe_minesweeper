@@ -58,10 +58,40 @@ class RoomState
         $this->turnOrder[] = $user;
     }
 
+    /**
+     * 現在ターンのプレイヤーが退出した場合、処理場は自動で次のターンプレイヤーにターンが移動する
+     */
     public function removeTurnOrder(string $user): void
     {
+
+        // 操作前のインデックスを退避
+        $oldIndex = $this->currentOrderIndex;
+
+        $currentPlayer = $this->getCurrentOrder();
+        // 現在プレイヤーかどうか
+        $isCurrentPlayer = $user === $currentPlayer;
+
+        // 該当プレイヤーが元々何番目だったか
+        $leavingIndex = array_search($user, $this->turnOrder, true);
+
+        // ルーム退出処理
         $this->turnOrder = array_filter($this->turnOrder, fn ($turn) => $turn !== $user);
         $this->turnOrder = array_values($this->turnOrder);
+
+        if (empty($this->turnOrder)) {
+            return;
+        }
+
+        // 退出プレイヤーが現在ターンの場合
+        if ($isCurrentPlayer) {
+            // 退出プレイヤーがターンプレイヤーで末尾の場合は、先頭に戻す
+            $this->currentOrderIndex = $oldIndex % count($this->turnOrder);
+            // ターンステートをリセット
+            $this->resetActionState();
+        } elseif ($oldIndex > $leavingIndex) {
+            // 抜けた人が前にいたので、index を 1 つ後ろへ
+            $this->currentOrderIndex--;
+        }
     }
 
     public function getCurrentOrder(): ?string
