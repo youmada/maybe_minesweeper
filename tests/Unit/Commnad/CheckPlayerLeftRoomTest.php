@@ -79,6 +79,8 @@ it('should advance turn automatically when current turn player disconnected to t
 
     $this->travel(30)->seconds();
 
+    // player2だけ残す
+    $this->room->players()->updateExistingPivot($player2->id, ['left_at' => now()]);
     // 実行
     $this->artisan('check:player-left-room');
 

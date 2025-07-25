@@ -100,14 +100,22 @@ class RoomRepository implements RoomRepositoryInterface
             $existingPlayers = $room->players()->pluck('players.public_id')->toArray();
             foreach ($addPlayerIds as $playerId) {
                 if (in_array($playerId, $existingPlayers)) {
+                    $player = Player::where('public_id', $playerId)->first();
+                    // 再参加の場合を考慮した処理
+                    $room->players()->updateExistingPivot($player->id, [
+                        'left_at' => null,
+                        'last_exists_at' => now(),
+                    ]);
+
                     continue;
                 }
                 $player = Player::firstOrCreate([
                     'public_id' => $playerId,
                 ]);
                 $room->players()->attach($player->id, [
-                    'joined_at' => Carbon::now()->format('Y-m-d H:i:s'),
                     'left_at' => null,
+                    'joined_at' => now(),
+                    'last_exists_at' => now(),
                 ]);
             }
             // room_usersテーブル
