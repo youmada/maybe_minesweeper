@@ -49,6 +49,12 @@ const restTiles = computed(() => {
 onMounted(async () => {
     settingMultiPlay(roomData.publicId);
     useGameStateChannel(roomData.publicId, gameData);
+    setInterval(() => {
+        axios.put(`/multi/rooms/${roomData.publicId}/play/heartbeat`, {
+            room_id: roomData.publicId,
+            player_id: props.auth.user.public_id,
+        });
+    }, 10000); // 10秒ごと
 });
 onUnmounted(() => {
     leaveChannel(true);
