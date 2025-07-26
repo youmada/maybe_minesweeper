@@ -4,10 +4,13 @@ import { useEchoPresence } from '@laravel/echo-vue';
 import { ref } from 'vue';
 
 export function useRoomChannel(roomPublicId: string, currentPlayerId: string) {
+    const leavingTimers = new Map<string, ReturnType<typeof setTimeout>>();
     const roomPlayers = ref<Player[]>([]);
     const { popUpToast } = useToastStore();
 
-    const { channel, leaveChannel } = useEchoPresence(`room.${roomPublicId}`);
+    const { channel, leaveChannel } = useEchoPresence(`room.${roomPublicId}`, [
+        'RoomPlayerList',
+    ]);
     channel().here((players: Player[]) => {
         // `isOwn`フラグを追加してソート
         roomPlayers.value = players
@@ -27,6 +30,7 @@ export function useRoomChannel(roomPublicId: string, currentPlayerId: string) {
         roomPlayers.value.push({
             ...player,
             isOwn: player.id === currentPlayerId,
+            isLeaving: false,
         });
 
         // ソート
@@ -34,9 +38,31 @@ export function useRoomChannel(roomPublicId: string, currentPlayerId: string) {
             (a, b) =>
                 new Date(a.joinedAt).getTime() - new Date(b.joinedAt).getTime(),
         );
+
+        // 離脱タイマーがあればキャンセル
+        if (leavingTimers.has(player.id)) {
+            clearTimeout(leavingTimers.get(player.id));
+            leavingTimers.delete(player.id);
+        }
     });
     channel().leaving((player: Player) => {
-        roomPlayers.value = roomPlayers.value.filter((p) => p.id !== player.id);
+        player.isLeaving = true;
+        const timeoutId = setTimeout(() => {
+            leavingTimers.delete(player.id);
+            // 30秒経っても戻ってこなければ UI から除去
+            roomPlayers.value = roomPlayers.value.filter(
+                (p) => p.id !== player.id,
+            );
+        }, 30000);
+
+        leavingTimers.set(player.id, timeoutId);
+    });
+
+    channel().listen('RoomPlayerList', (data: { players: Player[] }) => {
+        roomPlayers.value = data.players;
+        roomPlayers.value.map((player) => {
+            player.isOwn = player.id === currentPlayerId;
+        });
     });
     channel().error(() => {
         popUpToast(

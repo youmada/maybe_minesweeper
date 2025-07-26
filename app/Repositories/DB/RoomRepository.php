@@ -97,7 +97,6 @@ class RoomRepository implements RoomRepositoryInterface
             RoomState::where('room_id', $roomId)->update($this->getMappedRoomState($roomStateData, $roomId));
 
             // ルームにプレイヤーを紐付ける
-            //            $room->players()->detach();
             $existingPlayers = $room->players()->pluck('players.public_id')->toArray();
             foreach ($addPlayerIds as $playerId) {
                 if (in_array($playerId, $existingPlayers)) {
@@ -107,8 +106,9 @@ class RoomRepository implements RoomRepositoryInterface
                     'public_id' => $playerId,
                 ]);
                 $room->players()->attach($player->id, [
-                    'joined_at' => Carbon::now()->format('Y-m-d H:i:s'),
                     'left_at' => null,
+                    'joined_at' => now()->format('Y-m-d H:i:s'),
+                    'last_exists_at' => now(),
                 ]);
             }
             // room_usersテーブル
@@ -154,6 +154,7 @@ class RoomRepository implements RoomRepositoryInterface
     {
         return [
             'turn_order' => $toArrayRoomState['turnOrder'],
+            'current_player' => $toArrayRoomState['turnOrder'][$toArrayRoomState['currentOrderIndex']] ?? null,
             'status' => $toArrayRoomState['status'],
             'flag_limit' => $toArrayRoomState['flagLimit'],
             'room_id' => $roomId,

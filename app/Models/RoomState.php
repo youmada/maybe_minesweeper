@@ -24,11 +24,6 @@ class RoomState extends Model
         return $this->belongsTo(Room::class);
     }
 
-    public function getCurrentPlayerAttribute()
-    {
-        return Player::find($this->attributes['current_player'])->public_id ?? null;
-    }
-
     protected function casts(): array
     {
         return [

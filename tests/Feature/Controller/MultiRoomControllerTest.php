@@ -61,8 +61,8 @@ it("should create a room from user's request data.", function () {
     $this->assertDatabaseCount('room_states', 1);
     $this->assertDatabaseHas('room_states', [
         'room_id' => $roomId,
-        'turn_order' => json_encode([]),
-        'current_player' => $player->id,
+        'turn_order' => json_encode([$this->player->public_id]),
+        'current_player' => $player->public_id,
         'status' => 'waiting',
         'flag_limit' => 5,
     ]);

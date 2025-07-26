@@ -79,10 +79,17 @@ class GamePlayController extends Controller
         $tileOperation = $attributes['operation'] === 'open' ? TileActionMode::OPEN : TileActionMode::FLAG;
 
         try {
-            DB::transaction(function () use ($request, $room, $advanceTurnService, $minesweeperService, $attributes, $tileOperation) {
+            DB::transaction(function () use ($request, $room, $advanceTurnService, $minesweeperService, $attributes, $tileOperation, $roomState) {
                 // advanceTurnServiceに渡すプレイヤーIDはpublic_idの必要あり。内部で
                 $advanceTurnService($room->id, $request->user()->public_id, $tileOperation);
-                $minesweeperService->handleClickTile($room->id, $attributes['x'], $attributes['y'], $tileOperation);
+                $gameState = $minesweeperService->handleClickTile($room->id, $attributes['x'], $attributes['y'], $tileOperation);
+
+                // ゲームがクリアかゲームオーバーしたかチェック
+                if ($gameState->isGameEnded()) {
+                    $roomState->endRoom();
+                    app(RoomCompositeRepository::class)->update($roomState, $room->id);
+                }
+
             });
         } catch (\Exception $e) {
             Log::error($e->getMessage());

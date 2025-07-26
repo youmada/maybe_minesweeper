@@ -79,6 +79,11 @@ class GameState
         return $this->isGameStarted;
     }
 
+    public function isGameEnded(): bool
+    {
+        return $this->isGameOver || $this->isGameClear;
+    }
+
     public function isGameOver(): bool
     {
         return $this->isGameOver && ! $this->isGameClear;

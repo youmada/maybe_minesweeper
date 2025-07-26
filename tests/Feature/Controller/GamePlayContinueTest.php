@@ -110,3 +110,12 @@ it('should dispatch the room status and room data for client event', function ()
     Event::assertDispatched(RoomStatusApplyClient::class);
     Event::assertDispatched(GameDataApplyClient::class);
 });
+
+it('should response 403 status code when room status is not finished', function () {
+    $this->roomState->update(['status' => RoomStatus::PLAYING->value]);
+    $this->roomState->refresh();
+    $response = $this->withSession(['public_id' => $this->player->public_id])
+        ->actingAs($this->player, 'magicLink')
+        ->postJson("/multi/rooms/{$this->room->public_id}/play/continue");
+    $response->assertStatus(403);
+});

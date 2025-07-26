@@ -10,7 +10,8 @@ class RoomAggregateFactory
     public static function create(string $roomName, int $maxPlayers, string $ownerId, string $expireAt, bool $isPrivate = true, array $players = [], int $flagLimit = 5): RoomAggregate
     {
         $room = new Room($roomName, $maxPlayers, $players, $expireAt, $isPrivate, $ownerId);
-        $roomState = RoomStateFactory::createNew([], $flagLimit);
+        // createNewで[]を渡すこの状況では、後々問題があるかもしれない
+        $roomState = RoomStateFactory::createNew($players, $flagLimit);
 
         return new RoomAggregate($room, $roomState);
     }

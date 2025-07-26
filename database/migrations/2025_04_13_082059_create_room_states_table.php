@@ -18,7 +18,7 @@ return new class extends Migration
                 ->constrained()
                 ->onDelete('cascade');
             $table->json('turn_order')->nullable()->comment('ターン順番');
-            $table->integer('current_player')->nullable()->comment('現在ターンのプレイヤーID');
+            $table->string('current_player')->nullable()->comment('現在ターンのプレイヤーID');
             $table->integer('flag_limit')->default(0)->comment('フラグ操作上限');
             $table->enum('status', ['waiting', 'standby', 'playing', 'finished'])
                 ->default('waiting')
