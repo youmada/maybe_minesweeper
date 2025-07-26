@@ -6,8 +6,9 @@ export type RoomData = {
     ownerId: string;
     maxPlayer: number;
     magicLink: string;
-    status: string;
+    status: 'waiting' | 'standby' | 'playing' | 'finished';
     currentPlayer: string;
+    turnOrder: Array<Player>;
     turnActionState: {
         flagCount: number;
         flagLimit: number;
@@ -29,4 +30,5 @@ export type Player = {
     joinedAt: string;
     isCurrentTurn: boolean;
     isOwn?: boolean;
+    isLeaving?: boolean;
 };
