@@ -46,5 +46,3 @@ it('should call get on DB repository during PLAYING', function () {
         ->once();
     $this->compositeRepository->get('dummy-123');
 });
-
-

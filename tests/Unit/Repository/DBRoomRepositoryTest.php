@@ -119,7 +119,6 @@ it('can update room data in DB', function () {
     );
 });
 
-
 it('can not update room data in DB.  because of room id is not found', function () {
     // 準備
     $invalid_id = 'invalid-room-id';
