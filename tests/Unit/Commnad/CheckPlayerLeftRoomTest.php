@@ -24,7 +24,7 @@ beforeEach(function () {
     DB::table('room_player')->where('player_id', $this->player->id)->update(['last_exists_at' => now()]);
 });
 
-it('should set a left_at column when player disconnected to the room for 30 minutes', function () {
+it('should detach the player when player disconnected to the room for 30 minutes', function () {
 
     // 事前チェック
     $this->assertDatabaseHas('room_player', [
@@ -32,6 +32,7 @@ it('should set a left_at column when player disconnected to the room for 30 minu
         'player_id' => $this->player->id,
         'left_at' => null,
     ]);
+    $this->assertDatabaseCount('room_player', 1);
     // 準備
     $this->travel(30)->seconds();
 
@@ -39,11 +40,7 @@ it('should set a left_at column when player disconnected to the room for 30 minu
     $this->artisan('check:player-left-room');
 
     // アサート
-    $this->assertDatabaseHas('room_player', [
-        'room_id' => $this->room->id,
-        'player_id' => $this->player->id,
-        'left_at' => now(),
-    ]);
+    $this->assertDatabaseCount('room_player', 0);
 });
 
 it('should not set a left_at column when player disconnected to the room for 30 minutes', function () {

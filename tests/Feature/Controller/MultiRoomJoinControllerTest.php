@@ -1,5 +1,6 @@
 <?php
 
+use App\Events\RoomPlayerList;
 use App\Models\Player;
 use App\Models\Room;
 use App\Models\RoomState;
@@ -103,3 +104,11 @@ it('can skip to set a player id in players column. when already set a player id 
         'public_id' => $this->player1->public_id,
     ]);
 });
+
+// it('should dispatch a join notification event', function () {
+//    Event::fake();
+//    $this->withSession(['public_id' => $this->player1->public_id])
+//        ->get("/multi/rooms/{$this->room->public_id}/join?token={$this->room->magic_link_token}");
+//
+//    Event::assertDispatched(RoomPlayerList::class);
+// });

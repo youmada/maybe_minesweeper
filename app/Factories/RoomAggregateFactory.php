@@ -11,7 +11,7 @@ class RoomAggregateFactory
     {
         $room = new Room($roomName, $maxPlayers, $players, $expireAt, $isPrivate, $ownerId);
         // createNewで[]を渡すこの状況では、後々問題があるかもしれない
-        $roomState = RoomStateFactory::createNew([], $flagLimit);
+        $roomState = RoomStateFactory::createNew($players, $flagLimit);
 
         return new RoomAggregate($room, $roomState);
     }

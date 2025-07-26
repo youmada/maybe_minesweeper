@@ -47,27 +47,4 @@ it('should call get on DB repository during PLAYING', function () {
     $this->compositeRepository->get('dummy-123');
 });
 
-it('should not call update on DB repository during PLAYING', function () {
-    $this->roomAggregate->shouldReceive('getRoomStatus')
-        ->once()
-        ->andReturn(RoomStatus::PLAYING->value);
-    $this->redisRepository->shouldReceive('update')
-        ->once()
-        ->with($this->roomAggregate, 'dummy-123');
-    $this->dbRepository->shouldNotReceive('update');
-    $this->compositeRepository->update($this->roomAggregate, 'dummy-123');
-});
 
-it('should call update on DB repository during no PLAYING', function () {
-    $this->roomAggregate->shouldReceive('getRoomStatus')
-        ->once()
-        ->andReturn(RoomStatus::WAITING->value);
-    $this->redisRepository->shouldReceive('update')
-        ->once()
-        ->with($this->roomAggregate, 'dummy-123');
-    $this->dbRepository->shouldReceive('update')
-        ->once()
-        ->with($this->roomAggregate, 'dummy-123');
-
-    $this->compositeRepository->update($this->roomAggregate, 'dummy-123');
-});

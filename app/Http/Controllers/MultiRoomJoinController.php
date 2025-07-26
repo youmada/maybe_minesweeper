@@ -26,8 +26,8 @@ class MultiRoomJoinController extends Controller
             abort(401, '参加URLが違っています');
         }
         // 参加したユーザIDを保存
-
-        if (! $room->players->contains($playerId)) {
+        $freshRoom = Room::with('players')->find($room->id);
+        if (! $freshRoom->players()->pluck('public_id')->contains($playerId)) {
             $JoinRoomService($room->id, $playerId);
         }
 

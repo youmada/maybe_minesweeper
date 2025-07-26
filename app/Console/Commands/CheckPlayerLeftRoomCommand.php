@@ -2,7 +2,9 @@
 
 namespace App\Console\Commands;
 
+use App\Events\RoomPlayerList;
 use App\Models\Player;
+use App\Models\Room;
 use App\Repositories\Composites\RoomCompositeRepository;
 use DB;
 use Illuminate\Console\Command;
@@ -36,8 +38,11 @@ class CheckPlayerLeftRoomCommand extends Command
 
             // プレイヤー強制退出処理
             $currentRoom->leave($relevantPlayer->public_id);
+            Player::find($record->player_id)->rooms()->detach($record->room_id);
 
             $roomCompositeRepository->update($currentRoom, $record->room_id);
+            // ターンステートがリセットされる可能性もあるので、イベントを発火させる
+            RoomPlayerList::dispatch(Room::find($record->room_id));
         }
     }
 }

@@ -61,7 +61,7 @@ class RoomAggregate
         return $this->roomState->getTurnOrder();
     }
 
-    public function getCurrentOrder(): string
+    public function getCurrentOrder(): ?string
     {
         return $this->roomState->getCurrentOrder();
     }

@@ -119,24 +119,6 @@ it('can update room data in DB', function () {
     );
 });
 
-it('should update left_at column when a previous player rejoins', function () {
-    // 準備
-    $this->roomRepository->create($this->roomAggregate);
-    $this->roomAggregate->startRoom();
-    $this->roomAggregate->join('user1'); // 1
-    $this->roomAggregate->join('user2'); // 2
-    $this->roomRepository->update($this->roomAggregate, $this->roomId);
-
-    // ここでルームを退出したことにする
-    DB::table('room_player')->where('player_id', '2')->update(['left_at' => now()]);
-
-    // 実行
-    $this->roomRepository->update($this->roomAggregate, $this->roomId);
-    $this->assertDatabaseHas('room_player', [
-        'player_id' => '2',
-        'left_at' => null,
-    ]);
-});
 
 it('can not update room data in DB.  because of room id is not found', function () {
     // 準備
