@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Domain\Room\RoomStatus;
-use App\Events\GameDataApplyClient;
 use App\Events\RoomStateApplyClientEvent;
 use App\Events\RoomStatusApplyClient;
 use App\Models\Room;
@@ -39,8 +38,8 @@ class PlayContinueController extends Controller
 
         RoomStateApplyClientEvent::dispatch($room);
         RoomStatusApplyClient::dispatch($room);
-        GameDataApplyClient::dispatch($room);
 
-        return response()->json(['message' => 'ok'], 201);
+        return response()->json(['data' => app(MinesweeperService::class)->getGameStateForClient(app(GameCompositeRepository::class)->getState($room->id)),
+        ], 201);
     }
 }

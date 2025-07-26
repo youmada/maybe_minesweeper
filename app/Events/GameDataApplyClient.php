@@ -2,8 +2,10 @@
 
 namespace App\Events;
 
+use App\Domain\Minesweeper\GameState;
 use App\Models\Room;
 use App\Repositories\Composites\GameCompositeRepository;
+use App\Services\Minesweeper\MinesweeperService;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
@@ -14,7 +16,7 @@ class GameDataApplyClient implements ShouldBroadcastNow
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    public function __construct(protected Room $room) {}
+    public function __construct(protected Room $room, protected GameState $previousGameState) {}
 
     public function broadcastOn(): array
     {
@@ -28,7 +30,7 @@ class GameDataApplyClient implements ShouldBroadcastNow
         $gameState = app(GameCompositeRepository::class)->getState($this->room->id);
 
         return [
-            'data' => $gameState->toClientArray(),
+            'data' => app(MinesweeperService::class)->getGameStateForClient($gameState, $this->previousGameState),
         ];
     }
 }
