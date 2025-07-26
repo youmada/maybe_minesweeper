@@ -14,7 +14,7 @@ defineProps<{
 <template>
     <div>
         <ul class="min-h-96 rounded-lg border-4 border-gray-400">
-            <li class="m-5">
+            <li class="flex justify-center">
                 <TurnOrderPlayerTag
                     v-for="(player, index) in players"
                     :key="player.id"
