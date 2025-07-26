@@ -1,5 +1,5 @@
 <script setup lang="ts">
-const props = defineProps<{ color?: string; modalTile?: String }>();
+defineProps<{ color?: string; modalTile?: String }>();
 </script>
 <template>
     <div class="fixed inset-0 z-10 bg-white/30 backdrop-blur-md">

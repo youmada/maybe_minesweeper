@@ -1,9 +1,9 @@
 import { useEcho } from '@laravel/echo-vue';
-import { computed, ref } from 'vue';
+import { ref } from 'vue';
 
 interface Status {
     room: {
-        status: string;
+        status: 'waiting' | 'standby' | 'playing' | 'finished';
     };
     game: {
         status: string;
@@ -16,7 +16,7 @@ export function useRoomStatus(roomPublicId: string) {
     ]);
     const status = ref<Status>({
         room: {
-            status: '',
+            status: 'waiting',
         },
         game: {
             status: '',
@@ -26,15 +26,7 @@ export function useRoomStatus(roomPublicId: string) {
         status.value = data;
     });
 
-    const isRoomReady = computed(() => {
-        return (
-            status.value.room.status === 'playing' ||
-            status.value.room.status === 'standby'
-        );
-    });
-
     return {
         status,
-        isRoomReady,
     };
 }
