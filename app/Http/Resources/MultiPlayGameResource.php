@@ -5,7 +5,6 @@ namespace App\Http\Resources;
 use App\Models\RoomState;
 use App\Repositories\Composites\GameCompositeRepository;
 use App\Repositories\Composites\RoomCompositeRepository;
-use App\Services\Minesweeper\MinesweeperService;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -21,7 +20,6 @@ class MultiPlayGameResource extends JsonResource
         $roomState = RoomState::where('room_id', $this->id)->first();
         $roomRepository = app(RoomCompositeRepository::class)->get($this->id);
         $roomActionState = $roomRepository->getActionState();
-        $gameService = app(MinesweeperService::class);
         $gameState = app(GameCompositeRepository::class)->getState($this->id);
 
         return [
@@ -40,7 +38,7 @@ class MultiPlayGameResource extends JsonResource
                 ],
             ],
             'game' => [
-                ...$gameService->getGameStateForClient($gameState),
+                ...$gameState->toClientArray(),
             ],
         ];
     }

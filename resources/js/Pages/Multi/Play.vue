@@ -1,4 +1,6 @@
 <script setup lang="ts">
+// import HelpIcon from '@/Components/HelpIcon.vue';
+// import HelpModal from '@/Components/HelpModal.vue';
 import MagicLinkButton from '@/Components/MagicLinkButton.vue';
 import MultiPlayContinueModal from '@/Components/MultiPlayContinueModal.vue';
 import MultiPlayStandbyModal from '@/Components/MultiPlayStandbyModal.vue';
@@ -9,6 +11,7 @@ import { useGameStateChannel } from '@/Composables/useGameStateChannel';
 import { useMinesweeper } from '@/Composables/useMInesweeper';
 import { useRoomChannel } from '@/Composables/useRoomChannel';
 import { useRoomState } from '@/Composables/useRoomState';
+import { useRoomStatus } from '@/Composables/useRoomStatus';
 import useToastStore from '@/stores/notificationToast';
 import { GameState, RoomData } from '@/types/inertiaProps';
 import { router } from '@inertiajs/vue3';
@@ -29,6 +32,8 @@ const props = defineProps<{
 const roomData = reactive(props.data.room);
 const gameData = reactive(props.data.game);
 const isFlagMode = ref(false);
+// const showHelpModal = ref(false);
+let isFirstClicking = false;
 let heartBeat: ReturnType<typeof setInterval>;
 
 const { popUpToast } = useToastStore();
@@ -36,9 +41,15 @@ const { roomPlayers, leaveChannel, changeCurrentPlayer } = useRoomChannel(
     roomData.publicId,
     props.auth.user.public_id,
 );
+const { status } = useRoomStatus(roomData.publicId);
 const { roomState } = useRoomState(roomData.publicId, changeCurrentPlayer);
-const { startGame, settingMultiPlay, handleFlagAction, handleOpenAction } =
-    useMinesweeper();
+const {
+    startGame,
+    settingMultiPlay,
+    handleFirstClickAction,
+    handleFlagAction,
+    handleOpenAction,
+} = useMinesweeper();
 
 const restTiles = computed(() => {
     const totalTiles = gameData.width * gameData.height;
@@ -66,6 +77,10 @@ watch(roomState, (newValue) => {
         roomData.turnActionState.flagLimit =
             newValue.data.turnActionState.flagLimit;
     }
+});
+
+watch(status, (newValue) => {
+    roomData.status = newValue.room.status;
 });
 const playButtonText = computed(() => {
     if (roomPlayers.value.length >= roomData.maxPlayer) {
@@ -100,6 +115,28 @@ const handleClickTile = async (x: number, y: number) => {
         popUpToast('操作することができません！', 'warning');
         return;
     }
+
+    if (roomData.status === 'standby') {
+        if (isFirstClicking) return;
+        isFirstClicking = true;
+
+        try {
+            const resData = await handleFirstClickAction(x, y);
+            gameData.tileStates = JSON.parse(
+                JSON.stringify(resData.tileStates),
+            );
+            const {
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                tileStates, // 除外
+                ...rest
+            } = resData;
+            Object.assign(gameData, rest);
+        } catch (e: any) {
+            isFirstClicking = false;
+        }
+        return;
+    }
+
     if (isFlagMode.value) {
         await handleFlagAction(x, y);
     } else {
@@ -108,7 +145,19 @@ const handleClickTile = async (x: number, y: number) => {
 };
 
 const handleContinueGame = async () => {
-    await axios.post(`/multi/rooms/${roomData.publicId}/play/continue`);
+    const response = await axios.post(
+        `/multi/rooms/${roomData.publicId}/play/continue`,
+    );
+
+    const resData = response.data.data;
+    gameData.tileStates = JSON.parse(JSON.stringify(resData.tileStates));
+    const {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        tileStates, // 除外
+        ...rest
+    } = resData;
+    Object.assign(gameData, rest);
+    isFirstClicking = false;
 };
 
 const handleLeaveRoom = async () => {
@@ -126,6 +175,10 @@ const gameStatus = computed(() => {
     }
     return 'standby';
 });
+
+// const clickHelpIcon = () => {
+//     showHelpModal.value = !showHelpModal.value;
+// };
 </script>
 <template>
     <div>
@@ -238,6 +291,11 @@ const gameStatus = computed(() => {
                         :magicLink="roomData.magicLink"
                         :clipBoard="clipBoard"
                     ></MagicLinkButton>
+                    <!--                    <HelpIcon @clickHelpIcon="clickHelpIcon" />-->
+                    <!--                    <HelpModal-->
+                    <!--                        :isShow="showHelpModal"-->
+                    <!--                        :closeFn="() => (showHelpModal = false)"-->
+                    <!--                    />-->
                 </div>
             </div>
         </div>

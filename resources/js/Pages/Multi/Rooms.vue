@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import MagicLinkButton from '@/Components/MagicLinkButton.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
+import useToastStore from '@/stores/notificationToast';
 import { Head, Link, router } from '@inertiajs/vue3';
-import { ref } from 'vue';
 
 type Room = {
     name: string;
@@ -15,16 +15,11 @@ const props = defineProps({
 });
 const rooms = props.data;
 
-const isClipped = ref(false);
+const { popUpToast } = useToastStore();
 
 const clipBoard = (link: string) => {
-    isClipped.value = true;
-
     navigator.clipboard.writeText(link);
-
-    setTimeout(() => {
-        isClipped.value = false;
-    }, 2000);
+    popUpToast('ルーム参加のURLをコピーしました', 'info');
 };
 </script>
 
@@ -34,7 +29,7 @@ const clipBoard = (link: string) => {
         <h2 class="m-4 text-center text-lg font-bold">作成ルーム一覧</h2>
         <ul class="list min-h-[400px] rounded-box bg-gray-500 shadow-md">
             <li class="p-4 pb-2 text-xs tracking-wide opacity-60">
-                <div class="flex w-full justify-around">
+                <div class="flex w-full justify-around text-white">
                     <span class="font-bold">ルーム名</span>
                     <span class="font-bold">有効期限</span>
                     <span class="font-bold">ルームURL取得</span>
@@ -65,14 +60,6 @@ const clipBoard = (link: string) => {
             <Link href="/multi/rooms/create">
                 <PrimaryButton>ルーム作成</PrimaryButton>
             </Link>
-        </div>
-    </div>
-
-    <div v-show="isClipped" class="toast">
-        <div class="alert alert-info">
-            <span class="text-base font-bold text-white"
-                >ルーム参加のURLをコピーしました</span
-            >
         </div>
     </div>
 </template>

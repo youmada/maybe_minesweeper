@@ -33,6 +33,26 @@ export function useMinesweeper() {
         }
     };
 
+    const handleFirstClickAction = async (x: number, y: number) => {
+        try {
+            const response = await axios.put(
+                `/multi/rooms/${roomConfig.roomId}/play/operate`,
+                {
+                    x: x,
+                    y: y,
+                    operation: 'open',
+                },
+            );
+            return response.data.data;
+        } catch (error: any) {
+            if (error.response) {
+                checkResponseStatus(error.response); // 失敗時もstatus別に分けられる
+            } else {
+                popUpToast('通信エラーが発生しました', 'error');
+            }
+        }
+    };
+
     const startGame = async (): Promise<boolean> => {
         if (isDuplicateClick.value) return false;
         isDuplicateClick.value = true;
@@ -84,6 +104,7 @@ export function useMinesweeper() {
         }
     };
     return {
+        handleFirstClickAction,
         handleOpenAction,
         handleFlagAction,
         settingMultiPlay,

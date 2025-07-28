@@ -1,13 +1,14 @@
 <?php
 
 use App\Domain\Room\RoomStatus;
-use App\Events\GameDataApplyClient;
+use App\Events\GameStatesReflectionSignalEvent;
 use App\Events\RoomStateApplyClientEvent;
 use App\Events\RoomStatusApplyClient;
 use App\Models\GameState;
 use App\Models\Player;
 use App\Models\Room;
 use App\Models\RoomState;
+use App\Repositories\Composites\GameCompositeRepository;
 use App\Services\Minesweeper\MinesweeperService;
 use App\Services\Multi\CreateRoomService;
 use App\Services\Multi\JoinRoomService;
@@ -45,6 +46,11 @@ it('should continue a game controller response 201, when the previous game is cl
         ->postJson("/multi/rooms/{$this->room->public_id}/play/continue");
     // アサート
     $response->assertStatus(201);
+    $response->assertJson([
+        'data' => [
+            ...app(MinesweeperService::class)->getGameStateForClient(app(GameCompositeRepository::class)->getState($this->room->id)),
+        ],
+    ]);
 });
 
 it('should game and room status change a continue state', function () {
@@ -108,7 +114,7 @@ it('should dispatch the room status and room data for client event', function ()
 
     Event::assertDispatched(RoomStateApplyClientEvent::class);
     Event::assertDispatched(RoomStatusApplyClient::class);
-    Event::assertDispatched(GameDataApplyClient::class);
+    Event::assertDispatched(GameStatesReflectionSignalEvent::class);
 });
 
 it('should response 403 status code when room status is not finished', function () {

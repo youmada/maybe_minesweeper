@@ -13,12 +13,6 @@ class MinesweeperService
     private const MIN_SAFE_TILES_AROUND_START = 9;
 
     private GameRepositoryInterface $repository;
-    // 必要な処理一覧
-    // 1. ゲーム初期化 ✅
-    // 2. タイルクリック時の処理 ✅
-    // 3. データをリポジトリクラスに橋渡し
-    // 4. クライアントサイドへのデータ加工と出力 ✅
-    // 5. ゲームクリア・オーバー時の処理 ✅
 
     public function __construct(GameRepositoryInterface $repository)
     {
@@ -78,16 +72,41 @@ class MinesweeperService
         return $gameState;
     }
 
-    public function getGameStateForClient(GameState $gameState): array
+    public function getGameStateForClient(GameState $gameState, ?GameState $previousState = null): array
     {
-        return $gameState->toClientArray();
+        $current = $gameState->toClientArray();
+
+        if (is_null($previousState)) {
+            // 初期化時や旧状態がない場合は全体送信
+            return $current;
+        }
+
+        $previous = $previousState->toClientArray();
+
+        // 差分抽出
+        $diff = [];
+
+        foreach ($current['tileStates'] as $y => $row) {
+            foreach ($row as $x => $tile) {
+                if ($previous['tileStates'][$y][$x] !== $tile) {
+                    $diff['tileStates'][$y][$x] = $tile;
+                }
+            }
+        }
+
+        // その他必要なデータも含めて返す
+        return [
+            ...$diff, // キー名tileStatesが入る
+            'width' => $current['width'],
+            'height' => $current['height'],
+            'numOfMines' => $current['numOfMines'],
+            'visitedTiles' => $current['visitedTiles'],
+            'isGameStarted' => $current['isGameStarted'],
+            'isGameOver' => $current['isGameOver'],
+            'isGameClear' => $current['isGameClear'],
+        ];
     }
 
-    // どんな処理が必要？
-    // gameStateへの反映 ✅
-    // ゲームオーバー・クリアのチェック ✅
-    // リポジトリへの反映
-    // 状態の返却 ✅
     /**
      * @throws Exception
      */

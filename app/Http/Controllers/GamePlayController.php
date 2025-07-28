@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Domain\Minesweeper\TileActionMode;
 use App\Domain\Room\RoomStatus;
 use App\Events\GameDataApplyClient;
+use App\Events\GameStatesReflectionSignalEvent;
 use App\Events\RoomStateApplyClientEvent;
 use App\Events\RoomStatusApplyClient;
 use App\Http\Resources\MultiPlayGameResource;
@@ -66,14 +67,17 @@ class GamePlayController extends Controller
 
                 return response()->json(['message' => '更新処理でエラーが発生しました'], 500);
             }
-            // 盤面更新とターン更新イベント
-            GameDataApplyClient::dispatch($room);
+            // ターン更新イベント
             RoomStateApplyClientEvent::dispatch($room);
 
             // ルームとゲームのステータス通知イベント
             RoomStatusApplyClient::dispatch($room);
+            // 他プレイヤーに通知するためのイベント
+            GameStatesReflectionSignalEvent::dispatch($room);
 
-            return response()->json(['status' => 'gameStart'], 201);
+            // タイル数が多いとwebSocketではエラーになるので、例外的に最初のクリックだけhttpsで送信
+            return response()->json(['data' => app(MinesweeperService::class)->getGameStateForClient(app(GameCompositeRepository::class)->getState($room->id)),
+            ], 201);
         }
 
         $tileOperation = $attributes['operation'] === 'open' ? TileActionMode::OPEN : TileActionMode::FLAG;
@@ -101,7 +105,7 @@ class GamePlayController extends Controller
             return response()->json(['message' => '更新処理でエラーが発生しました'], 500);
         }
         // 盤面更新とターン更新イベント
-        GameDataApplyClient::dispatch($room);
+        GameDataApplyClient::dispatch($room, $gameState);
         RoomStateApplyClientEvent::dispatch($room);
 
         // ルームとゲームのステータス通知イベント

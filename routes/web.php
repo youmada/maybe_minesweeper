@@ -5,6 +5,7 @@ use App\Http\Controllers\MultiRoomController;
 use App\Http\Controllers\MultiRoomJoinController;
 use App\Http\Controllers\PlayContinueController;
 use App\Http\Controllers\PlayerHeartBeatController;
+use App\Http\Controllers\ResponseGameStatesController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -41,7 +42,7 @@ Route::group(['middleware' => ['room.auth', 'auth:magicLink']], function () {
     Route::get('multi/rooms/{room}/play', [GamePlayController::class, 'show'])
         ->whereUuid('room')
         ->name('multi.rooms.play.show');
-    // ゲーム開始
+    // ゲーム開始 - プレイヤー待機画面から、初回クリックのゲーム開始フェーズへの移行
     Route::post('multi/rooms/{room}/play/start', [GamePlayController::class, 'store'])
         ->whereUuid('room')
         ->name('multi.rooms.play.store');
@@ -63,5 +64,11 @@ Route::group(['middleware' => ['room.auth', 'auth:magicLink']], function () {
     Route::put('multi/rooms/{room}/play/heartbeat', [PlayerHeartBeatController::class, '__invoke'])
         ->whereUuid('room')
         ->name('multi.rooms.play.heartbeat');
+
+    // webSocketを使わずに、ボードデータを送信するためのコントローラ
+    Route::get('multi/rooms/{room}/play/reflection', [ResponseGameStatesController::class, '__invoke'])
+        ->whereUuid('room')
+        ->name('multi.rooms.play.reflection');
+
 });
 // require __DIR__.'/auth.php';
