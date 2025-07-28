@@ -33,7 +33,25 @@ export function useGameStateChannel(
         },
     });
     channel().listen('GameDataApplyClient', (data: GameState) => {
-        gameState.value = data;
+        const { tileStates, ...rest } = data.data;
+        const previousTileStates = gameData.tileStates;
+
+        // クリックしたタイルの差分がレスポンスされるので、該当のタイルだけ更新する
+        for (const [yStr, row] of Object.entries(tileStates)) {
+            const y = parseInt(yStr);
+            for (const [xStr, tile] of Object.entries(row)) {
+                const x = parseInt(xStr);
+                const prevTile = previousTileStates[y]?.[x];
+
+                if (
+                    tile.isFlag !== prevTile?.isFlag ||
+                    tile.isOpen !== prevTile?.isOpen
+                ) {
+                    gameData.tileStates[y][x] = tile;
+                }
+            }
+        }
+        Object.assign(gameData, rest);
     });
 
     watch(gameState, (newValue) => {

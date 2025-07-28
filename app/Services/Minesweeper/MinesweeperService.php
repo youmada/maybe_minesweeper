@@ -96,7 +96,7 @@ class MinesweeperService
 
         // その他必要なデータも含めて返す
         return [
-            'tileStates' => $diff,
+            ...$diff, // キー名tileStatesが入る
             'width' => $current['width'],
             'height' => $current['height'],
             'numOfMines' => $current['numOfMines'],
