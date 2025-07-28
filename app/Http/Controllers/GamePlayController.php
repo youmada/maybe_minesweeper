@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Domain\Minesweeper\TileActionMode;
 use App\Domain\Room\RoomStatus;
 use App\Events\GameDataApplyClient;
+use App\Events\GameStatesReflectionSignalEvent;
 use App\Events\RoomStateApplyClientEvent;
 use App\Events\RoomStatusApplyClient;
 use App\Http\Resources\MultiPlayGameResource;
@@ -71,6 +72,8 @@ class GamePlayController extends Controller
 
             // ルームとゲームのステータス通知イベント
             RoomStatusApplyClient::dispatch($room);
+            // 他プレイヤーに通知するためのイベント
+            GameStatesReflectionSignalEvent::dispatch($room);
 
             // タイル数が多いとwebSocketではエラーになるので、例外的に最初のクリックだけhttpsで送信
             return response()->json(['data' => app(MinesweeperService::class)->getGameStateForClient(app(GameCompositeRepository::class)->getState($room->id)),

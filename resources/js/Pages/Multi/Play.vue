@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import HelpIcon from '@/Components/HelpIcon.vue';
-import HelpModal from '@/Components/HelpModal.vue';
+// import HelpIcon from '@/Components/HelpIcon.vue';
+// import HelpModal from '@/Components/HelpModal.vue';
 import MagicLinkButton from '@/Components/MagicLinkButton.vue';
 import MultiPlayContinueModal from '@/Components/MultiPlayContinueModal.vue';
 import MultiPlayStandbyModal from '@/Components/MultiPlayStandbyModal.vue';
@@ -32,7 +32,7 @@ const props = defineProps<{
 const roomData = reactive(props.data.room);
 const gameData = reactive(props.data.game);
 const isFlagMode = ref(false);
-const showHelpModal = ref(false);
+// const showHelpModal = ref(false);
 let isFirstClicking = false;
 let heartBeat: ReturnType<typeof setInterval>;
 
@@ -176,9 +176,9 @@ const gameStatus = computed(() => {
     return 'standby';
 });
 
-const clickHelpIcon = () => {
-    showHelpModal.value = !showHelpModal.value;
-};
+// const clickHelpIcon = () => {
+//     showHelpModal.value = !showHelpModal.value;
+// };
 </script>
 <template>
     <div>
@@ -291,11 +291,11 @@ const clickHelpIcon = () => {
                         :magicLink="roomData.magicLink"
                         :clipBoard="clipBoard"
                     ></MagicLinkButton>
-                    <HelpIcon @clickHelpIcon="clickHelpIcon" />
-                    <HelpModal
-                        :isShow="showHelpModal"
-                        :closeFn="() => (showHelpModal = false)"
-                    />
+                    <!--                    <HelpIcon @clickHelpIcon="clickHelpIcon" />-->
+                    <!--                    <HelpModal-->
+                    <!--                        :isShow="showHelpModal"-->
+                    <!--                        :closeFn="() => (showHelpModal = false)"-->
+                    <!--                    />-->
                 </div>
             </div>
         </div>

@@ -1,6 +1,7 @@
 <?php
 
 use App\Domain\Room\RoomStatus;
+use App\Events\GameStatesReflectionSignalEvent;
 use App\Events\RoomStateApplyClientEvent;
 use App\Events\RoomStatusApplyClient;
 use App\Models\GameState;
@@ -113,6 +114,7 @@ it('should dispatch the room status and room data for client event', function ()
 
     Event::assertDispatched(RoomStateApplyClientEvent::class);
     Event::assertDispatched(RoomStatusApplyClient::class);
+    Event::assertDispatched(GameStatesReflectionSignalEvent::class);
 });
 
 it('should response 403 status code when room status is not finished', function () {

@@ -1,10 +1,13 @@
 <?php
 
 use App\Events\GameDataApplyClient;
+use App\Events\GameStatesReflectionSignalEvent;
 use App\Events\RoomStateApplyClientEvent;
+use App\Events\RoomStatusApplyClient;
 use App\Models\Player;
 use App\Models\Room;
 use App\Models\RoomState;
+use App\Repositories\Composites\GameCompositeRepository;
 use App\Repositories\Composites\RoomCompositeRepository;
 use App\Services\Minesweeper\MinesweeperService;
 use App\Services\Multi\CreateRoomService;
@@ -113,4 +116,20 @@ it('should response 400 status code by actions flag. when room status standby', 
         ->actingAs($this->player, 'magicLink')
         ->put("/multi/rooms/{$this->room->public_id}/play/operate", ['x' => 1, 'y' => 1, 'operation' => 'flag']);
     $response->assertStatus(400);
+});
+
+it('should operate a game initialize when play click is first click', function () {
+    Event::fake();
+    $this->roomState->update(['status' => 'standby']);
+    $this->roomState->refresh();
+    $response = $this->withSession(['public_id' => $this->player->public_id])
+        ->actingAs($this->player, 'magicLink')
+        ->put("/multi/rooms/{$this->room->public_id}/play/operate", ['x' => 1, 'y' => 1, 'operation' => 'open']);
+    Event::assertDispatched(RoomStatusApplyClient::class);
+    Event::assertDispatched(RoomStateApplyClientEvent::class);
+    Event::assertDispatched(GameStatesReflectionSignalEvent::class);
+    $response->assertStatus(201);
+    $response->assertJson([
+        'data' => [...app(MinesweeperService::class)->getGameStateForClient(app(GameCompositeRepository::class)->getState($this->room->id))],
+    ]);
 });

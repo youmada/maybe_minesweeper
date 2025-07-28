@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Domain\Room\RoomStatus;
+use App\Events\GameStatesReflectionSignalEvent;
 use App\Events\RoomStateApplyClientEvent;
 use App\Events\RoomStatusApplyClient;
 use App\Models\Room;
@@ -36,6 +37,7 @@ class PlayContinueController extends Controller
         $roomRepository->update($roomState, $room->id);
         $gameRepository->saveState($newGameState, $room->id);
 
+        GameStatesReflectionSignalEvent::dispatch($room);
         RoomStateApplyClientEvent::dispatch($room);
         RoomStatusApplyClient::dispatch($room);
 
