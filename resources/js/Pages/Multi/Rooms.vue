@@ -1,8 +1,12 @@
 <script setup lang="ts">
+import HelpIcon from '@/Components/HelpIcon.vue';
+import HelpModal from '@/Components/HelpModal.vue';
 import MagicLinkButton from '@/Components/MagicLinkButton.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
+import { roomHelpContents } from '@/data';
 import useToastStore from '@/stores/notificationToast';
 import { Head, Link, router } from '@inertiajs/vue3';
+import { ref } from 'vue';
 
 type Room = {
     name: string;
@@ -14,6 +18,7 @@ const props = defineProps({
     data: Array<Room>,
 });
 const rooms = props.data;
+const showHelpModal = ref(false);
 
 const { popUpToast } = useToastStore();
 
@@ -62,6 +67,17 @@ const clipBoard = (link: string) => {
             </Link>
         </div>
     </div>
-</template>
 
-<style scoped></style>
+    <div class="fixed bottom-5 right-5">
+        <HelpIcon
+            size="size-10"
+            @clickHelpIcon="() => (showHelpModal = true)"
+        />
+    </div>
+    <HelpModal
+        :isShow="showHelpModal"
+        :closeFn="() => (showHelpModal = false)"
+        tile="遊びかた"
+        :qaContents="roomHelpContents"
+    />
+</template>

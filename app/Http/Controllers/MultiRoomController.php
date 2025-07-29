@@ -50,8 +50,8 @@ class MultiRoomController extends Controller
 
         $attributes = $request->validate([
             'name' => ['required', 'string', 'max:50'],
-            'boardWidth' => ['required', 'integer', 'min:10', 'max:25'],
-            'boardHeight' => ['required', 'integer', 'min:10', 'max:25'],
+            'boardWidth' => ['required', 'integer', 'min:10', 'max:20'],
+            'boardHeight' => ['required', 'integer', 'min:10', 'max:20'],
             'mineRatio' => ['required', 'integer', 'min:10', 'max:40'],
             'expireAt' => ['required', 'integer', 'in:1,7,14'],
             'maxPlayer' => ['required', 'integer', 'min:2', 'max:6'],
