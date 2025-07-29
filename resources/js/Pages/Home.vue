@@ -1,6 +1,12 @@
 <script setup lang="ts">
+import HelpIcon from '@/Components/HelpIcon.vue';
+import HelpModal from '@/Components/HelpModal.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
+import { topPageHelpContents } from '@/data';
 import { Head, Link } from '@inertiajs/vue3';
+import { ref } from 'vue';
+
+const showHelpModal = ref(false);
 </script>
 
 <template>
@@ -17,4 +23,16 @@ import { Head, Link } from '@inertiajs/vue3';
             </main>
         </div>
     </div>
+    <div class="fixed bottom-5 right-5">
+        <HelpIcon
+            size="size-10"
+            @clickHelpIcon="() => (showHelpModal = true)"
+        />
+    </div>
+    <HelpModal
+        :isShow="showHelpModal"
+        :closeFn="() => (showHelpModal = false)"
+        tile="遊びかた"
+        :qaContents="topPageHelpContents"
+    />
 </template>

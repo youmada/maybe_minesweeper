@@ -289,7 +289,7 @@ const gameStatus = computed(() => {
                         :magicLink="roomData.magicLink"
                         :clipBoard="clipBoard"
                     ></MagicLinkButton>
-                    <HelpIcon @clickHelpIcon="() => !showHelpModal" />
+                    <HelpIcon @clickHelpIcon="() => (showHelpModal = true)" />
                     <HelpModal
                         :isShow="showHelpModal"
                         :closeFn="() => (showHelpModal = false)"
