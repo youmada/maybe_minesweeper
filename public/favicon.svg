@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+    <!-- 正方形のマス背景 -->
+    <rect x="8" y="8" width="48" height="48" rx="1" fill="#ffffff" stroke="#cccccc" stroke-width="3"/>
+
+    <!-- 中央の M（丸みのあるフォント、黒） -->
+    <text x="32" y="44" font-size="32" text-anchor="middle" fill="#000000"
+          font-family="'Arial Rounded MT Bold', 'Arial', sans-serif" font-weight="bold">
+        M
+    </text>
+</svg>

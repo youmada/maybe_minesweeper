@@ -1,0 +1,223 @@
+<?php
+
+namespace App\Domain\Minesweeper;
+
+class GameService
+{
+    /**
+     * ボードを作成する
+     */
+    public static function createBoard(int $width, int $height): Board
+    {
+        return new Board($width, $height);
+    }
+
+    /**
+     * 周囲のタイルを取得する
+     *
+     * @return array<Tile>
+     */
+    public static function getAroundTiles(Board $board, int $x, int $y): array
+    {
+        $boardTiles = $board->getBoardState();
+        if (empty($boardTiles)) {
+            return [];
+        }
+
+        $height = count($boardTiles);
+        $width = count($boardTiles[0]);
+        $aroundTiles = [];
+
+        // 相対位置を指定して時計回りに周囲のタイルを取得
+        $directions = [
+            [0, -1], [1, -1], [1, 0], [1, 1], [0, 1], [-1, 1], [-1, 0], [-1, -1],
+        ];
+
+        foreach ($directions as [$dx, $dy]) {
+            $nx = $x + $dx;
+            $ny = $y + $dy;
+
+            if ($nx >= 0 && $nx < $width && $ny >= 0 && $ny < $height) {
+                $aroundTiles[] = $boardTiles[$ny][$nx];
+            }
+        }
+
+        return $aroundTiles;
+    }
+
+    // xとy座標のタイルを取得する
+    public static function getTile(Board $board, int $x, int $y): ?Tile
+    {
+        return $board->getTile($x, $y);
+    }
+
+    /**
+     * 地雷を設置する
+     *
+     * @param  array{x: int, y: int}  $firstClick
+     *
+     * @throws \InvalidArgumentException
+     */
+    public static function setMines(Board $board, int $numOfMines, array $firstClick): void
+    {
+        $boardTiles = $board->getBoardState();
+        if (empty($boardTiles)) {
+            return;
+        }
+
+        $height = count($boardTiles);
+        $width = count($boardTiles[0]);
+
+        // 初クリック位置チェック
+        if ($firstClick['x'] < 0 || $firstClick['x'] >= $width ||
+            $firstClick['y'] < 0 || $firstClick['y'] >= $height) {
+            throw new \InvalidArgumentException('初クリック位置が不正です');
+        }
+
+        // 初クリック位置とその周囲を除外する位置に設定
+        $excludePositions = [];
+        for ($dy = -1; $dy <= 1; $dy++) {
+            for ($dx = -1; $dx <= 1; $dx++) {
+                $nx = $firstClick['x'] + $dx;
+                $ny = $firstClick['y'] + $dy;
+                if ($nx >= 0 && $nx < $width && $ny >= 0 && $ny < $height) {
+                    $excludePositions[] = ['x' => $nx, 'y' => $ny];
+                }
+            }
+        }
+
+        // 地雷を設置可能な位置数
+        $availableTiles = $width * $height - count($excludePositions);
+
+        if ($numOfMines >= $availableTiles) {
+            throw new \InvalidArgumentException('地雷数が多すぎます');
+        }
+
+        // 1. 配置可能な候補を全列挙
+        $candidates = [];
+        for ($y = 0; $y < $height; $y++) {
+            for ($x = 0; $x < $width; $x++) {
+                // 除外ゾーンに含まれないなら候補に追加
+                $isExcluded = false;
+                foreach ($excludePositions as $pos) {
+                    if ($x === $pos['x'] && $y === $pos['y']) {
+                        $isExcluded = true;
+                        break;
+                    }
+                }
+                if (! $isExcluded) {
+                    $candidates[] = ['x' => $x, 'y' => $y];
+                }
+            }
+        }
+
+        // 2. ランダムに並べ替え、必要数だけ取り出す
+        shuffle($candidates);
+        $selected = array_slice($candidates, 0, $numOfMines);
+
+        // 3. 地雷設置＆周辺タイルの地雷カウントを更新
+        foreach ($selected as $pos) {
+            $x = $pos['x'];
+            $y = $pos['y'];
+            $boardTiles[$y][$x]->setMine(true);
+
+            // 地雷設置の周囲8マスをチェックして周辺地雷数を更新する
+            for ($dy = -1; $dy <= 1; $dy++) {
+                for ($dx = -1; $dx <= 1; $dx++) {
+                    // これは地雷ポジション
+                    if ($dx === 0 && $dy === 0) {
+                        continue;
+                    }
+                    $ny = $y + $dy;
+                    $nx = $x + $dx;
+                    // 境界値をチェック
+                    if ($nx >= 0 && $nx < $width && $ny >= 0 && $ny < $height) {
+                        $boardTiles[$ny][$nx]->incrementAdjacentMines();
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * タイルを開く
+     */
+    public static function openTile(Board $board, Tile $tile, array &$visitedTiles): void
+    {
+        // すでに開かれているタイルは処理しない
+        if ($tile->isOpen()) {
+            return;
+        }
+
+        // すでに処理済みのタイルは処理しない
+        if (isset($visitedTiles["{$tile->x()}-{$tile->y()}"])) {
+            return;
+        }
+
+        // 地雷なら終了
+        if ($tile->isMine()) {
+            return;
+        }
+
+        // 訪問済みに追加
+        $visitedTiles["{$tile->x()}-{$tile->y()}"] = true;
+
+        // フラグが立っている場合は外す
+        if ($tile->isFlag()) {
+            $tile->setFlag(false);
+        }
+
+        // タイルを開く
+        $tile->setOpen(true);
+
+        // 周囲に地雷がなければ、周囲のタイルも再帰的に開く
+        if ($tile->adjacentMines() === 0) {
+            $aroundTiles = self::getAroundTiles($board, $tile->x(), $tile->y());
+            foreach ($aroundTiles as $aroundTile) {
+                self::openTile($board, $aroundTile, $visitedTiles);
+            }
+        }
+    }
+
+    /**
+     * フラグを切り替える
+     */
+    public static function toggleFlag(Tile $tile): void
+    {
+        // 開いているタイルにはフラグを立てられない
+        if ($tile->isOpen()) {
+            return;
+        }
+
+        $tile->setFlag(! $tile->isFlag());
+    }
+
+    /**
+     * ゲームオーバーをチェック
+     */
+    public static function checkGameOver(Tile $tile): bool
+    {
+        return $tile->isMine();
+    }
+
+    /**
+     * ゲームクリアをチェック
+     */
+    public static function checkGameClear(Board $board, int $totalMines): bool
+    {
+        $closedTiles = 0;
+
+        $boardTiles = $board->getBoardState();
+
+        foreach ($boardTiles as $row) {
+            foreach ($row as $tile) {
+                if (! $tile->isOpen()) {
+                    $closedTiles++;
+                }
+            }
+        }
+
+        // 未開放タイル数が地雷の数と一致する場合、ゲームクリア
+        return $closedTiles === $totalMines;
+    }
+}
