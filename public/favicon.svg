@@ -1,11 +1,10 @@
-<svg width="64" height="64" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+    <!-- 正方形のマス背景 -->
+    <rect x="8" y="8" width="48" height="48" rx="1" fill="#ffffff" stroke="#cccccc" stroke-width="3"/>
 
-    <!-- 旗のポール -->
-    <rect x="30" y="16" width="4" height="32" fill="#cccccc" rx="1"/>
-
-    <!-- 旗の三角布部分 -->
-    <polygon points="34,18 48,24 34,30" fill="#FF7A30"/>
-
-    <!-- 地面（軽くアクセント） -->
-    <rect x="28" y="48" width="8" height="4" fill="#888888" rx="1"/>
+    <!-- 中央の M（丸みのあるフォント、黒） -->
+    <text x="32" y="44" font-size="32" text-anchor="middle" fill="#000000"
+          font-family="'Arial Rounded MT Bold', 'Arial', sans-serif" font-weight="bold">
+        M
+    </text>
 </svg>
