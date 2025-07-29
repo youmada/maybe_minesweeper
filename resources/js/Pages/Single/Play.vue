@@ -3,7 +3,7 @@ import Board from '@/Components/Board.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import { useGameStore } from '@/stores/gameStore';
 import { useSaveDataStore } from '@/stores/singlePlayData';
-import { router } from '@inertiajs/vue3';
+import { Head, router } from '@inertiajs/vue3';
 import { onMounted, ref } from 'vue';
 
 interface modeInfo {
@@ -101,6 +101,7 @@ function onSaveData() {
 const modeName = currentLevel(props.level?.toString() || '')?.modeName;
 </script>
 <template>
+    <Head title="シングルプレイ" />
     <div class="flex h-full w-full flex-col">
         <template v-if="isInitialized">
             <div class="flex h-full w-full flex-col">

@@ -1,16 +1,19 @@
 <script setup lang="ts">
 defineEmits(['clickHelpIcon']);
+defineProps<{
+    size?: string;
+}>();
 </script>
 
 <template>
-    <button class="btn btn-ghost btn-square" @click="$emit('clickHelpIcon')">
+    <button @click="$emit('clickHelpIcon')">
         <svg
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
             viewBox="0 0 24 24"
             stroke-width="1.5"
             stroke="currentColor"
-            class="size-6"
+            :class="size ?? 'size-6'"
         >
             <path
                 stroke-linecap="round"

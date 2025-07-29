@@ -15,7 +15,7 @@ import { useRoomStatus } from '@/Composables/useRoomStatus';
 import { multiRoomHelpContents } from '@/data';
 import useToastStore from '@/stores/notificationToast';
 import { GameState, RoomData } from '@/types/inertiaProps';
-import { router } from '@inertiajs/vue3';
+import { Head, router } from '@inertiajs/vue3';
 import { computed, onMounted, onUnmounted, reactive, ref, watch } from 'vue';
 
 const props = defineProps<{
@@ -176,12 +176,9 @@ const gameStatus = computed(() => {
     }
     return 'standby';
 });
-
-const clickHelpIcon = () => {
-    showHelpModal.value = !showHelpModal.value;
-};
 </script>
 <template>
+    <Head title="マルチプレイ"></Head>
     <div>
         <template v-if="gameStatus === 'game_over'">
             <MultiPlayContinueModal
@@ -292,7 +289,7 @@ const clickHelpIcon = () => {
                         :magicLink="roomData.magicLink"
                         :clipBoard="clipBoard"
                     ></MagicLinkButton>
-                    <HelpIcon @clickHelpIcon="clickHelpIcon" />
+                    <HelpIcon @clickHelpIcon="() => !showHelpModal" />
                     <HelpModal
                         :isShow="showHelpModal"
                         :closeFn="() => (showHelpModal = false)"

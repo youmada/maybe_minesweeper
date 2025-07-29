@@ -21,7 +21,7 @@ defineProps<{
             @click.stop
         >
             <div class="flex h-full flex-col overflow-y-scroll">
-                <h2 class="top-7 m-5 text-center text-3xl font-bold">
+                <h2 class="my-5 text-center text-3xl font-bold">
                     {{ tile }}
                 </h2>
                 <!-- スクロール可能なコンテンツ部分 -->

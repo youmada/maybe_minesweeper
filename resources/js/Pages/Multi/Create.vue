@@ -1,5 +1,9 @@
 <script setup lang="ts">
+import HelpIcon from '@/Components/HelpIcon.vue';
+import HelpModal from '@/Components/HelpModal.vue';
+import { roomCreateHelpContents } from '@/data';
 import { Head, useForm } from '@inertiajs/vue3';
+import { ref } from 'vue';
 
 const form = useForm({
     name: '',
@@ -9,6 +13,8 @@ const form = useForm({
     expireAt: 1,
     maxPlayer: 3,
 });
+
+const showHelpModal = ref(false);
 </script>
 
 <template>
@@ -43,7 +49,7 @@ const form = useForm({
                         <input
                             type="range"
                             min="10"
-                            max="25"
+                            max="20"
                             step="5"
                             class="range w-full"
                             v-model="form.boardWidth"
@@ -52,13 +58,11 @@ const form = useForm({
                             <span>|</span>
                             <span>|</span>
                             <span>|</span>
-                            <span>|</span>
                         </div>
                         <div class="mt-2 flex justify-between px-2.5 text-xs">
                             <span>10</span>
                             <span>15</span>
                             <span>20</span>
-                            <span>25</span>
                         </div>
                     </div>
 
@@ -72,7 +76,7 @@ const form = useForm({
                         <input
                             type="range"
                             min="10"
-                            max="25"
+                            max="20"
                             step="5"
                             class="range w-full"
                             v-model="form.boardHeight"
@@ -81,13 +85,11 @@ const form = useForm({
                             <span>|</span>
                             <span>|</span>
                             <span>|</span>
-                            <span>|</span>
                         </div>
                         <div class="mt-2 flex justify-between px-2.5 text-xs">
                             <span>10</span>
                             <span>15</span>
                             <span>20</span>
-                            <span>25</span>
                         </div>
                     </div>
 
@@ -157,4 +159,16 @@ const form = useForm({
             </div>
         </div>
     </div>
+    <div class="fixed bottom-5 right-5">
+        <HelpIcon
+            size="size-10"
+            @clickHelpIcon="() => (showHelpModal = true)"
+        />
+    </div>
+    <HelpModal
+        :isShow="showHelpModal"
+        :closeFn="() => (showHelpModal = false)"
+        tile="遊びかた"
+        :qaContents="roomCreateHelpContents"
+    />
 </template>
