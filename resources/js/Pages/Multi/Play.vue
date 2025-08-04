@@ -235,12 +235,11 @@ const gameStatus = computed(() => {
                         </div>
                         <PrimaryButton
                             class="h-1/2"
-                            :class="{
-                                'bg-orange-500 text-white hover:bg-orange-300':
-                                    isFlagMode,
-                                'bg-gray-300 text-gray-500 hover:bg-gray-100':
-                                    !isFlagMode,
-                            }"
+                            :class="[
+                                isFlagMode
+                                    ? 'bg-orange-500 text-white'
+                                    : 'bg-gray-300 text-gray-500',
+                            ]"
                             :clickFn="() => toggleFlagMode()"
                         >
                             <svg
