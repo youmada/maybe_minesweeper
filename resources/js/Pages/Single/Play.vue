@@ -6,7 +6,7 @@ import { useElementObserver } from '@/Composables/useElementObserver';
 import { useGameStore } from '@/stores/gameStore';
 import { useSaveDataStore } from '@/stores/singlePlayData';
 import { Head, router } from '@inertiajs/vue3';
-import { computed, onMounted, ref } from 'vue';
+import { computed, onMounted, onUnmounted, ref } from 'vue';
 
 interface modeInfo {
     modeName: string;
@@ -68,7 +68,16 @@ function restartGame() {
     gameStore.initiaraize(gameStore.width, gameStore.height);
 }
 
+const handleKeyup = (e: KeyboardEvent) => {
+    if (!gameStore.isGameStarted) return;
+    if (e.key === 'f') {
+        e.preventDefault();
+        gameStore.toggleFlagMode();
+    }
+};
+
 onMounted(() => {
+    window.addEventListener('keyup', handleKeyup);
     // セーブデータがある場合はロードする
     saveDataStore.loadSaveData();
 
@@ -101,6 +110,10 @@ onMounted(() => {
     }
     // 初期化完了
     isInitialized.value = true;
+});
+
+onUnmounted(() => {
+    window.addEventListener('keydown', handleKeydown);
 });
 
 const currentLevel = (level: string) => {
