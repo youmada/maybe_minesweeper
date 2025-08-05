@@ -1,16 +1,71 @@
 <script setup lang="ts">
-import Board from '@/Components/Board.vue';
+import ModalWindow from '@/Components/ModalWindow.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
+import BoardTile from '@/Components/Tile.vue';
+import { useElementObserver } from '@/Composables/useElementObserver';
 import { useGameStore } from '@/stores/gameStore';
 import { useSaveDataStore } from '@/stores/singlePlayData';
 import { Head, router } from '@inertiajs/vue3';
-import { onMounted, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 
 interface modeInfo {
     modeName: string;
     boardWidth: number;
     boardHeight: number;
     totalMine: number;
+}
+
+const observerTarget = ref<HTMLElement | null>(null);
+const { isVisible } = useElementObserver(observerTarget);
+const props = defineProps<{ level?: string }>();
+const isError = ref(false);
+const isInitialized = ref(false);
+const saveDataStore = useSaveDataStore();
+const modes: { [name: string]: modeInfo } = {
+    easy: {
+        modeName: 'いーじー',
+        boardWidth: 10,
+        boardHeight: 10,
+        totalMine: 20,
+    },
+    normal: {
+        modeName: 'のーまる',
+        boardWidth: 17,
+        boardHeight: 15,
+        totalMine: 32,
+    },
+    hard: {
+        modeName: 'はーど',
+        boardWidth: 20,
+        boardHeight: 30,
+        totalMine: 100,
+    },
+};
+
+const gameStore = useGameStore();
+const restOpenTiles = computed(() => {
+    return gameStore.closedTilesCountWithoutMine;
+});
+
+function restartGame() {
+    // クエリパラメータから現在のレベルを取得
+    const params = new URLSearchParams(window.location.search);
+    const currentLevel = params.get('level');
+
+    // クエリパラメータが continue の場合は前回のレベルを取得して遷移
+    if (currentLevel === 'continue') {
+        const saveDataStore = useSaveDataStore();
+        const previouseLevel = saveDataStore.getSaveData?.previousGameMode;
+        if (previouseLevel) {
+            router.visit(`/single/play?level=${previouseLevel}`);
+            return;
+        } else {
+            // セーブデータがない場合は難易度選択画面に遷移
+            router.visit('/single/play?level=invalid');
+            return;
+        }
+    }
+    gameStore.initiaraize(gameStore.width, gameStore.height);
 }
 
 onMounted(() => {
@@ -48,33 +103,6 @@ onMounted(() => {
     isInitialized.value = true;
 });
 
-const gameStore = useGameStore();
-
-const props = defineProps<{ level?: string }>();
-const isError = ref(false);
-const isInitialized = ref(false);
-const saveDataStore = useSaveDataStore();
-const modes: { [name: string]: modeInfo } = {
-    easy: {
-        modeName: 'いーじー',
-        boardWidth: 10,
-        boardHeight: 10,
-        totalMine: 20,
-    },
-    normal: {
-        modeName: 'のーまる',
-        boardWidth: 17,
-        boardHeight: 15,
-        totalMine: 32,
-    },
-    hard: {
-        modeName: 'はーど',
-        boardWidth: 20,
-        boardHeight: 30,
-        totalMine: 100,
-    },
-};
-
 const currentLevel = (level: string) => {
     if (!modes[level]) {
         isError.value = true; // エラーフラグを立てる
@@ -110,7 +138,75 @@ const modeName = currentLevel(props.level?.toString() || '')?.modeName;
                         {{ modeName }}
                     </h1>
                 </div>
-                <Board></Board>
+                <div class="w-full">
+                    <!-- 監視用の透明なダミー -->
+                    <div ref="observerTarget" class="h-1"></div>
+
+                    <div
+                        v-if="gameStore.isGameStarted"
+                        class="rounded-2xl border-2 border-gray-500"
+                        :class="
+                            isVisible
+                                ? 'm-5 mx-auto flex w-fit p-5'
+                                : 'fixed bottom-10 left-5'
+                        "
+                    >
+                        <div class="m-2 mr-4 flex justify-around">
+                            <p class="inline text-center text-2xl font-bold">
+                                <span> 残りタイル数 </span>
+                                <span>{{ restOpenTiles }}</span>
+                            </p>
+                        </div>
+                        <PrimaryButton
+                            class="flex justify-center"
+                            :class="{
+                                'm-3 w-[90%]': !isVisible,
+                                'bg-orange-400': gameStore.isFlagMode,
+                                'text-white': gameStore.isFlagMode,
+                                'hover:bg-orange-400': gameStore.isFlagMode,
+                            }"
+                            :clickFn="() => gameStore.toggleFlagMode()"
+                        >
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke-width="1.5"
+                                stroke="currentColor"
+                                class="size-6"
+                            >
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    d="M3 3v1.5M3 21v-6m0 0 2.77-.693a9 9 0 0 1 6.208.682l.108.054a9 9 0 0 0 6.086.71l3.114-.732a48.524 48.524 0 0 1-.005-10.499l-3.11.732a9 9 0 0 1-6.085-.711l-.108-.054a9 9 0 0 0-6.208-.682L3 4.5M3 15V4.5"
+                                />
+                            </svg>
+                        </PrimaryButton>
+                    </div>
+                    <div class="m-auto flex w-fit flex-col">
+                        <div
+                            class="flex w-fit"
+                            v-for="(verticalTile, y) in gameStore.board"
+                            :key="`row-${y}`"
+                        >
+                            <div
+                                v-for="(tile, x) in verticalTile"
+                                :key="`col-${x}`"
+                            >
+                                <BoardTile
+                                    @click="
+                                        () =>
+                                            gameStore.handleClickTile(
+                                                tile.x,
+                                                tile.y,
+                                            )
+                                    "
+                                    :tile="tile"
+                                ></BoardTile>
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 <div class="p-7 text-center">
                     <template v-if="gameStore.isGameStarted">
                         <PrimaryButton class="m-5" :click-fn="onSaveData"
@@ -138,4 +234,32 @@ const modeName = currentLevel(props.level?.toString() || '')?.modeName;
             </div>
         </template>
     </div>
+
+    <!-- モーダルエリア -->
+    <ModalWindow
+        v-if="gameStore.isGameClear"
+        modalTile="ゲームクリアおめでとう！！"
+        color="#0059ff"
+    >
+        <PrimaryButton :class="'my-5 w-auto'" :clickFn="() => restartGame()"
+            >もう一度プレイ
+        </PrimaryButton>
+        <PrimaryButton
+            :class="'my-5 w-auto'"
+            :clickFn="() => router.visit('/single')"
+            >難易度をえらぶ
+        </PrimaryButton>
+        <PrimaryButton :class="'my-5 w-auto'" :clickFn="() => router.visit('/')"
+            >タイトルに戻る
+        </PrimaryButton>
+    </ModalWindow>
+    <ModalWindow
+        v-if="gameStore.isGameOver"
+        modalTile="ゲームオーバー"
+        color="red"
+    >
+        <PrimaryButton :clickFn="() => restartGame()"
+            >もう一度プレイ！
+        </PrimaryButton>
+    </ModalWindow>
 </template>

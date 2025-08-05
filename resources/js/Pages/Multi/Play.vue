@@ -7,6 +7,7 @@ import MultiPlayStandbyModal from '@/Components/MultiPlayStandbyModal.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import Tile from '@/Components/Tile.vue';
 import TurnOrderPlate from '@/Components/TurnOrderPlate.vue';
+import { useElementObserver } from '@/Composables/useElementObserver';
 import { useGameStateChannel } from '@/Composables/useGameStateChannel';
 import { useMinesweeper } from '@/Composables/useMInesweeper';
 import { useRoomChannel } from '@/Composables/useRoomChannel';
@@ -34,9 +35,11 @@ const roomData = reactive(props.data.room);
 const gameData = reactive(props.data.game);
 const isFlagMode = ref(false);
 const showHelpModal = ref(false);
+const observerTarget = ref<HTMLElement | null>(null);
 let isFirstClicking = false;
 let heartBeat: ReturnType<typeof setInterval>;
 
+const { isVisible } = useElementObserver(observerTarget);
 const { popUpToast } = useToastStore();
 const { roomPlayers, leaveChannel, changeCurrentPlayer } = useRoomChannel(
     roomData.publicId,
@@ -209,11 +212,18 @@ const gameStatus = computed(() => {
     <template
         v-if="roomData.status === 'standby' || roomData.status === 'playing'"
     >
-        <div>
-            <div class="w-full">
+        <div class="h-[110vh] w-full pb-20">
+            <div>
+                <div ref="observerTarget" class="h-1"></div>
+                <!-- 監視用の透明なダミー -->
                 <div
                     v-if="gameData.isGameStarted"
-                    class="m-5 mx-auto flex w-fit rounded-2xl border-2 border-gray-500 p-5"
+                    class="w-fit rounded-2xl border-2 border-gray-500"
+                    :class="
+                        isVisible
+                            ? 'm-5 mx-auto flex p-5'
+                            : 'fixed bottom-10 left-5 p-1'
+                    "
                 >
                     <div class="m-2 flex justify-around">
                         <p
@@ -223,7 +233,12 @@ const gameStatus = computed(() => {
                             <span class="ml-2">{{ restTiles }}</span>
                         </p>
                     </div>
-                    <div class="m-3 flex flex-col items-center">
+                    <div
+                        :class="
+                            isVisible ? 'flex-col' : 'flex-row justify-around'
+                        "
+                        class="m-3 flex items-center"
+                    >
                         <div class="mb-1 flex text-lg font-bold">
                             <span>{{
                                 roomData.turnActionState.flagCount
@@ -259,6 +274,8 @@ const gameStatus = computed(() => {
                         </PrimaryButton>
                     </div>
                 </div>
+
+                <!--        ボード本体         -->
                 <div class="m-auto flex w-fit flex-col">
                     <div
                         class="flex w-fit"
