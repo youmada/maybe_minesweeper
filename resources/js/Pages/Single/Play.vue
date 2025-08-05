@@ -6,7 +6,7 @@ import { useElementObserver } from '@/Composables/useElementObserver';
 import { useGameStore } from '@/stores/gameStore';
 import { useSaveDataStore } from '@/stores/singlePlayData';
 import { Head, router } from '@inertiajs/vue3';
-import { computed, onMounted, onUnmounted, ref } from 'vue';
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 
 interface modeInfo {
     modeName: string;
@@ -15,6 +15,7 @@ interface modeInfo {
     totalMine: number;
 }
 
+const isModalVisible = ref(false);
 const observerTarget = ref<HTMLElement | null>(null);
 const { isVisible } = useElementObserver(observerTarget);
 const props = defineProps<{ level?: string }>();
@@ -113,7 +114,7 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
-    window.addEventListener('keydown', handleKeydown);
+    window.addEventListener('keydown', handleKeyup);
 });
 
 const currentLevel = (level: string) => {
@@ -140,6 +141,16 @@ function onSaveData() {
 }
 
 const modeName = currentLevel(props.level?.toString() || '')?.modeName;
+
+// 答え合わせの時にモーダルを閉じるために使う。
+watch(
+    () => gameStore.isGameOver,
+    (newValue) => {
+        if (newValue) {
+            isModalVisible.value = true;
+        }
+    },
+);
 </script>
 <template>
     <Head title="シングルプレイ" />
@@ -226,6 +237,13 @@ const modeName = currentLevel(props.level?.toString() || '')?.modeName;
                             >ボードをセーブする
                         </PrimaryButton>
                     </template>
+                    <template v-if="!isModalVisible && gameStore.isGameOver">
+                        <PrimaryButton
+                            class="m-5"
+                            :click-fn="() => (isModalVisible = true)"
+                            >次のゲームを開始する
+                        </PrimaryButton>
+                    </template>
                     <PrimaryButton class="m-5" :click-fn="returnToHome"
                         >ホームに戻る
                     </PrimaryButton>
@@ -267,12 +285,17 @@ const modeName = currentLevel(props.level?.toString() || '')?.modeName;
         </PrimaryButton>
     </ModalWindow>
     <ModalWindow
-        v-if="gameStore.isGameOver"
+        v-if="isModalVisible && gameStore.isGameOver"
         modalTile="ゲームオーバー"
         color="red"
     >
-        <PrimaryButton :clickFn="() => restartGame()"
+        <PrimaryButton :clickFn="() => restartGame()" class="m-4 w-60"
             >もう一度プレイ！
+        </PrimaryButton>
+        <PrimaryButton
+            :clickFn="() => (isModalVisible = false)"
+            class="m-4 w-60"
+            >答えを見る！
         </PrimaryButton>
     </ModalWindow>
 </template>
