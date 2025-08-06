@@ -96,6 +96,7 @@ class RoomRepository implements RoomRepositoryInterface
             Room::where('id', $roomId)->update($this->getMappedRoom($roomData));
             RoomState::where('room_id', $roomId)->update($this->getMappedRoomState($roomStateData, $roomId));
 
+            // TODO: ルームのデータ更新とプレイヤーに紐付ける処理が混在しているので、プライベートメソッドとして、切り出す。
             // ルームにプレイヤーを紐付ける
             $existingPlayers = $room->players()->pluck('players.public_id')->toArray();
             foreach ($addPlayerIds as $playerId) {

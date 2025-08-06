@@ -1,5 +1,5 @@
 flowchart TB
-    subgraph "クライアントサイド"
+    subgraph "フロントエンド"
         direction TB
         Browser["ブラウザ 🌐"]
 
@@ -13,20 +13,20 @@ flowchart TB
 
         Browser --> SinglePlayer & MultiPlayer
         SinglePlayer & MultiPlayer --> GameBoard
-        SinglePlayer & MultiPlayer <--> PiniaStore
+        SinglePlayer <--> PiniaStore
     end
 
-    subgraph "サーバーサイド"
+    subgraph "バックエンド"
         direction TB
 
         subgraph "Controller層"
-            MineController["MinesweeperController\n- リクエスト処理\n- レスポンス生成"]
-            MultiController["MultiplayerController\n- ルーム管理\n- プレイヤー参加処理"]
+            MineController["MinesweeperController\n- リクエスト処理\n- ゲーム情報更新処理\n- レスポンス生成"]
+            MultiController["MultiplayerController\n- ルーム管理\n- プレイヤー参加処理\n- レスポンス生成"]
         end
 
         subgraph "Service層"
-            MineService["MinesweeperService\n- ゲーム状態管理\n- セッション処理"]
-            MultiService["MultiplayerService\n- ルーム状態管理\n- ターン処理"]
+            MineService["MinesweeperService\n- ゲーム状態管理"]
+            MultiService["MultiplayerService\n- ルーム状態管理\n- ターン処理\n- セッション管理"]
         end
 
         subgraph "Domain層"
@@ -36,35 +36,21 @@ flowchart TB
         end
 
         subgraph "Repository層"
-            RoomRepo["RoomRepository\n- ルームCRUD操作\n- 参加者管理"]
-            MinesweeperRepo["MinesweeperRepository\n- ボードCRUD操作"]
+            RoomRepo["RoomCompositeRepository\n- ルームCRUD操作\n- 参加者管理"]
+            MinesweeperRepo["MinesweeperCompositeRepository\n- ボードCRUD操作"]
         end
 
         subgraph "Data層"
             DB[("データベース\n(MySQL)")]
             Cache[("キャッシュ\n(Redis)")]
-            Session[("セッション\nストレージ")]
         end
 
         subgraph "WebSocket"
             Echo["Laravel Echo\n(リアルタイム通信)"]
+            Reverb["laravel reverb\n(webSocketサーバ)"]
         end
     end
 
-    subgraph "デプロイ環境 (Digital Ocean)"
-        direction TB
-        Droplet["Droplet\n(仮想サーバー)"]
-
-        subgraph "インフラ構成"
-            WebServer["Nginx\nWebサーバー"]
-            AppServer["PHP-FPM\nアプリケーションサーバー"]
-            DBServer["MySQL\nデータベースサーバー"]
-            Redis["Redis\nキャッシュ/WebSocket"]
-            Queue["Laravel Queue\n(非同期処理)"]
-        end
-
-        Droplet --> WebServer & AppServer & DBServer & Redis & Queue
-    end
 
 %% 接続関係
     Browser <--> MineController & MultiController
@@ -77,11 +63,10 @@ flowchart TB
     MultiService --> RoomRepo
     GameService --> Tile & Board
     RoomRepo --> DB
+    MinesweeperRepo --> DB
     RoomRepo --> Cache
     MinesweeperRepo --> Cache
-    MineService --> Session
     MultiService --> Cache
-    Echo <--> Redis
 %% クラススタイル
     classDef client fill: #dbeafe, stroke: #3b82f6, stroke-width: 2px, color: #1e3a8a
     classDef controller fill: #bbf7d0, stroke: #22c55e, stroke-width: 2px, color: #166534
@@ -89,11 +74,9 @@ flowchart TB
     classDef domain fill: #fecaca, stroke: #ef4444, stroke-width: 2px, color: #991b1b
     classDef repository fill: #e9d5ff, stroke: #a855f7, stroke-width: 2px, color: #6b21a8
     classDef data fill: #e5e7eb, stroke: #6b7280, stroke-width: 2px, color: #1f2937
-    classDef infra fill: #fce7f3, stroke: #ec4899, stroke-width: 2px, color: #831843
     class Browser,SinglePlayer,MultiPlayer,GameBoard,PiniaStore client
     class MineController,MultiController controller
-    class MineService,MultiService,Echo service
+    class MineService,MultiService,Echo,Reverb service
     class GameService,Tile,Board domain
     class RoomRepo,MinesweeperRepo repository
     class DB,Cache,Session data
-    class Droplet,WebServer,AppServer,DBServer,Redis,Queue infra

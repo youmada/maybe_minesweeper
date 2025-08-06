@@ -7,6 +7,7 @@ import MultiPlayStandbyModal from '@/Components/MultiPlayStandbyModal.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import Tile from '@/Components/Tile.vue';
 import TurnOrderPlate from '@/Components/TurnOrderPlate.vue';
+import { useElementObserver } from '@/Composables/useElementObserver';
 import { useGameStateChannel } from '@/Composables/useGameStateChannel';
 import { useMinesweeper } from '@/Composables/useMInesweeper';
 import { useRoomChannel } from '@/Composables/useRoomChannel';
@@ -34,9 +35,11 @@ const roomData = reactive(props.data.room);
 const gameData = reactive(props.data.game);
 const isFlagMode = ref(false);
 const showHelpModal = ref(false);
+const observerTarget = ref<HTMLElement | null>(null);
 let isFirstClicking = false;
 let heartBeat: ReturnType<typeof setInterval>;
 
+const { isVisible } = useElementObserver(observerTarget);
 const { popUpToast } = useToastStore();
 const { roomPlayers, leaveChannel, changeCurrentPlayer } = useRoomChannel(
     roomData.publicId,
@@ -57,7 +60,16 @@ const restTiles = computed(() => {
     return totalTiles - gameData.visitedTiles;
 });
 
+const handleKeyup = (e: KeyboardEvent) => {
+    if (roomData.status !== 'playing') return;
+    if (e.key === 'f') {
+        e.preventDefault();
+        isFlagMode.value = !isFlagMode.value;
+    }
+};
+
 onMounted(async () => {
+    window.addEventListener('keyup', handleKeyup);
     settingMultiPlay(roomData.publicId);
     useGameStateChannel(roomData.publicId, gameData);
     heartBeat = setInterval(() => {
@@ -68,6 +80,7 @@ onMounted(async () => {
     }, 10000); // 10秒ごと
 });
 onUnmounted(() => {
+    window.addEventListener('keyup', handleKeyup);
     leaveChannel(true);
     clearInterval(heartBeat);
 });
@@ -209,71 +222,92 @@ const gameStatus = computed(() => {
     <template
         v-if="roomData.status === 'standby' || roomData.status === 'playing'"
     >
-        <div>
-            <div class="w-full">
-                <div
-                    v-if="gameData.isGameStarted"
-                    class="m-5 mx-auto flex w-fit rounded-2xl border-2 border-gray-500 p-5"
-                >
-                    <div class="m-2 flex justify-around">
-                        <p
-                            class="flex items-center text-center text-2xl font-bold"
-                        >
-                            <span> 残りタイル数 </span>
-                            <span class="ml-2">{{ restTiles }}</span>
-                        </p>
-                    </div>
-                    <div class="m-3 flex flex-col items-center">
-                        <div class="mb-1 flex text-lg font-bold">
-                            <span>{{
-                                roomData.turnActionState.flagCount
-                            }}</span>
-                            <span>/</span>
-                            <span>{{
-                                roomData.turnActionState.flagLimit
-                            }}</span>
-                        </div>
-                        <PrimaryButton
-                            class="h-1/2"
-                            :class="{
-                                'bg-orange-500 text-white hover:bg-orange-300':
-                                    isFlagMode,
-                                'bg-gray-300 text-gray-500 hover:bg-gray-100':
-                                    !isFlagMode,
-                            }"
-                            :clickFn="() => toggleFlagMode()"
-                        >
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke-width="1.5"
-                                stroke="currentColor"
-                                class="size-6"
-                            >
-                                <path
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    d="M3 3v1.5M3 21v-6m0 0 2.77-.693a9 9 0 0 1 6.208.682l.108.054a9 9 0 0 0 6.086.71l3.114-.732a48.524 48.524 0 0 1-.005-10.499l-3.11.732a9 9 0 0 1-6.085-.711l-.108-.054a9 9 0 0 0-6.208-.682L3 4.5M3 15V4.5"
-                                />
-                            </svg>
-                        </PrimaryButton>
-                    </div>
-                </div>
-                <div class="m-auto flex w-fit flex-col">
+        <div class="h-[110vh] w-full">
+            <div class="flex justify-center">
+                <div class="m-auto">
+                    <div ref="observerTarget" class="h-1"></div>
+                    <!-- 監視用の透明なダミー -->
                     <div
-                        class="flex w-fit"
-                        v-for="(verticalTile, rowIndex) in gameData.tileStates"
-                        :key="`row-${rowIndex}`"
+                        v-if="gameData.isGameStarted"
+                        class="w-fit rounded-2xl border-2 border-gray-500"
+                        :class="
+                            isVisible
+                                ? 'm-5 mx-auto flex p-5'
+                                : 'fixed bottom-10 left-5 p-1'
+                        "
                     >
+                        <div class="m-2 flex justify-around">
+                            <p
+                                class="flex items-center text-center text-2xl font-bold"
+                            >
+                                <span> 残りタイル数 </span>
+                                <span class="ml-2">{{ restTiles }}</span>
+                            </p>
+                        </div>
                         <div
-                            v-for="(tile, colIndex) in verticalTile"
-                            :key="`col-${colIndex}`"
+                            :class="
+                                isVisible
+                                    ? 'flex-col'
+                                    : 'flex-row justify-around'
+                            "
+                            class="m-3 flex items-center"
                         >
-                            <Tile
-                                @click="() => handleClickTile(tile.x, tile.y)"
-                                :tile="tile"
-                            ></Tile>
+                            <div class="mb-1 flex text-lg font-bold">
+                                <span>{{
+                                    roomData.turnActionState.flagCount
+                                }}</span>
+                                <span>/</span>
+                                <span>{{
+                                    roomData.turnActionState.flagLimit
+                                }}</span>
+                            </div>
+                            <PrimaryButton
+                                class="h-1/2"
+                                :class="[
+                                    isFlagMode
+                                        ? 'bg-orange-500 text-white'
+                                        : 'bg-gray-300 text-gray-500',
+                                ]"
+                                :clickFn="() => toggleFlagMode()"
+                            >
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    stroke-width="1.5"
+                                    stroke="currentColor"
+                                    class="size-6"
+                                >
+                                    <path
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        d="M3 3v1.5M3 21v-6m0 0 2.77-.693a9 9 0 0 1 6.208.682l.108.054a9 9 0 0 0 6.086.71l3.114-.732a48.524 48.524 0 0 1-.005-10.499l-3.11.732a9 9 0 0 1-6.085-.711l-.108-.054a9 9 0 0 0-6.208-.682L3 4.5M3 15V4.5"
+                                    />
+                                </svg>
+                            </PrimaryButton>
+                        </div>
+                    </div>
+
+                    <!--        ボード本体         -->
+                    <div class="m-auto flex w-fit flex-col">
+                        <div
+                            class="flex w-fit"
+                            v-for="(
+                                verticalTile, rowIndex
+                            ) in gameData.tileStates"
+                            :key="`row-${rowIndex}`"
+                        >
+                            <div
+                                v-for="(tile, colIndex) in verticalTile"
+                                :key="`col-${colIndex}`"
+                            >
+                                <Tile
+                                    @click="
+                                        () => handleClickTile(tile.x, tile.y)
+                                    "
+                                    :tile="tile"
+                                ></Tile>
+                            </div>
                         </div>
                     </div>
                 </div>

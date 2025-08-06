@@ -13,7 +13,7 @@ import { Link } from '@inertiajs/vue3';
             </Link>
         </div>
         <div
-            class="relative flex min-h-screen flex-col items-center justify-center pt-16 selection:text-white"
+            class="relative flex min-h-screen flex-col items-center justify-center pt-16"
         >
             <slot></slot>
         </div>
