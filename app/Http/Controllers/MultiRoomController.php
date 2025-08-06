@@ -55,6 +55,13 @@ class MultiRoomController extends Controller
             'mineRatio' => ['required', 'integer', 'min:10', 'max:40'],
             'expireAt' => ['required', 'integer', 'in:1,7,14'],
             'maxPlayer' => ['required', 'integer', 'min:2', 'max:6'],
+        ], [], [
+            'name' => 'ルーム名',
+            'boardWidth' => 'ボードの横幅',
+            'boardHeight' => 'ボードの縦幅',
+            'mineRatio' => '地雷の割合',
+            'expireAt' => '有効期限',
+            'maxPlayer' => '最大参加人数',
         ]);
 
         $ownerId = Player::getPlayerIdentifier();
