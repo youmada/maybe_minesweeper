@@ -2,6 +2,7 @@
 import HelpIcon from '@/Components/HelpIcon.vue';
 import HelpModal from '@/Components/HelpModal.vue';
 import { roomCreateHelpContents } from '@/data';
+import useToastStore from '@/stores/notificationToast';
 import { Head, useForm } from '@inertiajs/vue3';
 import { ref } from 'vue';
 
@@ -13,8 +14,9 @@ const form = useForm({
     expireAt: 1,
     maxPlayer: 3,
 });
-
 const showHelpModal = ref(false);
+
+const { popUpToast } = useToastStore();
 </script>
 
 <template>
@@ -26,11 +28,21 @@ const showHelpModal = ref(false);
         <div class="card w-full max-w-lg bg-base-100 shadow-xl">
             <div class="card-body text-base">
                 <form
-                    @submit.prevent="form.post('/multi/rooms')"
+                    @submit.prevent="
+                        form.post('/multi/rooms', {
+                            onError: () => {
+                                Object.entries(form.errors).forEach(
+                                    ([, message]) => {
+                                        popUpToast(message, 'error');
+                                    },
+                                );
+                            },
+                        })
+                    "
                     class="mt-6 space-y-6"
                     :disabled="form.processing"
                 >
-                    <!-- ルーム名 -->
+                    <!--       ルーム名 -->
                     <input
                         name="name"
                         type="text"
@@ -39,7 +51,7 @@ const showHelpModal = ref(false);
                         v-model="form.name"
                         required
                     />
-                    <!-- ボード幅 -->
+                    <!--     ボード幅-->
                     <div>
                         <label class="label w-full text-center">
                             <span class="m-auto font-medium"
@@ -151,7 +163,11 @@ const showHelpModal = ref(false);
                     </div>
 
                     <div class="mt-8 flex flex-col gap-4 sm:flex-row">
-                        <button type="submit" class="btn btn-outline mx-auto">
+                        <button
+                            type="submit"
+                            class="btn btn-outline mx-auto"
+                            :disabled="form.processing"
+                        >
                             ルームを作成する
                         </button>
                     </div>

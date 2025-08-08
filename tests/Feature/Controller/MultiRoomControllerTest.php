@@ -86,3 +86,34 @@ it("should create a room from user's request data.", function () {
 
     $response->assertRedirect('/multi/rooms/'.$room->public_id.'/join'.'?token='.$room->magic_link_token);
 });
+
+it("should not create a room from user's request data. because of invalid request data.", function (
+    $name,
+    $boardWidth,
+    $boardHeight,
+    $mineRatio,
+    $expireAt,
+    $maxPlayer,
+) {
+    $response = $this->withHeader('referer', '/multi/rooms')->withSession(['public_id' => $this->playerId])->post('/multi/rooms', [
+        'name' => $name,
+        'boardWidth' => $boardWidth,
+        'boardHeight' => $boardHeight,
+        'mineRatio' => $mineRatio,
+        'expireAt' => $expireAt,
+        'maxPlayer' => $maxPlayer,
+    ]);
+    $response->assertRedirect('/multi/rooms');
+    $response->assertSessionHasErrors([
+        'name',
+        'boardWidth',
+        'boardHeight',
+        'mineRatio',
+        'expireAt',
+        'maxPlayer',
+    ]);
+})->with([
+    // name, width, height, mineRatio, maxPlayer, expireAt
+    'invalid case. Boundary value Lower limit' => ['', 0, 0, 0, 0, 0],
+    'invalid case. Boundary value upper limit' => ['', 21, 21, 41, 15, 7],
+]);

@@ -3,6 +3,7 @@
 use App\Exceptions\RoomException;
 use App\Factories\RoomAggregateFactory;
 use App\Models\Player;
+use App\Models\Room;
 use App\Repositories\DB\RoomRepository;
 use Illuminate\Support\Carbon;
 
@@ -117,6 +118,34 @@ it('can update room data in DB', function () {
             'public_id' => 'user1',
         ]
     );
+});
+
+it('should set a null value at room table waiting_at column, when player is joining a room', function () {
+    // 準備
+    $this->freezeTime();
+    $now = Carbon::now()->toDateTimeString();
+    $roomId = $this->roomRepository->create($this->roomAggregate);
+    $room = Room::find($roomId);
+    $room->update(['waiting_at' => $now, 'backup_at' => $now]);
+    $room->refresh();
+
+    $this->assertDatabaseHas('rooms', [
+        'id' => $roomId,
+        'waiting_at' => $now,
+        'backup_at' => $now,
+    ]);
+    $this->roomAggregate->startRoom();
+    $this->roomAggregate->join('user1');
+
+    // 実行
+    $this->roomRepository->update($this->roomAggregate, $roomId);
+
+    // アサート
+    $this->assertDatabaseHas('rooms', [
+        'id' => $roomId,
+        'waiting_at' => null,
+        'backup_at' => null,
+    ]);
 });
 
 it('can not update room data in DB.  because of room id is not found', function () {

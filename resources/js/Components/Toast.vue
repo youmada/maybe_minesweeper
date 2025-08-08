@@ -12,7 +12,7 @@ const { toasts } = storeToRefs(toastStore);
             v-for="toast in toasts"
             :key="toast.id"
             role="alert"
-            :class="`alert alert-${toast.type}`"
+            :class="['alert', `alert-${toast.type.toLowerCase()}`]"
         >
             <span class="text-base font-bold text-white">{{
                 toast.message

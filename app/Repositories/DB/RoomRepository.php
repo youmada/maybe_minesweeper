@@ -111,6 +111,8 @@ class RoomRepository implements RoomRepositoryInterface
                     'joined_at' => now()->format('Y-m-d H:i:s'),
                     'last_exists_at' => now(),
                 ]);
+                // プレイヤーが参加した場合にのみ、waiting_atとbackup_atをリセットする
+                $room->update(['waiting_at' => null, 'backup_at' => null]);
             }
             // room_usersテーブル
         } catch (RoomException $e) {
