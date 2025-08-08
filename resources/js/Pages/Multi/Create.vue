@@ -32,7 +32,7 @@ const { popUpToast } = useToastStore();
                         form.post('/multi/rooms', {
                             onError: () => {
                                 Object.entries(form.errors).forEach(
-                                    ([key, message]) => {
+                                    ([, message]) => {
                                         popUpToast(message, 'error');
                                     },
                                 );
