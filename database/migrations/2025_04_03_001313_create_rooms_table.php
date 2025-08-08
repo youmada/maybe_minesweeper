@@ -20,7 +20,8 @@ return new class extends Migration
             $table->string('magic_link_token')->unique()->index();
             $table->integer('max_player')->comment('ルーム最大参加人数');
             $table->boolean('is_private')->default(true);
-            $table->timestamp('last_activity_at')->nullable()->index();
+            $table->timestamp('waiting_at')->nullable()->index()->comment('最後のプレイヤーがルームから退出した時のタイムスタンプ');
+            $table->timestamp('backup_at')->nullable()->index()->comment('ルームとゲームデータをredisからDBに退避時のタイムスタンプ');
             $table->date('expire_at')->default(now()->addWeek())->comment('ルーム有効期限。デフォルトでは1週間');
             $table->timestamps();
         });

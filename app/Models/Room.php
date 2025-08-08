@@ -38,6 +38,8 @@ class Room extends Model
         'magic_link_token',
         'is_private',
         'expire_at',
+        'waiting_at',
+        'backup_at',
     ];
 
     protected $hidden = [
