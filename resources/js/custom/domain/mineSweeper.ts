@@ -67,21 +67,40 @@ export function setMines(
         excludeTiles.add(`${tile.x},${tile.y}`);
     });
 
-    let minesToPlace = numOfMine;
-    while (minesToPlace > 0) {
-        const rx = Math.floor(Math.random() * width);
-        const ry = Math.floor(Math.random() * height);
-        const key = `${rx},${ry}`;
-        if (excludeTiles.has(key)) continue; // 置けない場所
-        const tile = board[ry][rx];
-        if (tile.isMine) continue; // すでに地雷がある
+    const candidates = [];
+
+    // 配置可能な候補エリアを列挙
+    for (let y = 0; y < height; y++) {
+        for (let x = 0; x < width; x++) {
+            if (!excludeTiles.has(`${x},${y}`)) candidates.push({ x, y });
+        }
+    }
+
+    if (candidates.length < numOfMine) {
+        throw new Error(
+            '配置可能なタイル数が地雷数より少ないため、配置できません',
+        );
+    }
+
+    // 候補のエリア一覧をシャッフルする
+    for (let i = candidates.length - 1; i > 0; i--) {
+        // ランダムなインデックスを取得
+        const j = Math.floor(Math.random() * (i + 1));
+        // 要素を入れ替える
+        [candidates[i], candidates[j]] = [candidates[j], candidates[i]];
+    }
+
+    // シャッフルしたエリアに対して地雷数だけ取得する
+    const selectedTiles = candidates.slice(0, numOfMine);
+    // 取得したエリアに対して地雷をセットする。
+    selectedTiles.forEach(({ x, y }) => {
+        const tile = board[y][x];
         tile.isMine = true;
-        excludeTiles.add(key);
-        getAroundTiles(board, rx, ry).forEach((t) => {
+        // セットした地雷の周辺に対してgetAroundTilesを使う
+        getAroundTiles(board, x, y).forEach((t) => {
             t.adjacentMines++;
         });
-        minesToPlace--;
-    }
+    });
 }
 
 /**
