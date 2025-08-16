@@ -17,8 +17,8 @@ const computedText = computed(() => {
         class="tile align-center flex text-center text-lg font-bold"
         :class="{
             open: tile.isOpen,
-            mine: tile.isMine,
             flag: tile.isFlag,
+            mine: tile.isMine && tile.isOpen,
         }"
         >{{ computedText }}</span
     >
@@ -40,6 +40,7 @@ const computedText = computed(() => {
 
 .mine {
     text-align: center;
+    background: #ea5b6f;
 }
 
 .flag {

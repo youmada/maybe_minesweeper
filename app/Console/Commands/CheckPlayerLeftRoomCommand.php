@@ -6,6 +6,7 @@ use App\Events\RoomPlayerList;
 use App\Models\Player;
 use App\Models\Room;
 use App\Repositories\Composites\RoomCompositeRepository;
+use Carbon\Carbon;
 use DB;
 use Illuminate\Console\Command;
 
@@ -41,6 +42,11 @@ class CheckPlayerLeftRoomCommand extends Command
             Player::find($record->player_id)->rooms()->detach($record->room_id);
 
             $roomCompositeRepository->update($currentRoom, $record->room_id);
+
+            // ルームに誰も入っていない場合、ルームを待機モードにする。
+            if (empty($currentRoom->getPlayers())) {
+                Room::find($record->room_id)->update(['waiting_at' => Carbon::now()->toDateTimeString()]);
+            }
             // ターンステートがリセットされる可能性もあるので、イベントを発火させる
             RoomPlayerList::dispatch(Room::find($record->room_id));
         }

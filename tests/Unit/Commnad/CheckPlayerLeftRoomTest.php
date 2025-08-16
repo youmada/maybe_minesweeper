@@ -85,3 +85,44 @@ it('should advance turn automatically when current turn player disconnected to t
 
     expect($room->getCurrentOrder())->toBe($player2->public_id);
 });
+
+it('should set a room column waiting_at, when room last player is leaving', function () {
+    // 事前チェック
+    $this->assertDatabaseHas('rooms', [
+        'id' => $this->room->id,
+        'waiting_at' => null,
+    ]);
+    // 準備
+    $this->travel(30)->seconds();
+    // 実行
+
+    $this->artisan('check:player-left-room');
+
+    // アサート
+    $this->assertDatabaseCount('room_player', 0);
+
+    $this->assertDatabaseHas('rooms', [
+        'id' => $this->room->id,
+        'waiting_at' => now(),
+    ]);
+});
+
+it('should not set a room column waiting_at when player is leaving', function () {
+    $player2 = Player::factory()->create();
+
+    app(JoinRoomService::class)($this->room->id, $player2->public_id);
+
+    $room = app(RoomCompositeRepository::class)->get($this->room->id);
+
+    $this->travel(30)->seconds();
+
+    // player2だけ残す
+    $this->room->players()->updateExistingPivot($player2->id, ['left_at' => now()]);
+    // 実行
+    $this->artisan('check:player-left-room');
+
+    $this->assertDatabaseHas('rooms', [
+        'id' => $this->room->id,
+        'waiting_at' => null,
+    ]);
+});

@@ -134,6 +134,10 @@ export const useGameStore = defineStore('gameStore', {
             openTile(this.board, tile, this.visitedTiles);
 
             this.isGameOver = checkGameOver(tile);
+            // ゲームオーバー時にすべてのタイルを展開する。
+            if (this.isGameOver) {
+                openedAllTiles(this.board);
+            }
             this.isGameClear = checkGameClear(this.board, this.numOfMines);
         },
         // フラグのトグル
@@ -145,3 +149,13 @@ export const useGameStore = defineStore('gameStore', {
         },
     },
 });
+
+function openedAllTiles(board: Board) {
+    for (const row of board) {
+        for (const tile of row) {
+            if (!tile.isOpen) tile.isOpen = true;
+            if (tile.isFlag) tile.isFlag = false;
+        }
+    }
+    return board;
+}

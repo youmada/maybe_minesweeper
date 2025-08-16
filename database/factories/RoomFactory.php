@@ -23,7 +23,8 @@ class RoomFactory extends Factory
             'max_player' => 3,
             'is_private' => $this->faker->boolean(),
             'expire_at' => Carbon::now()->addDays(1),
-            'last_activity_at' => Carbon::now(),
+            'waiting_at' => null,
+            'backup_at' => null,
             'created_at' => Carbon::now(),
             'updated_at' => Carbon::now(),
         ];

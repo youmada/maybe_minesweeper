@@ -96,6 +96,7 @@ class RoomRepository implements RoomRepositoryInterface
             Room::where('id', $roomId)->update($this->getMappedRoom($roomData));
             RoomState::where('room_id', $roomId)->update($this->getMappedRoomState($roomStateData, $roomId));
 
+            // TODO: ルームのデータ更新とプレイヤーに紐付ける処理が混在しているので、プライベートメソッドとして、切り出す。
             // ルームにプレイヤーを紐付ける
             $existingPlayers = $room->players()->pluck('players.public_id')->toArray();
             foreach ($addPlayerIds as $playerId) {
@@ -110,6 +111,8 @@ class RoomRepository implements RoomRepositoryInterface
                     'joined_at' => now()->format('Y-m-d H:i:s'),
                     'last_exists_at' => now(),
                 ]);
+                // プレイヤーが参加した場合にのみ、waiting_atとbackup_atをリセットする
+                $room->update(['waiting_at' => null, 'backup_at' => null]);
             }
             // room_usersテーブル
         } catch (RoomException $e) {

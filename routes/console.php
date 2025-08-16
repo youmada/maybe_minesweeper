@@ -8,3 +8,4 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote')->hourly();
 
 Schedule::command('check:player-left-room')->everyFifteenSeconds();
+Schedule::command('backup:data-from-redis-to-db')->everyMinute();
