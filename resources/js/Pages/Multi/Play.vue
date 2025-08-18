@@ -222,8 +222,11 @@ const gameStatus = computed(() => {
     <template
         v-if="roomData.status === 'standby' || roomData.status === 'playing'"
     >
-        <div class="h-[110vh] w-full">
-            <div class="flex justify-center">
+        <div
+            class="w-full"
+            :class="roomData.status === 'playing' ? 'h-[110vh]' : 'h-auto'"
+        >
+            <div class="flex h-auto justify-center">
                 <div class="m-auto">
                     <div ref="observerTarget" class="h-1"></div>
                     <!-- 監視用の透明なダミー -->
