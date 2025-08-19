@@ -45,10 +45,10 @@ class RoomCompositeRepository implements RoomCompositesRepositoryInterface
     {
         // プレイ中は高速に Redis、終了時は DB へも upsert
         $this->redisRepo->update($roomAggregate, $roomId);
+        if ($roomAggregate->getRoomStatus() === RoomStatus::PLAYING->value) {
+            return;
+        }
         $this->dbRepo->update($roomAggregate, $roomId);
-        //        if ($roomAggregate->getRoomStatus() === RoomStatus::PLAYING->value) {
-        //            return;
-        //        }
     }
 
     /**
