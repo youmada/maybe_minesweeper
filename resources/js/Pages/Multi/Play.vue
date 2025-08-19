@@ -80,7 +80,7 @@ onMounted(async () => {
     }, 10000); // 10秒ごと
 });
 onUnmounted(() => {
-    window.addEventListener('keyup', handleKeyup);
+    window.removeEventListener('keyup', handleKeyup);
     leaveChannel(true);
     clearInterval(heartBeat);
 });
