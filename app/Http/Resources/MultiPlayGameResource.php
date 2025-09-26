@@ -29,12 +29,12 @@ class MultiPlayGameResource extends JsonResource
                 'maxPlayer' => $this->max_player,
                 'ownerId' => $this->owner_id,
                 'magicLink' => $this->magicLinkUrl,
-                'status' => $roomState->status,
-                'turnOrder' => $roomState->turn_order,
-                'currentPlayer' => $roomState->current_player,
+                'status' => $roomRepository->getRoomStatus(),
+                'turnOrder' => $roomRepository->getTurnOrder(),
+                'currentPlayer' => $roomRepository->getCurrentOrder(),
                 'turnActionState' => [
                     'flagCount' => $roomActionState['flagCount'],
-                    'flagLimit' => $roomState->flag_limit,
+                    'flagLimit' => $roomRepository->getRoomState()->getFlagLimit(),
                 ],
             ],
             'game' => [

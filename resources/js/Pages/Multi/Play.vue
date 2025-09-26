@@ -271,7 +271,7 @@ const gameStatus = computed(() => {
                                         ? 'bg-orange-500 text-white'
                                         : 'bg-gray-300 text-gray-500',
                                 ]"
-                                :clickFn="() => toggleFlagMode()"
+                                :clickFn="toggleFlagMode"
                             >
                                 <svg
                                     xmlns="http://www.w3.org/2000/svg"

@@ -232,7 +232,9 @@ watch(
                     </div>
                 </div>
                 <div class="p-7 text-center">
-                    <template v-if="gameStore.isGameStarted">
+                    <template
+                        v-if="gameStore.isGameStarted && !gameStore.isGameOver"
+                    >
                         <PrimaryButton class="m-5" :click-fn="onSaveData"
                             >ボードをセーブする
                         </PrimaryButton>

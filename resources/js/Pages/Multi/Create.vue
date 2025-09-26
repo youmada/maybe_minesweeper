@@ -4,7 +4,7 @@ import HelpModal from '@/Components/HelpModal.vue';
 import { roomCreateHelpContents } from '@/data';
 import useToastStore from '@/stores/notificationToast';
 import { Head, useForm } from '@inertiajs/vue3';
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
 
 const form = useForm({
     name: '',
@@ -17,6 +17,13 @@ const form = useForm({
 const showHelpModal = ref(false);
 
 const { popUpToast } = useToastStore();
+
+watch(
+    () => form.expireAt,
+    (newValue) => {
+        form.expireAt = parseInt(String(newValue), 10);
+    },
+);
 </script>
 
 <template>
