@@ -11,7 +11,7 @@ WebSocket を用いて、各プレイヤーの操作が即時に同期される�
 
 ## ゲームプレイはこちらから
 
-[▶️ アプリケーションはこちら]()
+[▶️ アプリケーションはこちら](https://maybe-minesweeper-main-ty9rtx.laravel.cloud/)
 
 ### 遊び方
 
