@@ -7,8 +7,8 @@ use App\Models\Player;
 use App\Models\Room;
 use App\Repositories\Composites\RoomCompositeRepository;
 use Carbon\Carbon;
-use DB;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\DB;
 
 class CheckPlayerLeftRoomCommand extends Command
 {

@@ -8,8 +8,8 @@ use App\Repositories\DB\RoomRepository as DbRoomRepo;
 use App\Repositories\Redis\MinesweeperRepository as RedisGameRepo;
 use App\Repositories\Redis\RoomRepository as RedisRoomRepo;
 use Carbon\Carbon;
-use DB;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\DB;
 
 class BackUpDataFromRedisToDbCommand extends Command
 {
